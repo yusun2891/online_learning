@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V-M02: 플래시 카드</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+            background: #f5f5f5;
+        }
+
+        /* 네비게이션 */
+        .global-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 16px 32px;
+            border-bottom: 2px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #212121;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-btn:hover {
+            border-color: #2196F3;
+            color: #2196F3;
+        }
+
+        .nav-btn.active {
+            background: #2196F3;
+            color: white;
+            border-color: #2196F3;
+        }
+
+        .screen {
+            padding-top: 64px;
+            display: none;
+            min-height: 100vh;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* 헤더 */
+        .header {
+            background: white;
+            padding: 20px 32px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left .textbook {
+            font-size: 13px;
+            color: #757575;
+            margin-bottom: 4px;
+        }
+
+        .header-left .unit {
+            font-size: 16px;
+            color: #212121;
+            font-weight: 600;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .module-name {
+            font-size: 13px;
+            color: #757575;
+        }
+
+        .progress {
+            font-size: 16px;
+            color: #2196F3;
+            font-weight: bold;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #757575;
+            padding: 4px 8px;
+        }
+
+        /* 진입 페이지 */
+        .entry-container {
+            max-width: 600px;
+            margin: 80px auto;
+            padding: 48px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .entry-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+        }
+
+        .entry-title {
+            font-size: 36px;
+            font-weight: bold;
+            color: #212121;
+            margin-bottom: 16px;
+        }
+
+        .entry-count {
+            font-size: 18px;
+            color: #2196F3;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+
+        .entry-info {
+            font-size: 15px;
+            color: #757575;
+            margin-bottom: 8px;
+        }
+
+        .entry-description {
+            font-size: 17px;
+            color: #616161;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .btn-start {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 16px 48px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-start:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+
+        /* 마이크 테스트 */
+        .mic-test-section {
+            background: #F5F5F5;
+            border: 2px solid #E0E0E0;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .mic-test-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #212121;
+            margin-bottom: 8px;
+        }
+
+        .mic-test-description {
+            font-size: 14px;
+            color: #757575;
+            margin-bottom: 16px;
+        }
+
+        .btn-mic-test {
+            background: white;
+            color: #616161;
+            border: 2px solid #BDBDBD;
+            padding: 12px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-mic-test:hover {
+            border-color: #4CAF50;
+            color: #4CAF50;
+        }
+
+        .btn-mic-test.testing {
+            background: #F44336;
+            color: white;
+            border-color: #F44336;
+        }
+
+        .btn-mic-test.success {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+
+        .mic-test-result {
+            margin-top: 16px;
+            font-size: 14px;
+            min-height: 20px;
+        }
+
+        .mic-test-result.success {
+            color: #4CAF50;
+            font-weight: 600;
+        }
+
+        .mic-test-result.error {
+            color: #F44336;
+            font-weight: 600;
+        }
+
+        .mic-test-result.testing {
+            color: #F57C00;
+            font-weight: 600;
+        }
+
+        /* 학습 진행 페이지 */
+        .learning-container {
+            padding: 48px;
+            padding-bottom: 180px;
+            max-width: 900px;
+            margin: 0 auto;
+            overflow-y: auto;
+            max-height: calc(100vh - 128px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 128px);
+        }
+
+        .status-bar {
+            background: #FFF9C4;
+            padding: 20px 32px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .status-icon {
+            font-size: 28px;
+        }
+
+        .status-text {
+            font-size: 17px;
+            color: #F57C00;
+            font-weight: 600;
+        }
+
+        /* 플래시 카드 */
+        .flashcard-container {
+            perspective: 1000px;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .flashcard {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-front,
+        .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 48px;
+        }
+
+        .flashcard-front {
+            background: white;
+            border: 3px solid #e0e0e0;
+        }
+
+        .flashcard-front.playing {
+            background: #FFF9C4;
+            border-color: #FBC02D;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        .flashcard-back {
+            background: #E3F2FD;
+            border: 3px solid #2196F3;
+            transform: rotateY(180deg);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .card-word {
+            font-size: 48px;
+            font-weight: bold;
+            color: #212121;
+            margin-bottom: 16px;
+        }
+
+        .card-meaning {
+            font-size: 24px;
+            color: #616161;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .card-hint {
+            font-size: 14px;
+            color: #9E9E9E;
+            margin-top: 24px;
+        }
+
+        /* 녹음 영역 */
+        .recording-area {
+            margin-top: 40px;
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .recording-message {
+            font-size: 17px;
+            color: #616161;
+            margin-bottom: 20px;
+        }
+
+        .btn-record {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 16px 48px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-record:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .btn-record:disabled {
+            background: #BDBDBD;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .recording-status {
+            font-size: 16px;
+            color: #F44336;
+            font-weight: 600;
+            display: none;
+        }
+
+        /* 하단 고정 버튼 영역 */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 24px 32px;
+            text-align: center;
+            border-top: 2px solid #e0e0e0;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
+            transform: translateY(100%);
+            transition: transform 0.4s ease-out;
+            z-index: 100;
+        }
+
+        .bottom-bar.show {
+            transform: translateY(0);
+        }
+
+        .bottom-message {
+            font-size: 17px;
+            color: #616161;
+            margin-bottom: 16px;
+        }
+
+        .bottom-score {
+            font-size: 15px;
+            color: #757575;
+            margin-bottom: 16px;
+        }
+
+        .score-value {
+            font-size: 24px;
+            color: #2196F3;
+            font-weight: bold;
+        }
+
+        .bottom-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #616161;
+            border: 2px solid #e0e0e0;
+            padding: 14px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            border-color: #2196F3;
+            color: #2196F3;
+        }
+
+        .btn-primary {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+
+        /* 결과 페이지 */
+        .result-container {
+            max-width: 600px;
+            margin: 80px auto;
+            padding: 48px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .result-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+        }
+
+        .result-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #212121;
+            margin-bottom: 32px;
+        }
+
+        .result-score {
+            font-size: 48px;
+            color: #2196F3;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+
+        .result-points {
+            font-size: 20px;
+            color: #FF9800;
+            font-weight: bold;
+            margin-bottom: 32px;
+        }
+
+        .result-message {
+            font-size: 17px;
+            color: #616161;
+            margin-bottom: 40px;
+            line-height: 1.8;
+        }
+
+        .result-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .result-btn-primary {
+            width: 100%;
+            padding: 18px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .result-btn-primary:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+        }
+
+        .result-btn-secondary {
+            width: 100%;
+            padding: 18px;
+            background: white;
+            color: #2196F3;
+            border: 2px solid #2196F3;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .result-btn-secondary:hover {
+            background: #E3F2FD;
+        }
+
+        .retry-info {
+            font-size: 13px;
+            color: #757575;
+            margin-top: 8px;
+        }
+
+        /* 바텀 팝업 */
+        .bottom-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .bottom-popup-overlay.show {
+            display: block;
+            opacity: 1;
+        }
+
+        .bottom-popup {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 24px 24px 0 0;
+            padding: 32px 24px 24px;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+            z-index: 10000;
+        }
+
+        .bottom-popup-overlay.show .bottom-popup {
+            transform: translateY(0);
+        }
+
+        .bottom-popup-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #212121;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .bottom-popup-desc {
+            font-size: 14px;
+            color: #757575;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .bottom-popup-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .bottom-popup-btn {
+            flex: 1;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .bottom-popup-btn.cancel {
+            background: #F5F5F5;
+            color: #616161;
+        }
+
+        .bottom-popup-btn.cancel:hover {
+            background: #EEEEEE;
+        }
+
+        .bottom-popup-btn.confirm {
+            background: #2196F3;
+            color: white;
+        }
+
+        .bottom-popup-btn.confirm:hover {
+            background: #1976D2;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .entry-container,
+            .result-container {
+                margin: 40px 16px;
+                padding: 32px 24px;
+            }
+
+            .learning-container {
+                padding: 24px 16px;
+            }
+
+            .flashcard {
+                height: 350px;
+            }
+
+            .card-word {
+                font-size: 36px;
+            }
+
+            .card-meaning {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 전역 네비게이션 -->
+    <div class="global-nav">
+        <div class="nav-title">V-M02: 플래시 카드 와이어프레임</div>
+        <div class="nav-buttons">
+            <button class="nav-btn active" onclick="goToScreen(1)">1.진입</button>
+            <button class="nav-btn" onclick="goToScreen(2)">2.음성재생</button>
+            <button class="nav-btn" onclick="goToScreen(3)">3.뒤집기+녹음</button>
+            <button class="nav-btn" onclick="goToScreen(4)">4.개별결과</button>
+            <button class="nav-btn" onclick="goToScreen(5)">5.결과</button>
+        </div>
+    </div>
+
+    <!-- 1. 진입 페이지 -->
+    <div id="screen1" class="screen active">
+        <div class="entry-container">
+            <div class="entry-icon">🎴</div>
+            <div class="entry-title">플래시 카드</div>
+            <div class="entry-count">총 5개 단어</div>
+            <div class="entry-info">Reading Book 3A > Unit 3: Space Journey</div>
+            <div class="entry-description">
+                단어의 발음을 듣고 따라 말하면서 단어를 익혀보세요.
+            </div>
+            
+            <!-- 마이크 테스트 섹션 -->
+            <div class="mic-test-section">
+                <div class="mic-test-title">🎤 마이크 테스트</div>
+                <div class="mic-test-description">학습 전에 마이크가 정상 작동하는지 확인해주세요</div>
+                <button class="btn-mic-test" id="micTestBtn" onclick="testMicrophone()">
+                    <span>🎤</span>
+                    <span>마이크 테스트</span>
+                </button>
+                <div class="mic-test-result" id="micTestResult"></div>
+            </div>
+            
+            <button class="btn-start" onclick="startLearning()">학습 시작</button>
+        </div>
+    </div>
+
+    <!-- 2. 학습 진행 - 음성 재생 -->
+    <div id="screen2" class="screen">
+        <div class="header">
+            <div class="header-left">
+                <div class="textbook">Reading Book 3A</div>
+                <div class="unit">Unit 3: Space Journey</div>
+            </div>
+            <div class="header-right">
+                <div class="module-name">Step 2 • 플래시 카드</div>
+                <div class="progress" id="progress1">1/10</div>
+                <button class="close-btn" onclick="exitLearning()">✕</button>
+            </div>
+        </div>
+
+        <div class="learning-container">
+            <div class="status-bar">
+                <span class="status-icon">🎧</span>
+                <span class="status-text">단어의 발음을 들어보세요</span>
+            </div>
+
+            <div class="flashcard-container">
+                <div class="flashcard" id="card1">
+                    <div class="flashcard-front playing">
+                        <div class="card-word">adventure</div>
+                    </div>
+                    <div class="flashcard-back">
+                        <div class="card-meaning">모험</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 카드 뒤집기 + 녹음 -->
+    <div id="screen3" class="screen">
+        <div class="header">
+            <div class="header-left">
+                <div class="textbook">Reading Book 3A</div>
+                <div class="unit">Unit 3: Space Journey</div>
+            </div>
+            <div class="header-right">
+                <div class="module-name">Step 2 • 플래시 카드</div>
+                <div class="progress">1/10</div>
+                <button class="close-btn" onclick="exitLearning()">✕</button>
+            </div>
+        </div>
+
+        <div class="learning-container">
+            <div class="status-bar">
+                <span class="status-icon">🎤</span>
+                <span class="status-text">단어 뜻을 확인한 후, 단어를 발음해보세요</span>
+            </div>
+
+            <div class="flashcard-container">
+                <div class="flashcard flipped" id="card2" onclick="toggleCard('card2')">
+                    <div class="flashcard-front">
+                        <div class="card-word">adventure</div>
+                    </div>
+                    <div class="flashcard-back">
+                        <div class="card-meaning">모험</div>
+                        <div class="card-hint">💡 카드를 클릭하면 다시 앞면으로 돌아갑니다</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-bar" id="recordingBar">
+            <div class="bottom-message">
+                <span id="recordingMessage" style="color: #616161; font-size: 17px;">준비가 되면 녹음 버튼을 눌러주세요</span>
+            </div>
+            <div class="bottom-actions">
+                <button class="btn-primary" id="recordBtn" onclick="startRecording()">
+                    <span>🎤</span>
+                    <span>녹음 시작</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 개별 단어 결과 -->
+    <div id="screen4" class="screen">
+        <div class="header">
+            <div class="header-left">
+                <div class="textbook">Reading Book 3A</div>
+                <div class="unit">Unit 3: Space Journey</div>
+            </div>
+            <div class="header-right">
+                <div class="module-name">Step 2 • 플래시 카드</div>
+                <div class="progress">1/10</div>
+                <button class="close-btn" onclick="exitLearning()">✕</button>
+            </div>
+        </div>
+
+        <div class="learning-container">
+            <div class="status-bar">
+                <span class="status-icon">✅</span>
+                <span class="status-text">잘했어요!</span>
+            </div>
+
+            <div class="flashcard-container">
+                <div class="flashcard flipped" id="card3" onclick="toggleCard('card3')">
+                    <div class="flashcard-front">
+                        <div class="card-word">adventure</div>
+                    </div>
+                    <div class="flashcard-back">
+                        <div class="card-meaning">모험</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-bar show">
+            <div class="bottom-score">
+                발음 점수: <span class="score-value">88점</span>
+            </div>
+            <div class="bottom-actions">
+                <button class="btn-secondary" onclick="retryRecording()">다시 읽어보기</button>
+                <button class="btn-primary" id="nextBtn" onclick="nextWord()">다음 단어 (1/5)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. 결과 페이지 -->
+    <div id="screen5" class="screen">
+        <div class="result-container">
+            <div class="result-icon">✅</div>
+            <div class="result-title">플래시 카드 학습 완료</div>
+            <div class="result-score">평균 발음 점수: 87점</div>
+            <div class="result-points">획득 포인트: 100 P</div>
+            <div class="result-message">
+                학습한 단어를 잘 기억하는지 확인해볼까요?
+            </div>
+            <div class="result-buttons">
+                <button class="result-btn-primary" onclick="nextModule()">다음 학습</button>
+                <button class="result-btn-secondary" onclick="showRetryPopup()">
+                    다시 학습하기
+                    <div class="retry-info">복습하고 보너스 포인트도 챙기세요!</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 다시 학습하기 바텀 팝업 -->
+    <div class="bottom-popup-overlay" id="retryPopup" onclick="closeRetryPopup(event)">
+        <div class="bottom-popup" onclick="event.stopPropagation()">
+            <div class="bottom-popup-title">다시 공부해볼까요?</div>
+            <div class="bottom-popup-desc">(원래 점수는 바뀌지 않아요)</div>
+            <div class="bottom-popup-buttons">
+                <button class="bottom-popup-btn cancel" onclick="closeRetryPopup()">취소</button>
+                <button class="bottom-popup-btn confirm" onclick="confirmRetry()">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentScreen = 1;
+        let currentWordIndex = 0;
+        
+        // 단어 데이터
+        const words = [
+            { english: 'absorb', korean: '흡수하다; 흡착하다, 흡입하다' },
+            { english: 'experiment', korean: '실험' },
+            { english: 'consist of', korean: '…로 구성되다' },
+            { english: 'reflect', korean: '반사하다' },
+            { english: 'mixture', korean: '혼합물; 결합물' },
+            { english: 'object', korean: '물건; 물체, 사물' },
+            { english: 'appear', korean: '…처럼 보이다, 나타나다' },
+            { english: 'shine', korean: '비치다' },
+            { english: 'sunlight', korean: '햇빛' },
+            { english: 'prism', korean: '프리즘, 분광기' }
+        ];
+
+        // 화면 전환
+        function goToScreen(screenNum) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById('screen' + screenNum).classList.add('active');
+            document.querySelectorAll('.nav-btn')[screenNum - 1].classList.add('active');
+            
+            currentScreen = screenNum;
+        }
+
+        // 학습 시작
+        function startLearning() {
+            currentWordIndex = 0;
+            updateWord();
+            goToScreen(2);
+            playAudio();
+        }
+        
+        // 마이크 테스트
+        let micTestStream = null;
+        
+        async function testMicrophone() {
+            const btn = document.getElementById('micTestBtn');
+            const result = document.getElementById('micTestResult');
+            
+            // 이미 테스트 중이면 중지
+            if (micTestStream) {
+                stopMicTest();
+                return;
+            }
+            
+            try {
+                // 버튼 상태 변경
+                btn.classList.add('testing');
+                btn.innerHTML = '<span>⏹</span><span>테스트 중지</span>';
+                result.className = 'mic-test-result testing';
+                result.textContent = '🔴 마이크 테스트 중... 말씀해주세요';
+                
+                // 마이크 권한 요청
+                micTestStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                
+                // AudioContext로 음량 측정
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const analyser = audioContext.createAnalyser();
+                const microphone = audioContext.createMediaStreamSource(micTestStream);
+                const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                
+                microphone.connect(analyser);
+                analyser.fftSize = 256;
+                
+                let soundDetected = false;
+                
+                function checkVolume() {
+                    if (!micTestStream) return;
+                    
+                    analyser.getByteFrequencyData(dataArray);
+                    const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+                    
+                    if (average > 10 && !soundDetected) {
+                        soundDetected = true;
+                        result.className = 'mic-test-result success';
+                        result.textContent = '✅ 마이크가 정상 작동합니다!';
+                        btn.classList.remove('testing');
+                        btn.classList.add('success');
+                        
+                        setTimeout(() => {
+                            stopMicTest();
+                        }, 2000);
+                        return;
+                    }
+                    
+                    requestAnimationFrame(checkVolume);
+                }
+                
+                checkVolume();
+                
+            } catch (error) {
+                result.className = 'mic-test-result error';
+                result.textContent = '❌ 마이크 접근 권한이 필요합니다.';
+                btn.classList.remove('testing');
+                btn.innerHTML = '<span>🎤</span><span>마이크 테스트</span>';
+                micTestStream = null;
+            }
+        }
+        
+        function stopMicTest() {
+            if (micTestStream) {
+                micTestStream.getTracks().forEach(track => track.stop());
+                micTestStream = null;
+            }
+            
+            const btn = document.getElementById('micTestBtn');
+            btn.classList.remove('testing', 'success');
+            btn.innerHTML = '<span>🎤</span><span>마이크 테스트</span>';
+        }
+        
+        // 단어 업데이트
+        function updateWord() {
+            const word = words[currentWordIndex];
+            const progress = `${currentWordIndex + 1}/${words.length}`;
+            
+            // 진행 상황 업데이트
+            document.querySelectorAll('.progress').forEach(el => {
+                el.textContent = progress;
+            });
+            
+            // 카드 단어 업데이트
+            document.querySelectorAll('.card-word').forEach(el => {
+                el.textContent = word.english;
+            });
+            
+            document.querySelectorAll('.card-meaning').forEach(el => {
+                el.textContent = word.korean;
+            });
+        }
+
+        // 음성 재생 시뮬레이션
+        function playAudio() {
+            const card = document.getElementById('card1');
+            card.querySelector('.flashcard-front').classList.add('playing');
+            
+            // TTS 음성 재생
+            const word = words[currentWordIndex].english;
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.9;
+            
+            utterance.onend = () => {
+                setTimeout(() => {
+                    card.querySelector('.flashcard-front').classList.remove('playing');
+                    goToScreen(3);
+                    document.getElementById('card2').classList.add('flipped');
+                    
+                    // 하단 바 애니메이션으로 나타내기
+                    setTimeout(() => {
+                        document.getElementById('recordingBar').classList.add('show');
+                    }, 300);
+                }, 500);
+            };
+            
+            speechSynthesis.speak(utterance);
+        }
+
+        // 카드 뒤집기
+        function toggleCard(cardId) {
+            const card = document.getElementById(cardId);
+            card.classList.toggle('flipped');
+            
+            // 앞면으로 뒤집힐 때 음성 재생 (녹음 중이 아닐 때만)
+            if (!card.classList.contains('flipped') && !isRecording) {
+                const word = card.querySelector('.card-word').textContent;
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9;
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        // 녹음 시작
+        let recordingTimer = null;
+        let isRecording = false;
+        
+        function startRecording() {
+            const btn = document.getElementById('recordBtn');
+            const bar = document.getElementById('recordingBar');
+            const message = document.getElementById('recordingMessage');
+            
+            // 진행 중인 음성 재생 중지
+            speechSynthesis.cancel();
+            
+            // 녹음 상태 설정
+            isRecording = true;
+            
+            // 녹음 시작 상태로 변경
+            message.textContent = '🔴 녹음 중입니다...';
+            message.style.color = '#F44336';
+            message.style.fontWeight = '600';
+            
+            btn.innerHTML = '<span>⏹</span><span>녹음 종료</span>';
+            btn.style.background = '#F44336';
+            btn.onclick = stopRecording;
+            
+            // 20초 후 자동 종료
+            recordingTimer = setTimeout(() => {
+                stopRecording();
+            }, 20000);
+        }
+        
+        // 녹음 종료
+        function stopRecording() {
+            // 타이머 정리
+            if (recordingTimer) {
+                clearTimeout(recordingTimer);
+                recordingTimer = null;
+            }
+            
+            // 녹음 상태 해제
+            isRecording = false;
+            
+            const btn = document.getElementById('recordBtn');
+            const bar = document.getElementById('recordingBar');
+            const message = document.getElementById('recordingMessage');
+            
+            bar.classList.remove('show');
+            
+            // 버튼과 메시지 원래대로 복원
+            btn.innerHTML = '<span>🎤</span><span>녹음 시작</span>';
+            btn.style.background = '#2196F3';
+            btn.onclick = startRecording;
+            message.textContent = '준비가 되면 녹음 버튼을 눌러주세요';
+            message.style.color = '#616161';
+            message.style.fontWeight = 'normal';
+            
+            goToScreen(4);
+            
+            // 랜덤 점수 생성 (70~100점)
+            const score = Math.floor(Math.random() * 31) + 70;
+            
+            // 점수에 따른 피드백
+            let feedback = '';
+            let icon = '';
+            if (score >= 95) {
+                feedback = '완벽해요!';
+                icon = '🌟';
+            } else if (score >= 90) {
+                feedback = '아주 잘했어요!';
+                icon = '🎉';
+            } else if (score >= 85) {
+                feedback = '잘했어요!';
+                icon = '✨';
+            } else if (score >= 80) {
+                feedback = '좋아요!';
+                icon = '👍';
+            } else if (score >= 75) {
+                feedback = '조금만 더 연습해봐요!';
+                icon = '💪';
+            } else {
+                feedback = '다시 한번 연습해볼까요?';
+                icon = '🔄';
+            }
+            
+            // 상태 바 업데이트
+            const statusBar = document.querySelector('#screen4 .status-bar');
+            statusBar.innerHTML = `
+                <span class="status-icon">${icon}</span>
+                <span class="status-text">${feedback}</span>
+            `;
+            
+            // 점수 표시
+            document.querySelector('#screen4 .score-value').textContent = `${score}점`;
+            
+            // 다음 단어 버튼 텍스트 업데이트
+            const nextBtn = document.getElementById('nextBtn');
+            if (currentWordIndex === words.length - 1) {
+                nextBtn.textContent = '결과 보기';
+            } else {
+                nextBtn.textContent = `다음 단어 (${currentWordIndex + 1}/${words.length})`;
+            }
+            
+            // 4번 화면 하단 바 표시
+            setTimeout(() => {
+                document.querySelector('#screen4 .bottom-bar').classList.add('show');
+            }, 300);
+        }
+
+        // 다시 녹음
+        function retryRecording() {
+            const bar = document.querySelector('#screen4 .bottom-bar');
+            bar.classList.remove('show');
+            
+            // 녹음 버튼과 메시지 초기화
+            const btn = document.getElementById('recordBtn');
+            const message = document.getElementById('recordingMessage');
+            
+            btn.innerHTML = '<span>🎤</span><span>녹음 시작</span>';
+            btn.style.background = '#2196F3';
+            btn.onclick = startRecording;
+            message.textContent = '준비가 되면 녹음 버튼을 눌러주세요';
+            message.style.color = '#616161';
+            message.style.fontWeight = 'normal';
+            
+            goToScreen(3);
+            
+            // 3번 화면으로 돌아가면서 하단 바 다시 표시
+            setTimeout(() => {
+                document.getElementById('recordingBar').classList.add('show');
+            }, 300);
+        }
+
+        // 다음 단어
+        function nextWord() {
+            currentWordIndex++;
+            
+            if (currentWordIndex < words.length) {
+                // 다음 단어로 진행
+                updateWord();
+                goToScreen(2);
+                
+                // 하단 바 숨기기
+                const bar = document.querySelector('#screen4 .bottom-bar');
+                bar.classList.remove('show');
+                
+                // 카드 초기화
+                document.getElementById('card1').classList.remove('flipped');
+                document.getElementById('card2').classList.remove('flipped');
+                
+                playAudio();
+            } else {
+                // 결과 페이지로 이동
+                goToScreen(5);
+            }
+        }
+
+        let isRetryMode = false; // 다시 학습 중인지 추적
+
+        // 다음 모듈로 (또는 학습 완료)
+        function nextModule() {
+            alert('다음 모듈로 이동합니다!');
+            // 실제로는 다음 모듈로 이동
+        }
+
+        // 다시 학습하기 팝업 열기
+        function showRetryPopup() {
+            document.getElementById('retryPopup').classList.add('show');
+        }
+
+        // 다시 학습하기 팝업 닫기
+        function closeRetryPopup(event) {
+            // 오버레이 클릭 시에만 닫기
+            if (!event || event.target.id === 'retryPopup') {
+                document.getElementById('retryPopup').classList.remove('show');
+            }
+        }
+
+        // 다시 학습하기 확인
+        function confirmRetry() {
+            closeRetryPopup();
+            isRetryMode = true;
+            currentWordIndex = 0;
+            updateWord();
+            goToScreen(2);
+            playAudio();
+            
+            setTimeout(() => {
+                alert('다시 학습을 시작합니다!\n정답 개수 × 5P의 보너스 포인트를 받을 수 있어요.');
+            }, 300);
+        }
+
+        // 원래 startLearning 함수에서 사용
+        function startLearning() {
+            isRetryMode = false;
+            currentWordIndex = 0;
+            updateWord();
+            goToScreen(2);
+            playAudio();
+        }
+
+        // 나가기
+        function exitLearning() {
+            if (isRetryMode) {
+                // 다시 학습 중일 때
+                if (confirm('다시 학습을 종료하시겠습니까?\n\n다시 학습 중에는 보너스 포인트가 지급되지 않으며\n진행 상황이 저장되지 않습니다.')) {
+                    isRetryMode = false;
+                    goToScreen(1); // 진입 페이지로
+                }
+            } else {
+                // 일반 학습 중일 때
+                if (confirm('학습을 종료하시겠습니까?\n\n지금까지의 학습 내용이 저장됩니다.')) {
+                    goToScreen(1); // 진입 페이지로
+                }
+            }
+        }
+    </script>
+</body>
+</html>

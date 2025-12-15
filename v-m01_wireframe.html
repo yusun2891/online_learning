@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V-M01: 아는 단어 체크</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+            background: #f5f5f5;
+        }
+
+        /* 네비게이션 */
+        .global-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 16px 32px;
+            border-bottom: 2px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #212121;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-btn:hover {
+            border-color: #2196F3;
+            color: #2196F3;
+        }
+
+        .nav-btn.active {
+            background: #2196F3;
+            color: white;
+            border-color: #2196F3;
+        }
+
+        .screen {
+            padding-top: 64px;
+        }
+
+        .screen {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* 헤더 */
+        .header {
+            background: white;
+            padding: 20px 32px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left .textbook {
+            font-size: 13px;
+            color: #757575;
+            margin-bottom: 4px;
+        }
+
+        .header-left .unit {
+            font-size: 16px;
+            color: #212121;
+            font-weight: 600;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .module-name {
+            font-size: 13px;
+            color: #757575;
+        }
+
+        .progress {
+            font-size: 16px;
+            color: #2196F3;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 24px;
+            color: #757575;
+        }
+
+        /* 1. 진입 페이지 */
+        .entry {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: white;
+            padding: 40px;
+        }
+
+        .entry-icon {
+            font-size: 80px;
+            margin-bottom: 32px;
+        }
+
+        .entry-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #212121;
+            margin-bottom: 24px;
+        }
+
+        .entry-word-count {
+            font-size: 18px;
+            color: #2196F3;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .entry-textbook {
+            font-size: 15px;
+            color: #757575;
+            margin-bottom: 24px;
+        }
+
+        .entry-desc {
+            font-size: 17px;
+            color: #757575;
+            text-align: center;
+            line-height: 1.6;
+            margin-bottom: 48px;
+            max-width: 500px;
+        }
+
+        .btn-start {
+            padding: 18px 64px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-start:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+
+        /* 학습 진행 페이지 */
+        .learning-container {
+            padding: 48px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-bottom: 180px; /* 바텀바 공간 확보 */
+            overflow-y: auto;
+            max-height: calc(100vh - 128px); /* 헤더와 네비게이션 제외 */
+        }
+
+        .status-bar {
+            background: #FFF9C4;
+            padding: 20px 32px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .status-bar.phase2 {
+            background: #E3F2FD;
+        }
+
+        .status-icon {
+            font-size: 28px;
+        }
+
+        .status-text {
+            font-size: 17px;
+            color: #F57C00;
+            font-weight: 600;
+        }
+
+        .status-bar.phase2 .status-text {
+            color: #1976D2;
+        }
+
+        .word-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .word-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 16px;
+            padding: 48px 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .word-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+
+        .word-card.playing {
+            background: #FFF9C4;
+            border-color: #FBC02D;
+            border-width: 3px;
+            transform: scale(1.1);
+            box-shadow: 0 12px 32px rgba(251, 192, 45, 0.5);
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        .word-card.selected {
+            background: #E3F2FD;
+            border-color: #2196F3;
+            border-width: 3px;
+        }
+
+        .word-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            background: #2196F3;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .word-english {
+            font-size: 28px;
+            font-weight: 700;
+            color: #212121;
+        }
+
+        .word-korean {
+            font-size: 16px;
+            color: #757575;
+            margin-top: 12px;
+            display: none;
+        }
+
+        .word-card.selected .word-korean {
+            display: block;
+        }
+
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 24px 32px;
+            border-top: 2px solid #e0e0e0;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+        }
+
+        .bottom-bar.show {
+            transform: translateY(0);
+        }
+
+        .bottom-message {
+            font-size: 15px;
+            color: #757575;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .bottom-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-secondary {
+            padding: 14px 32px;
+            background: white;
+            color: #2196F3;
+            border: 2px solid #2196F3;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: #E3F2FD;
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            padding: 14px 48px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #1976D2;
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 결과 페이지 */
+        .result-container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 100px 40px;
+            text-align: center;
+        }
+
+        .result-icon {
+            font-size: 96px;
+            margin-bottom: 32px;
+        }
+
+        .result-title {
+            font-size: 40px;
+            font-weight: 700;
+            color: #212121;
+            margin-bottom: 32px;
+        }
+
+        .result-score {
+            font-size: 64px;
+            font-weight: 700;
+            color: #2196F3;
+            margin-bottom: 16px;
+        }
+
+        .result-detail {
+            font-size: 20px;
+            color: #757575;
+            margin-bottom: 48px;
+        }
+
+        .result-message {
+            font-size: 19px;
+            color: #212121;
+            margin-bottom: 56px;
+            line-height: 1.6;
+        }
+
+        .btn-next {
+            padding: 20px 64px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-next:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1.1);
+            }
+            50% {
+                transform: scale(1.15);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .word-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .global-nav {
+                flex-direction: column;
+                gap: 12px;
+                padding: 12px 16px;
+            }
+
+            .nav-title {
+                font-size: 14px;
+            }
+
+            .nav-buttons {
+                width: 100%;
+                overflow-x: auto;
+                justify-content: flex-start;
+            }
+
+            .nav-btn {
+                flex-shrink: 0;
+                font-size: 12px;
+                padding: 8px 16px;
+            }
+
+            .learning-container {
+                padding: 24px;
+                padding-bottom: 160px;
+            }
+
+            .screen {
+                padding-top: 100px;
+            }
+
+            .bottom-bar {
+                padding: 20px 16px;
+            }
+
+            .bottom-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .btn-secondary, .btn-primary {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 전역 네비게이션 -->
+    <div class="global-nav">
+        <div class="nav-title">📱 V-M01: 아는 단어 체크 - 시연</div>
+        <div class="nav-buttons">
+            <button class="nav-btn active" onclick="goToScreen(1)">1. 진입</button>
+            <button class="nav-btn" onclick="goToScreen(2)">2. 음성 재생</button>
+            <button class="nav-btn" onclick="goToScreen(4)">3. 단어 선택</button>
+            <button class="nav-btn" onclick="goToScreen(5)">4. 결과</button>
+        </div>
+    </div>
+
+    <!-- 1. 진입 페이지 -->
+    <div id="screen1" class="screen active">
+        <div class="entry">
+            <div class="entry-icon">📚</div>
+            <div class="entry-title">아는 단어 체크</div>
+            <div class="entry-word-count">총 10개 단어</div>
+            <div class="entry-textbook">Reading Book 3A > Unit 3: Space Journey</div>
+            <div class="entry-desc">
+                오늘 학습할 단어의 발음을 들어보고 아는 단어가 있는지 확인해보세요.
+            </div>
+            <button class="btn-start" onclick="startLearning()">학습 시작</button>
+        </div>
+    </div>
+
+    <!-- 2-1. 학습 진행 페이지 진입 -->
+    <div id="screen2" class="screen">
+        <div class="header">
+            <div class="header-left">
+                <div class="textbook">Reading Book 3A</div>
+                <div class="unit">Unit 3: Space Journey</div>
+            </div>
+            <div class="header-right">
+                <div class="module-name">Step 1 • 아는 단어 체크</div>
+                <div class="progress" id="progress1">0/10</div>
+                <button class="close-btn">✕</button>
+            </div>
+        </div>
+
+        <div class="learning-container">
+            <div class="status-bar">
+                <span class="status-icon">🎧</span>
+                <span class="status-text">오늘 학습할 단어를 들으면서 읽어보세요.</span>
+            </div>
+
+            <div class="word-grid" id="wordGrid1">
+                <div class="word-card" data-word="adventure">
+                    <div class="word-english">adventure</div>
+                </div>
+                <div class="word-card" data-word="astronaut">
+                    <div class="word-english">astronaut</div>
+                </div>
+                <div class="word-card" data-word="explore">
+                    <div class="word-english">explore</div>
+                </div>
+                <div class="word-card" data-word="galaxy">
+                    <div class="word-english">galaxy</div>
+                </div>
+                <div class="word-card" data-word="journey">
+                    <div class="word-english">journey</div>
+                </div>
+                <div class="word-card" data-word="planet">
+                    <div class="word-english">planet</div>
+                </div>
+                <div class="word-card" data-word="rocket">
+                    <div class="word-english">rocket</div>
+                </div>
+                <div class="word-card" data-word="satellite">
+                    <div class="word-english">satellite</div>
+                </div>
+                <div class="word-card" data-word="telescope">
+                    <div class="word-english">telescope</div>
+                </div>
+                <div class="word-card" data-word="universe">
+                    <div class="word-english">universe</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-bar" id="bottomBar1">
+            <div class="bottom-message">
+                발음과 함께 단어를 살펴보셨나요?
+            </div>
+            <div class="bottom-actions">
+                <button class="btn-secondary" id="replayBtn1" disabled onclick="replayAudio()">🔄 다시 듣기</button>
+                <button class="btn-primary" id="selectBtn1" disabled onclick="goToScreen(4)">아는 단어 선택하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2-2. 자동 음성 재생 (동일 화면, 재생 중 상태) -->
+    <div id="screen3" class="screen">
+        <div class="header">
+            <div class="header-left">
+                <div class="textbook">Reading Book 3A</div>
+                <div class="unit">Unit 3: Space Journey</div>
+            </div>
+            <div class="header-right">
+                <div class="module-name">Step 1 • 아는 단어 체크</div>
+                <div class="progress">5/10</div>
+                <button class="close-btn">✕</button>
+            </div>
+        </div>
+
+        <div class="learning-container">
+            <div class="status-bar">
+                <span class="status-icon">🔊</span>
+                <span class="status-text">단어 듣는 중...</span>
+            </div>
+
+            <div class="word-grid">
+                <div class="word-card">
+                    <div class="word-english">absorb</div>
+                </div>
+                <div class="word-card">
+                    <div class="word-english">experiment</div>
+                </div>
+                <div class="word-card">
+                    <div class="word-english">consist of</div>
+                </div>
+                <div class="word-card">
+                    <div class="word-english">reflect</div>
+                </div>
+                <div class="word-card playing">
+                    <div class="word-english">mixture</div>
+                </div>
+                <div class="word-card">
+                    <div class="word-english">object</div>
+                </div>
+                <div class="word-card">
+                    <div class="word-english">count</div>
+                </div>
+                <div class="word-card">
+                    <div class="word-english">appear</div>
+                </div>
+                <div class="word-card">
+                    <div class="word-english">shine</div>
+                </div>
+                <div class="word-card">
+                    <div class="word-english">sunlight</div>
+                </div>
+                <div class="word-card">
+                    <div class="word-english">prism</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-bar">
+        </div>
+    </div>
+
+    <!-- 3-1. 단어 선택 페이지 -->
+    <div id="screen4" class="screen">
+        <div class="header">
+            <div class="header-left">
+                <div class="textbook">Reading Book 3A</div>
+                <div class="unit">Unit 3: Space Journey</div>
+            </div>
+            <div class="header-right">
+                <div class="module-name">Step 1 • 아는 단어 체크</div>
+                <div class="progress" id="selectedCount">0/10</div>
+                <button class="close-btn">✕</button>
+            </div>
+        </div>
+
+        <div class="learning-container">
+            <div class="status-bar phase2">
+                <span class="status-icon">✓</span>
+                <span class="status-text">이미 알고 있는 단어가 있나요? 아는 단어를 체크해주세요.</span>
+            </div>
+
+            <div class="word-grid" id="selectableGrid">
+                <div class="word-card" onclick="toggleSelect(this)">
+                    <div class="word-english">absorb</div>
+                    <div class="word-korean">흡수하다; 흡착하다, 흡입하다</div>
+                </div>
+                <div class="word-card" onclick="toggleSelect(this)">
+                    <div class="word-english">experiment</div>
+                    <div class="word-korean">실험</div>
+                </div>
+                <div class="word-card" onclick="toggleSelect(this)">
+                    <div class="word-english">consist of</div>
+                    <div class="word-korean">…로 구성되다</div>
+                </div>
+                <div class="word-card" onclick="toggleSelect(this)">
+                    <div class="word-english">reflect</div>
+                    <div class="word-korean">반사하다</div>
+                </div>
+                <div class="word-card" onclick="toggleSelect(this)">
+                    <div class="word-english">mixture</div>
+                    <div class="word-korean">혼합물; 결합물</div>
+                </div>
+                <div class="word-card" onclick="toggleSelect(this)">
+                    <div class="word-english">object</div>
+                    <div class="word-korean">물건; 물체, 사물</div>
+                </div>
+                <div class="word-card" onclick="toggleSelect(this)">
+                    <div class="word-english">count</div>
+                    <div class="word-korean">계산하다</div>
+                </div>
+                <div class="word-card" onclick="toggleSelect(this)">
+                    <div class="word-english">appear</div>
+                    <div class="word-korean">…처럼 보이다, 나타나다</div>
+                </div>
+                <div class="word-card" onclick="toggleSelect(this)">
+                    <div class="word-english">shine</div>
+                    <div class="word-korean">비치다</div>
+                </div>
+                <div class="word-card" onclick="toggleSelect(this)">
+                    <div class="word-english">sunlight</div>
+                    <div class="word-korean">햇빛</div>
+                </div>
+                <div class="word-card" onclick="toggleSelect(this)">
+                    <div class="word-english">prism</div>
+                    <div class="word-korean">프리즘, 분광기</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-bar show">
+            <div class="bottom-message">
+                아는 단어를 모두 선택했나요?
+            </div>
+            <div class="bottom-actions">
+                <button class="btn-secondary" onclick="goToScreen(2); replayAudio()">🔄 다시 듣기</button>
+                <button class="btn-primary" onclick="completeSelection()">선택 완료</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 결과 페이지 -->
+    <div id="screen5" class="screen">
+        <div class="result-container">
+            <div class="result-icon">✅</div>
+            <div class="result-title">아는 단어 체크 완료</div>
+            <div class="result-score" id="resultScore">0 / 10</div>
+            <div class="result-detail" id="resultDetail">아는 단어 0개 · 학습할 단어 10개</div>
+            <div class="result-message" id="resultMessage">
+                총 10개 단어 중에 0개 단어를 알고 있네요!<br>
+                이제 본격적으로 단어 학습을 해볼까요?
+            </div>
+            <button class="btn-next">단어 학습 시작하기</button>
+        </div>
+    </div>
+
+    <script>
+        // TTS 음성 생성 함수
+        function speakWord(word) {
+            return new Promise((resolve) => {
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.8;
+                utterance.pitch = 1;
+                
+                utterance.onend = () => {
+                    setTimeout(resolve, 500); // 0.5초 대기
+                };
+                
+                utterance.onerror = () => {
+                    setTimeout(resolve, 500);
+                };
+                
+                speechSynthesis.speak(utterance);
+            });
+        }
+
+        let isPlaying = false;
+        let currentPlayIndex = 0;
+
+        // 자동 음성 재생
+        async function playAllWords() {
+            if (isPlaying) return;
+            
+            isPlaying = true;
+            const cards = document.querySelectorAll('#wordGrid1 .word-card');
+            const progress = document.getElementById('progress1');
+            const replayBtn = document.getElementById('replayBtn1');
+            const selectBtn = document.getElementById('selectBtn1');
+            const bottomBar = document.getElementById('bottomBar1');
+            
+            // 바텀바 숨기기
+            bottomBar.classList.remove('show');
+            replayBtn.disabled = true;
+            selectBtn.disabled = true;
+            
+            for (let i = 0; i < cards.length; i++) {
+                currentPlayIndex = i;
+                const card = cards[i];
+                const word = card.dataset.word;
+                
+                // 카드 강조
+                card.classList.add('playing');
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // 진행 상황 업데이트
+                progress.textContent = `${i + 1}/10`;
+                
+                // 음성 재생
+                await speakWord(word);
+                
+                // 강조 제거
+                card.classList.remove('playing');
+            }
+            
+            isPlaying = false;
+            
+            // 재생 완료 후 바텀바 표시 (애니메이션)
+            setTimeout(() => {
+                bottomBar.classList.add('show');
+                replayBtn.disabled = false;
+                selectBtn.disabled = false;
+            }, 300);
+        }
+
+        // 다시 듣기
+        function replayAudio() {
+            playAllWords();
+        }
+
+        // 학습 시작
+        function startLearning() {
+            goToScreen(2);
+            setTimeout(() => {
+                playAllWords();
+            }, 500);
+        }
+
+        // 단어 선택/해제
+        function toggleSelect(card) {
+            card.classList.toggle('selected');
+            updateSelectedCount();
+        }
+
+        // 선택 개수 업데이트
+        function updateSelectedCount() {
+            const selected = document.querySelectorAll('#selectableGrid .word-card.selected').length;
+            document.getElementById('selectedCount').textContent = `${selected}/10`;
+        }
+
+        // 선택 완료
+        function completeSelection() {
+            const selected = document.querySelectorAll('#selectableGrid .word-card.selected').length;
+            const toLearn = 10 - selected;
+            
+            document.getElementById('resultScore').textContent = `${selected} / 10`;
+            document.getElementById('resultDetail').textContent = `아는 단어 ${selected}개 · 학습할 단어 ${toLearn}개`;
+            document.getElementById('resultMessage').innerHTML = 
+                `총 10개 단어 중에 ${selected}개 단어를 알고 있네요!<br>이제 본격적으로 단어 학습을 해볼까요?`;
+            
+            goToScreen(5);
+        }
+
+        // 화면 전환
+        function goToScreen(num) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById('screen' + num).classList.add('active');
+            
+            // 네비게이션 버튼 활성화 (1,2,4,5 화면만 버튼 있음)
+            const btnMap = {1: 0, 2: 1, 4: 2, 5: 3};
+            if (btnMap[num] !== undefined) {
+                document.querySelectorAll('.nav-btn')[btnMap[num]].classList.add('active');
+            }
+            
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>

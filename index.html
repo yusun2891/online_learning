@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DYB Circle - 학습 모듈 기획 문서</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1565C0;
+            --primary-light: #42A5F5;
+            --secondary: #FF6B35;
+            --accent: #FFC107;
+            --dark: #1A1A2E;
+            --gray: #757575;
+            --light-bg: #F8F9FA;
+            --white: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 32px;
+        }
+
+        /* Header */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 24px 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Poppins', sans-serif;
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav-links a {
+            color: var(--dark);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--primary);
+            transition: width 0.3s;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 120px 0;
+            text-align: center;
+            position: relative;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            padding: 12px 32px;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 1px;
+            margin-bottom: 32px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .hero h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 72px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 24px;
+            letter-spacing: -2px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero .subtitle {
+            font-size: 24px;
+            color: rgba(255, 255, 255, 0.95);
+            margin-bottom: 40px;
+            font-weight: 500;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.5;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            margin-top: 48px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 24px 40px;
+            border-radius: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.25);
+        }
+
+        .stat-number {
+            font-family: 'Poppins', sans-serif;
+            font-size: 48px;
+            font-weight: 800;
+            color: white;
+            display: block;
+            line-height: 1;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Main Content */
+        .main-content {
+            background: white;
+            border-radius: 32px 32px 0 0;
+            margin-top: -32px;
+            position: relative;
+            z-index: 10;
+            padding: 80px 0;
+        }
+
+        .section {
+            margin-bottom: 120px;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .section-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            color: white;
+            padding: 8px 24px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 48px;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 16px;
+            letter-spacing: -1px;
+        }
+
+        .section-desc {
+            font-size: 18px;
+            color: var(--gray);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* Course Cards */
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 32px;
+            margin-bottom: 80px;
+        }
+
+        .course-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 24px;
+            padding: 48px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeInUp 0.6s ease-out both;
+        }
+
+        .course-card:nth-child(1) {
+            animation-delay: 0.1s;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .course-card:nth-child(2) {
+            animation-delay: 0.2s;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .course-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+        }
+
+        .course-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+            display: block;
+        }
+
+        .course-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: 32px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 16px;
+        }
+
+        .course-desc {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.7;
+            margin-bottom: 24px;
+        }
+
+        .course-meta {
+            display: flex;
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .meta-badge {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 13px;
+            color: white;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Module Grid */
+        .module-category {
+            margin-bottom: 64px;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 3px solid var(--light-bg);
+        }
+
+        .category-icon {
+            font-size: 48px;
+        }
+
+        .category-info h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .category-info p {
+            color: var(--gray);
+            font-size: 15px;
+        }
+
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .module-card {
+            background: white;
+            border: 2px solid #E0E0E0;
+            border-radius: 16px;
+            padding: 32px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+
+        .module-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary);
+        }
+
+        .module-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .module-card.available {
+            background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+        }
+
+        .module-card.coming-soon {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .module-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .module-id {
+            font-family: 'Poppins', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge.available {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        .status-badge.coming {
+            background: #FFF3E0;
+            color: #E65100;
+        }
+
+        .module-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 12px;
+        }
+
+        .module-desc {
+            font-size: 14px;
+            color: var(--gray);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .module-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .feature-tag {
+            background: var(--light-bg);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        /* Info Cards */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            margin-top: 48px;
+        }
+
+        .info-card {
+            background: var(--light-bg);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .info-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .info-card h4 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .info-card p {
+            font-size: 15px;
+            color: var(--gray);
+            line-height: 1.6;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 64px 0 32px;
+            margin-top: 120px;
+        }
+
+        .footer-content {
+            text-align: center;
+        }
+
+        .footer-content h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .footer-content p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .hero h1 {
+                font-size: 56px;
+            }
+
+            .course-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .module-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 40px;
+            }
+
+            .hero .subtitle {
+                font-size: 18px;
+            }
+
+            .hero-stats {
+                flex-direction: column;
+                gap: 24px;
+            }
+
+            .section-title {
+                font-size: 36px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">DYB Circle <span style="font-size: 14px; font-weight: 500; opacity: 0.7;">(가제)</span></div>
+                <nav class="nav-links">
+                    <a href="#overview">개요</a>
+                    <a href="#courses">학습 코스</a>
+                    <a href="#modules">학습 모듈</a>
+                    <a href="#schedule">일정</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-badge">온라인 학습 서비스 기획 문서</div>
+            <h1>DYB Circle <span style="font-size: 48px; opacity: 0.8;">(가제)</span></h1>
+            <p class="subtitle">
+                초등 3~6학년 학생들을 위한 AI 기반 맞춤형 영어 학습 플랫폼<br>
+                수업 후 효과적인 내재화와 개인별 맞춤 훈련을 통한 실력 향상
+            </p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-number">14K</span>
+                    <span class="stat-label">예상 사용자</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">40K</span>
+                    <span class="stat-label">월 이용료 (원)</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">2027.01</span>
+                    <span class="stat-label">정식 오픈</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <!-- Overview Section -->
+            <section id="overview" class="section">
+                <div class="section-header">
+                    <span class="section-tag">SERVICE OVERVIEW</span>
+                    <h2 class="section-title">서비스 개요</h2>
+                    <p class="section-desc">
+                        DYB Circle은 학원 수업의 한계를 극복하고 AI 기술을 활용하여<br>
+                        학생 개개인에게 최적화된 학습 경험을 제공합니다
+                    </p>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h4>💡 개발 목적</h4>
+                        <p>수익성 향상, 학습 효과 극대화, 차별화된 경쟁력 확보</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>🎯 타겟</h4>
+                        <p>CREO, 최선어학원 초3~초6 학생 약 14,000명</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>⏱️ 학습 시간</h4>
+                        <p>주당 80~100분 (Circular 60분 + Retention 20~40분)</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Courses Section -->
+            <section id="courses" class="section">
+                <div class="section-header">
+                    <span class="section-tag">LEARNING COURSES</span>
+                    <h2 class="section-title">주요 학습 코스</h2>
+                    <p class="section-desc">
+                        두 가지 핵심 학습 코스로 읽기, 듣기, 말하기, 단어까지<br>
+                        영어의 4대 영역을 균형있게 발달시킵니다
+                    </p>
+                </div>
+
+                <div class="course-grid">
+                    <div class="course-card">
+                        <span class="course-icon">🔄</span>
+                        <h3 class="course-name">Circular Course</h3>
+                        <p class="course-desc">
+                            Reading 교재 기반 통합 학습. 수업에서 학습한 지문을 반복하며 
+                            Listening, Speaking, Vocabulary, Grammar를 통합 훈련하여 
+                            영어 실력을 균형있게 발달시킵니다.
+                        </p>
+                        <div class="course-meta">
+                            <span class="meta-badge">📚 Reading 교재</span>
+                            <span class="meta-badge">⏱️ 주당 60분</span>
+                        </div>
+                    </div>
+
+                    <div class="course-card">
+                        <span class="course-icon">🧠</span>
+                        <h3 class="course-name">Retention Course</h3>
+                        <p class="course-desc">
+                            과학적 단계별 학습 (노출 → 인지 → 이해)으로 단어를 장기 기억에 
+                            저장하고 실제 문맥에서 활용할 수 있도록 훈련합니다.
+                        </p>
+                        <div class="course-meta">
+                            <span class="meta-badge">📖 Vocabulary 교재</span>
+                            <span class="meta-badge">⏱️ 주당 20~40분</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Modules Section -->
+            <section id="modules" class="section">
+                <div class="section-header">
+                    <span class="section-tag">LEARNING MODULES</span>
+                    <h2 class="section-title">학습 모듈 와이어프레임</h2>
+                    <p class="section-desc">
+                        각 학습 코스별로 세밀하게 설계된 모듈들로<br>
+                        학생들에게 효과적이고 재미있는 학습 경험을 제공합니다
+                    </p>
+                </div>
+
+                <!-- Retention Course Modules -->
+                <div class="module-category">
+                    <div class="category-header">
+                        <span class="category-icon">🧠</span>
+                        <div class="category-info">
+                            <h3>Retention Course</h3>
+                            <p>단어 암기 및 장기 기억 훈련을 위한 10개 모듈 (Vocabulary 교재 기반)</p>
+                        </div>
+                    </div>
+                    <div class="module-grid">
+                        <a href="V-M01_wireframe.html" style="text-decoration: none;">
+                            <div class="module-card available">
+                                <div class="module-header">
+                                    <span class="module-id">V-M01</span>
+                                    <span class="status-badge available">AVAILABLE</span>
+                                </div>
+                                <h4 class="module-name">아는 단어 체크</h4>
+                                <p class="module-desc">
+                                    단어 음원을 듣고 이미 알고 있는 단어를 체크하여 학습할 단어를 선별합니다.
+                                </p>
+                                <div class="module-features">
+                                    <span class="feature-tag">음원 재생</span>
+                                    <span class="feature-tag">단어 선택</span>
+                                </div>
+                            </div>
+                        </a>
+
+                        <a href="V-M02_wireframe.html" style="text-decoration: none;">
+                            <div class="module-card available">
+                                <div class="module-header">
+                                    <span class="module-id">V-M02</span>
+                                    <span class="status-badge available">AVAILABLE</span>
+                                </div>
+                                <h4 class="module-name">플래시카드</h4>
+                                <p class="module-desc">
+                                    플래시 카드를 넘기며 단어와 뜻을 반복 학습하고, 음성으로 발음을 따라합니다.
+                                </p>
+                                <div class="module-features">
+                                    <span class="feature-tag">음원 재생</span>
+                                    <span class="feature-tag">STT</span>
+                                    <span class="feature-tag">스와이프</span>
+                                </div>
+                            </div>
+                        </a>
+
+                        <a href="V-M03_wireframe.html" style="text-decoration: none;">
+                            <div class="module-card available">
+                                <div class="module-header">
+                                    <span class="module-id">V-M03</span>
+                                    <span class="status-badge available">AVAILABLE</span>
+                                </div>
+                                <h4 class="module-name">단어 뜻 맞추기</h4>
+                                <p class="module-desc">
+                                    단어를 보고 알맞은 뜻을 4개 선택지 중에서 고르는 기본 문제 유형입니다.
+                                </p>
+                                <div class="module-features">
+                                    <span class="feature-tag">객관식 (4지)</span>
+                                </div>
+                            </div>
+                        </a>
+
+                        <a href="V-M04_wireframe.html" style="text-decoration: none;">
+                            <div class="module-card available">
+                                <div class="module-header">
+                                    <span class="module-id">V-M04</span>
+                                    <span class="status-badge available">AVAILABLE</span>
+                                </div>
+                                <h4 class="module-name">뜻 보고 단어 맞추기</h4>
+                                <p class="module-desc">
+                                    뜻을 보고 알맞은 단어를 4개 선택지 중에서 고르는 역방향 문제 유형입니다.
+                                </p>
+                                <div class="module-features">
+                                    <span class="feature-tag">객관식 (4지)</span>
+                                </div>
+                            </div>
+                        </a>
+
+                        <div class="module-card coming-soon">
+                            <div class="module-header">
+                                <span class="module-id">V-M05</span>
+                                <span class="status-badge coming">COMING SOON</span>
+                            </div>
+                            <h4 class="module-name">발음 듣고 단어 맞추기</h4>
+                            <p class="module-desc">
+                                발음을 듣고 알맞은 단어를 4개 선택지 중에서 선택하는 듣기 기반 학습입니다.
+                            </p>
+                            <div class="module-features">
+                                <span class="feature-tag">음원 재생</span>
+                                <span class="feature-tag">객관식 (4지)</span>
+                            </div>
+                        </div>
+
+                        <div class="module-card coming-soon">
+                            <div class="module-header">
+                                <span class="module-id">V-M06</span>
+                                <span class="status-badge coming">COMING SOON</span>
+                            </div>
+                            <h4 class="module-name">철자 매칭</h4>
+                            <p class="module-desc">
+                                단어와 뜻을 드래그하여 올바르게 연결하는 인터랙티브 학습입니다.
+                            </p>
+                            <div class="module-features">
+                                <span class="feature-tag">Drag & Drop</span>
+                            </div>
+                        </div>
+
+                        <div class="module-card coming-soon">
+                            <div class="module-header">
+                                <span class="module-id">V-M07</span>
+                                <span class="status-badge coming">COMING SOON</span>
+                            </div>
+                            <h4 class="module-name">철자 빈칸 채우기</h4>
+                            <p class="module-desc">
+                                단어의 철자 중 빈칸에 들어갈 알파벳을 6개 보기 중에서 선택합니다.
+                            </p>
+                            <div class="module-features">
+                                <span class="feature-tag">객관식 (6개 알파벳)</span>
+                            </div>
+                        </div>
+
+                        <div class="module-card coming-soon">
+                            <div class="module-header">
+                                <span class="module-id">V-M08</span>
+                                <span class="status-badge coming">COMING SOON</span>
+                            </div>
+                            <h4 class="module-name">단어 타이핑</h4>
+                            <p class="module-desc">
+                                단어의 뜻을 보고 키보드로 직접 철자를 타이핑하여 입력합니다.
+                            </p>
+                            <div class="module-features">
+                                <span class="feature-tag">키보드 입력</span>
+                            </div>
+                        </div>
+
+                        <div class="module-card coming-soon">
+                            <div class="module-header">
+                                <span class="module-id">V-M09</span>
+                                <span class="status-badge coming">COMING SOON</span>
+                            </div>
+                            <h4 class="module-name">예문 빈칸 채우기</h4>
+                            <p class="module-desc">
+                                예문의 빈칸에 들어갈 알맞은 단어를 4개 선택지 중에서 고릅니다.
+                            </p>
+                            <div class="module-features">
+                                <span class="feature-tag">객관식 (4지)</span>
+                            </div>
+                        </div>
+
+                        <div class="module-card coming-soon">
+                            <div class="module-header">
+                                <span class="module-id">V-M10</span>
+                                <span class="status-badge coming">COMING SOON</span>
+                            </div>
+                            <h4 class="module-name">단어 오답 복습</h4>
+                            <p class="module-desc">
+                                이전에 틀렸던 문제들을 원래 유형 그대로 다시 풀어봅니다.
+                            </p>
+                            <div class="module-features">
+                                <span class="feature-tag">혼합 유형</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Circular Course Modules -->
+                <div class="module-category">
+                    <div class="category-header">
+                        <span class="category-icon">🔄</span>
+                        <div class="category-info">
+                            <h3>Circular Course</h3>
+                            <p>Reading 교재 기반 통합 학습을 위한 6개 모듈 (Listening, Grammar, Speaking)</p>
+                        </div>
+                    </div>
+                    <div class="module-grid">
+                        <div class="module-card coming-soon">
+                            <div class="module-header">
+                                <span class="module-id">L-M01</span>
+                                <span class="status-badge coming">COMING SOON</span>
+                            </div>
+                            <h4 class="module-name">지문 듣고 단어 수집(예습)</h4>
+                            <p class="module-desc">
+                                지문을 들으며 모르는 단어를 클릭하면 즉시 뜻을 확인할 수 있습니다.
+                            </p>
+                            <div class="module-features">
+                                <span class="feature-tag">음원 재생</span>
+                                <span class="feature-tag">단어 클릭</span>
+                                <span class="feature-tag">하이라이트</span>
+                            </div>
+                        </div>
+
+                        <div class="module-card coming-soon">
+                            <div class="module-header">
+                                <span class="module-id">L-M02</span>
+                                <span class="status-badge coming">COMING SOON</span>
+                            </div>
+                            <h4 class="module-name">문장 듣고 빈칸 채우기</h4>
+                            <p class="module-desc">
+                                문장을 듣고 빈칸에 들어갈 알맞은 단어를 선택합니다.
+                            </p>
+                            <div class="module-features">
+                                <span class="feature-tag">음원 재생</span>
+                                <span class="feature-tag">객관식 (4지)</span>
+                            </div>
+                        </div>
+
+                        <div class="module-card coming-soon">
+                            <div class="module-header">
+                                <span class="module-id">G-M01</span>
+                                <span class="status-badge coming">COMING SOON</span>
+                            </div>
+                            <h4 class="module-name">주어/동사 찾기</h4>
+                            <p class="module-desc">
+                                지문에서 주어와 동사를 찾아 클릭하여 문법 요소를 학습합니다.
+                            </p>
+                            <div class="module-features">
+                                <span class="feature-tag">단어 클릭/선택</span>
+                            </div>
+                        </div>
+
+                        <div class="module-card coming-soon">
+                            <div class="module-header">
+                                <span class="module-id">S-M01</span>
+                                <span class="status-badge coming">COMING SOON</span>
+                            </div>
+                            <h4 class="module-name">문장 발음 평가</h4>
+                            <p class="module-desc">
+                                문장을 듣고 따라 말하면 AI가 발음을 평가하고 점수를 제공합니다.
+                            </p>
+                            <div class="module-features">
+                                <span class="feature-tag">음원 재생</span>
+                                <span class="feature-tag">STT</span>
+                                <span class="feature-tag">발음 평가</span>
+                            </div>
+                        </div>
+
+                        <div class="module-card coming-soon">
+                            <div class="module-header">
+                                <span class="module-id">S-M02</span>
+                                <span class="status-badge coming">COMING SOON</span>
+                            </div>
+                            <h4 class="module-name">지문 발음과 읽기</h4>
+                            <p class="module-desc">
+                                지문을 듣고 따라 읽으면 음성 인식으로 정확도를 체크합니다.
+                            </p>
+                            <div class="module-features">
+                                <span class="feature-tag">음원 재생</span>
+                                <span class="feature-tag">STT</span>
+                            </div>
+                        </div>
+
+                        <div class="module-card coming-soon">
+                            <div class="module-header">
+                                <span class="module-id">S-M03</span>
+                                <span class="status-badge coming">COMING SOON</span>
+                            </div>
+                            <h4 class="module-name">AI 대화 평가</h4>
+                            <p class="module-desc">
+                                AI 튜터와 대화하며 질문에 답하고 실시간 피드백을 받습니다.
+                            </p>
+                            <div class="module-features">
+                                <span class="feature-tag">음원 재생</span>
+                                <span class="feature-tag">STT</span>
+                                <span class="feature-tag">AI Tutor</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Schedule Section -->
+            <section id="schedule" class="section">
+                <div class="section-header">
+                    <span class="section-tag">DEVELOPMENT SCHEDULE</span>
+                    <h2 class="section-title">개발 및 배포 일정</h2>
+                    <p class="section-desc">
+                        2025년 12월 기획 시작부터 2027년 1월 정식 오픈까지<br>
+                        체계적인 단계별 개발 프로세스
+                    </p>
+                </div>
+
+                <div style="background: var(--light-bg); padding: 48px; border-radius: 24px;">
+                    <div style="display: grid; gap: 24px;">
+                        <div style="display: flex; align-items: center; gap: 24px;">
+                            <div style="min-width: 140px; font-weight: 700; color: var(--primary);">2025.12 ~ 2026.01</div>
+                            <div style="flex: 1; background: white; padding: 20px; border-radius: 12px; border-left: 4px solid var(--primary);">
+                                <strong>기획</strong> - Learning Platform, CMS, DYB Window, 각 학습 모듈, Prompt 기획
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 24px;">
+                            <div style="min-width: 140px; font-weight: 700; color: var(--primary);">2026.01 ~ 2026.06</div>
+                            <div style="flex: 1; background: white; padding: 20px; border-radius: 12px; border-left: 4px solid var(--primary);">
+                                <strong>개발</strong> - 프론트/백엔드 개발, AI 모델 연동, DYB Window 및 Learning Platform 연동, CMS 개발
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 24px;">
+                            <div style="min-width: 140px; font-weight: 700; color: var(--primary);">2026.07</div>
+                            <div style="flex: 1; background: white; padding: 20px; border-radius: 12px; border-left: 4px solid var(--secondary);">
+                                <strong>QA 및 개발 수정</strong> - 기능 테스트, 버그 수정, 사용성 개선
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 24px;">
+                            <div style="min-width: 140px; font-weight: 700; color: var(--primary);">2026.08</div>
+                            <div style="flex: 1; background: white; padding: 20px; border-radius: 12px; border-left: 4px solid var(--secondary);">
+                                <strong>1개 클래스 베타 테스트</strong> - 최대 20명 규모, 피드백 수집 및 개선
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 24px;">
+                            <div style="min-width: 140px; font-weight: 700; color: var(--primary);">2026.09</div>
+                            <div style="flex: 1; background: white; padding: 20px; border-radius: 12px; border-left: 4px solid var(--secondary);">
+                                <strong>1개 캠퍼스 베타 테스트</strong> - 최대 1,000명 규모, 시스템 안정성 검증
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 24px;">
+                            <div style="min-width: 140px; font-weight: 700; color: var(--primary);">2026.10 ~ 2026.12</div>
+                            <div style="flex: 1; background: white; padding: 20px; border-radius: 12px; border-left: 4px solid var(--accent);">
+                                <strong>직원/선생님 교육, 홍보, 마케팅</strong> - 내부 교육 및 학부모 대상 홍보 활동
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 24px;">
+                            <div style="min-width: 140px; font-weight: 700; color: var(--primary);">2027.01.04</div>
+                            <div style="flex: 1; background: linear-gradient(135deg, var(--primary), var(--primary-light)); padding: 20px; border-radius: 12px; color: white;">
+                                <strong>🎉 전체 유료 오픈</strong> - 전체 CREO, 최선어학원 캠퍼스 대상 정식 오픈
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <h3>DYB Circle (가제)</h3>
+                <p>© 2025 Edubrain. Planning & Design Documentation</p>
+                <p style="margin-top: 8px;">담당자: Yusun | 영역: 공통 | 유형: 컨셉기획</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
