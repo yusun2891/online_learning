@@ -369,25 +369,16 @@
         /* 힌트 영역 */
         .hint-section {
             background: #FFF9C4;
-            padding: 24px;
-            border-radius: 12px;
-            margin-bottom: 20px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
             text-align: center;
         }
 
-        .hint-title {
-            font-size: 16px;
-            font-weight: bold;
-            color: #F57C00;
-            margin-bottom: 12px;
-        }
-
         .hint-text {
-            font-size: 24px;
+            font-size: 16px;
             color: #E65100;
             font-weight: bold;
-            font-family: 'Courier New', monospace;
-            letter-spacing: 2px;
         }
 
         /* 단어 정보 표시 */
@@ -664,8 +655,7 @@
         <div class="bottom-bar" id="bottom-bar">
             <div class="result-message" id="result-message"></div>
             <div class="hint-section" id="hint-section" style="display: none;">
-                <div class="hint-title">💡 힌트</div>
-                <div class="hint-text" id="hint-text">'ab...'로 시작해요</div>
+                <span class="hint-text" id="hint-text">힌트: 'ab...'</span>
             </div>
             <div class="word-info" id="word-info" style="display: none;">
                 <div class="word-info-text"><span class="word" id="word-display"></span> - <span id="meaning-display"></span></div>
@@ -1031,7 +1021,7 @@
                 document.getElementById(`block-${index}`).classList.add('disabled');
             });
 
-            document.getElementById('result-message').textContent = `정답은 ${wordData.word} - ${wordData.meaning}이에요. 단어를 다시 한 번 학습하세요.`;
+            document.getElementById('result-message').textContent = `정답: ${wordData.word} - ${wordData.meaning}`;
             document.getElementById('result-message').className = 'result-message incorrect';
             document.getElementById('result-message').style.display = 'block';
             document.getElementById('hint-section').style.display = 'none';
@@ -1067,7 +1057,7 @@
                 resultMessage.className = 'result-message incorrect';
                 resultMessage.style.display = 'block';
                 hintSection.style.display = 'block';
-                document.getElementById('hint-text').textContent = `'${hintText}'로 이어져요`;
+                document.getElementById('hint-text').textContent = `힌트: '${hintText}'`;
                 actionBtn.style.display = 'none';
             } else if (type === 'incorrect2_nohint') {
                 resultMessage.textContent = '마지막 기회예요! 신중하게 선택하세요';
