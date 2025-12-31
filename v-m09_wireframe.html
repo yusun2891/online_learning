@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>V-M05: 발음 듣고 단어 뜻 맞추기</title>
+    <title>V-M09: 예문 빈칸 채우기</title>
     <style>
         * {
             margin: 0;
@@ -190,7 +190,7 @@
             padding: 48px;
             max-width: 1200px;
             margin: 0 auto;
-            padding-bottom: 180px;
+            padding-bottom: 280px;
             overflow-y: auto;
         }
 
@@ -211,54 +211,78 @@
             color: #616161;
         }
 
-        /* 음원 재생 영역 */
-        .audio-player {
+        /* 타이머 */
+        .timer-container {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .timer {
+            display: inline-block;
+            padding: 12px 32px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .timer-label {
+            font-size: 12px;
+            color: #757575;
+            margin-bottom: 4px;
+        }
+
+        .timer-value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .timer.green .timer-value {
+            color: #4CAF50;
+        }
+
+        .timer.yellow .timer-value {
+            color: #FF9800;
+        }
+
+        .timer.red .timer-value {
+            color: #F44336;
+        }
+
+        /* 예문 표시 */
+        .sentence-display {
             text-align: center;
             margin-bottom: 40px;
-            background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+            background: white;
             padding: 40px 32px;
             border-radius: 16px;
-            border: 3px dashed #2196F3;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
         }
 
-        .speaker-icon {
-            font-size: 64px;
-            margin-bottom: 16px;
-            display: block;
+        .sentence-text {
+            font-size: 28px;
+            font-weight: 500;
+            color: #212121;
+            line-height: 1.6;
         }
 
-        .speaker-icon.playing {
-            animation: pulse 1s ease-in-out 3;
+        .sentence-text .blank {
+            display: inline-block;
+            min-width: 120px;
+            border-bottom: 3px solid #2196F3;
+            margin: 0 4px;
+            color: transparent;
         }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.1); opacity: 0.7; }
+        .sentence-text .blank.filled {
+            color: #4CAF50;
+            border-bottom-color: #4CAF50;
+            font-weight: bold;
         }
 
-        .replay-button {
-            padding: 12px 24px;
-            background: white;
+        .sentence-text .blank.filled-blue {
             color: #2196F3;
-            border: 2px solid #2196F3;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .replay-button:hover {
-            background: #E3F2FD;
-            transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2);
-        }
-
-        .replay-button:active {
-            transform: translateY(0);
+            border-bottom-color: #2196F3;
+            font-weight: bold;
         }
 
         /* 보기 선택 */
@@ -286,9 +310,9 @@
         }
 
         .choice-text {
-            font-size: 20px;
+            font-size: 22px;
             color: #212121;
-            font-weight: 500;
+            font-weight: 600;
         }
 
         .choice-card.correct {
@@ -351,28 +375,48 @@
             transform: translateY(0);
         }
 
-        .feedback-message {
+        .result-message {
             font-size: 18px;
             font-weight: bold;
             text-align: center;
             margin-bottom: 16px;
         }
 
-        .feedback-message.correct {
+        .result-message.correct {
             color: #4CAF50;
         }
 
-        .feedback-message.incorrect {
+        .result-message.incorrect {
             color: #F44336;
         }
 
-        /* 힌트 영역 - 예문 음원 재생으로 변경 */
-        .hint-section {
-            background: #FFF9C4;
-            padding: 24px;
+        /* 정답 해석 표시 */
+        .answer-section {
+            background: #E8F5E9;
+            padding: 20px 24px;
             border-radius: 12px;
             margin-bottom: 20px;
             text-align: center;
+        }
+
+        .answer-translation {
+            font-size: 18px;
+            color: #2E7D32;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .answer-word {
+            font-size: 14px;
+            color: #616161;
+        }
+
+        /* 힌트 영역 */
+        .hint-section {
+            background: #FFF9C4;
+            padding: 32px 24px;
+            border-radius: 12px;
+            margin-bottom: 20px;
         }
 
         .hint-title {
@@ -380,42 +424,25 @@
             font-weight: bold;
             color: #F57C00;
             margin-bottom: 20px;
+            text-align: center;
         }
 
-        .hint-audio-player {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .hint-speaker-icon {
-            font-size: 48px;
-        }
-
-        .hint-speaker-icon.playing {
-            animation: pulse 1s ease-in-out 3;
-        }
-
-        .hint-replay-button {
-            padding: 12px 24px;
-            background: white;
-            color: #F57C00;
-            border: 2px solid #F57C00;
+        .hint-sentence {
+            font-size: 20px;
+            color: #212121;
+            line-height: 1.8;
+            text-align: center;
+            font-weight: 500;
+            padding: 16px;
             border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+            background: rgba(255, 255, 255, 0.5);
         }
 
-        .hint-replay-button:hover {
-            background: #FFF3E0;
-            transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(245, 124, 0, 0.2);
+        .hint-sentence .blank {
+            display: inline-block;
+            min-width: 100px;
+            border-bottom: 2px solid #F57C00;
+            margin: 0 4px;
         }
 
         /* 버튼 */
@@ -472,7 +499,7 @@
             margin-bottom: 32px;
         }
 
-        .result-message-text {
+        .result-final-message {
             font-size: 16px;
             color: #616161;
             line-height: 1.6;
@@ -615,7 +642,7 @@
 <body>
     <!-- 글로벌 네비게이션 -->
     <nav class="global-nav">
-        <div class="nav-title">V-M05: 발음 듣고 단어 뜻 맞추기 - 와이어프레임</div>
+        <div class="nav-title">V-M09: 예문 빈칸 채우기 - 와이어프레임</div>
         <div class="nav-buttons">
             <button class="nav-btn active" onclick="goToEntry()">1. 진입</button>
             <button class="nav-btn" onclick="goToLearning()">2-1. 학습 진행</button>
@@ -627,12 +654,12 @@
     <!-- 1. 진입 페이지 -->
     <div id="entry" class="screen active">
         <div class="entry-container">
-            <div class="entry-icon">🎧</div>
-            <h1 class="entry-title">발음 듣고 단어 뜻 맞추기</h1>
+            <div class="entry-icon">📝</div>
+            <h1 class="entry-title">예문 빈칸 채우기</h1>
             <div class="entry-count">총 10개 단어</div>
-            <div class="entry-info">Reading Book 3A > Unit 3: Science Exploration</div>
+            <div class="entry-info">Reading Book 3A > Unit 3: Space Journey</div>
             <p class="entry-description">
-                단어를 듣고 정확한 단어 뜻을 찾을 수 있는지 점검해 보세요.
+                예문의 빈칸에 알맞은 단어를 선택하며 단어 활용법을 익혀보세요.
             </p>
             <button class="start-btn" onclick="startLearning()">학습 시작</button>
         </div>
@@ -643,10 +670,10 @@
         <div class="header">
             <div class="header-left">
                 <div class="textbook">Reading Book 3A</div>
-                <div class="unit">Unit 3: Science Exploration</div>
+                <div class="unit">Unit 3: Space Journey</div>
             </div>
             <div class="header-right">
-                <div class="module-name">Step 2 • 발음 듣고 단어 뜻 맞추기</div>
+                <div class="module-name">Step 5 • 예문 빈칸 채우기</div>
                 <div class="progress" id="progress-text">1/10</div>
                 <button class="close-btn" onclick="exitLearning()">✕</button>
             </div>
@@ -654,15 +681,20 @@
         
         <div class="learning-container">
             <div class="status-bar" id="status-bar">
-                <div class="status-message" id="status-message">단어를 듣고 알맞은 뜻을 선택하세요</div>
+                <div class="status-message" id="status-message">빈칸에 들어갈 알맞은 단어를 선택하세요</div>
             </div>
 
-            <div class="audio-player">
-                <div class="speaker-icon" id="speaker-icon">🔊</div>
-                <button class="replay-button" onclick="replayAudio()">
-                    <span>🔁</span>
-                    <span>다시 듣기</span>
-                </button>
+            <div class="timer-container" id="timer-container">
+                <div class="timer green" id="timer">
+                    <div class="timer-label">남은 시간</div>
+                    <div class="timer-value" id="timer-value">30초</div>
+                </div>
+            </div>
+
+            <div class="sentence-display">
+                <div class="sentence-text" id="sentence-text">
+                    Plants <span class="blank" id="blank-word">absorb</span> sunlight to make food.
+                </div>
             </div>
 
             <div class="choices-container" id="choices-container">
@@ -671,15 +703,15 @@
         </div>
 
         <div class="bottom-bar" id="bottom-bar">
-            <div class="feedback-message" id="feedback-message"></div>
+            <div class="result-message" id="result-message"></div>
+            <div class="answer-section" id="answer-section" style="display: none;">
+                <div class="answer-translation" id="answer-translation">식물은 음식을 만들기 위해 햇빛을 흡수해요.</div>
+                <div class="answer-word" id="answer-word">(absorb - 흡수하다)</div>
+            </div>
             <div class="hint-section" id="hint-section" style="display: none;">
-                <div class="hint-title">💡 힌트: 예문을 듣고 단어의 뜻을 다시 파악해보세요.</div>
-                <div class="hint-audio-player">
-                    <div class="hint-speaker-icon" id="hint-speaker-icon">🔊</div>
-                    <button class="hint-replay-button" onclick="replayExampleAudio()">
-                        <span>🔁</span>
-                        <span>다시 듣기</span>
-                    </button>
+                <div class="hint-title">💡 힌트: 다른 예문을 읽고 단어를 유추해보세요</div>
+                <div class="hint-sentence" id="hint-sentence">
+                    The sponge can <span class="blank">_____</span> water quickly.
                 </div>
             </div>
             <button class="action-btn" id="action-btn" onclick="nextWord()">다음 단어</button>
@@ -690,11 +722,11 @@
     <div id="result" class="screen">
         <div class="result-container">
             <div class="result-icon" id="result-icon">🏆</div>
-            <div class="result-title">발음 듣고 단어 뜻 맞추기 완료</div>
+            <div class="result-title">예문 빈칸 채우기 완료</div>
             <div class="result-score" id="result-score">총점: 92점</div>
             <div class="result-points">획득 포인트: 100 P</div>
-            <div class="result-message-text" id="result-message-text">
-                완벽해요! 단어를 정확하게 익혔네요! 🌟
+            <div class="result-final-message" id="result-final-message">
+                완벽해요! 단어 활용을 정확하게 익혔네요! 🌟
             </div>
             <div class="result-buttons">
                 <button class="result-btn-primary" onclick="nextModule()">다음 학습</button>
@@ -719,68 +751,87 @@
     </div>
 
     <script>
-        // 10개 단어 데이터 (예문 추가)
-        // 오답 보기는 같은 Unit 내 다른 단어의 뜻에서 선택
+        // 10개 단어 데이터
         const words = [
             { 
                 word: 'absorb', 
-                correct: '흡수하다', 
-                choices: ['흡수하다', '반사하다', '비치다, 빛나다', '측정하다'],
-                example: 'Plants absorb water through their roots.'
-            },
-            { 
-                word: 'reflect', 
-                correct: '반사하다', 
-                choices: ['반사하다', '흡수하다', '관찰하다', '결론짓다'],
-                example: 'The mirror reflects light.'
-            },
-            { 
-                word: 'shine', 
-                correct: '비치다, 빛나다', 
-                choices: ['비치다, 빛나다', '반사하다', '분석하다', '…로 구성되다'],
-                example: 'The sun shines brightly in the sky.'
-            },
-            { 
-                word: 'consist', 
-                correct: '…로 구성되다', 
-                choices: ['…로 구성되다', '흡수하다', '측정하다', '관찰하다'],
-                example: 'Water consists of hydrogen and oxygen.'
-            },
-            { 
-                word: 'temperature', 
-                correct: '온도', 
-                choices: ['온도', '실험', '반사하다', '결론짓다'],
-                example: 'The temperature dropped below zero.'
-            },
-            { 
-                word: 'measure', 
-                correct: '측정하다', 
-                choices: ['측정하다', '분석하다', '관찰하다', '흡수하다'],
-                example: 'We need to measure the length of the table.'
+                meaning: '흡수하다', 
+                sentence: 'Plants _____ sunlight to make food.',
+                sentenceKor: '식물은 음식을 만들기 위해 햇빛을 흡수해요.',
+                hintSentence: 'The sponge can _____ water quickly.',
+                choices: ['absorb', 'reflect', 'shine', 'appear'] 
             },
             { 
                 word: 'experiment', 
-                correct: '실험', 
-                choices: ['실험', '온도', '비치다, 빛나다', '결론짓다'],
-                example: 'The students conducted an experiment in the lab.'
+                meaning: '실험', 
+                sentence: 'We did a science _____ in class today.',
+                sentenceKor: '우리는 오늘 수업 시간에 과학 실험을 했어요.',
+                hintSentence: 'The _____ was very fun and exciting.',
+                choices: ['experiment', 'mixture', 'object', 'prism'] 
             },
             { 
-                word: 'observe', 
-                correct: '관찰하다', 
-                choices: ['관찰하다', '측정하다', '분석하다', '반사하다'],
-                example: 'Scientists observe the stars at night.'
+                word: 'reflect', 
+                meaning: '반사하다', 
+                sentence: 'Mirrors _____ light very well.',
+                sentenceKor: '거울은 빛을 아주 잘 반사해요.',
+                hintSentence: 'The lake can _____ the mountains.',
+                choices: ['reflect', 'absorb', 'shine', 'consist'] 
             },
             { 
-                word: 'analyze', 
-                correct: '분석하다', 
-                choices: ['분석하다', '관찰하다', '…로 구성되다', '흡수하다'],
-                example: 'We need to analyze the data carefully.'
+                word: 'mixture', 
+                meaning: '혼합물', 
+                sentence: 'The _____ of red and blue makes purple.',
+                sentenceKor: '빨간색과 파란색의 혼합물은 보라색을 만들어요.',
+                hintSentence: 'This cake is a _____ of flour, eggs, and sugar.',
+                choices: ['mixture', 'object', 'experiment', 'prism'] 
             },
             { 
-                word: 'conclude', 
-                correct: '결론짓다', 
-                choices: ['결론짓다', '측정하다', '실험', '비치다, 빛나다'],
-                example: 'Based on the evidence, we can conclude that the theory is correct.'
+                word: 'object', 
+                meaning: '물체', 
+                sentence: 'Heavy _____ fall at the same speed as light ones.',
+                sentenceKor: '무거운 물체는 가벼운 것과 같은 속도로 떨어져요.',
+                hintSentence: 'What is that _____ on the table?',
+                choices: ['object', 'mixture', 'sunlight', 'experiment'] 
+            },
+            { 
+                word: 'appear', 
+                meaning: '나타나다', 
+                sentence: 'The sun _____ to move across the sky.',
+                sentenceKor: '태양은 하늘을 가로질러 움직이는 것처럼 보여요.',
+                hintSentence: 'Stars _____ in the sky at night.',
+                choices: ['appear', 'reflect', 'absorb', 'shine'] 
+            },
+            { 
+                word: 'shine', 
+                meaning: '빛나다', 
+                sentence: 'The sun _____ brightly during the day.',
+                sentenceKor: '태양은 낮 동안 밝게 빛나요.',
+                hintSentence: 'The diamond will _____ in the light.',
+                choices: ['shine', 'appear', 'reflect', 'absorb'] 
+            },
+            { 
+                word: 'sunlight', 
+                meaning: '햇빛', 
+                sentence: 'Plants need _____ to grow.',
+                sentenceKor: '식물은 자라기 위해 햇빛이 필요해요.',
+                hintSentence: 'The room was filled with bright _____.',
+                choices: ['sunlight', 'mixture', 'object', 'prism'] 
+            },
+            { 
+                word: 'prism', 
+                meaning: '프리즘', 
+                sentence: 'A _____ separates white light into colors.',
+                sentenceKor: '프리즘은 백색광을 여러 색으로 분리해요.',
+                hintSentence: 'We used a _____ in our science class.',
+                choices: ['prism', 'object', 'mixture', 'experiment'] 
+            },
+            { 
+                word: 'consist', 
+                meaning: '구성되다', 
+                sentence: 'Water _____ of hydrogen and oxygen.',
+                sentenceKor: '물은 수소와 산소로 구성되어 있어요.',
+                hintSentence: 'The team _____ of five players.',
+                choices: ['consist', 'absorb', 'reflect', 'appear'] 
             }
         ];
 
@@ -791,18 +842,10 @@
         let reviewWords = [];
         let isReviewMode = false;
         let reviewIndex = 0;
+        let timerInterval = null;
+        let timeLeft = 30;
         let totalCorrect = 0;
         let isRetryMode = false;
-
-        // Fisher-Yates 셔플 알고리즘
-        function shuffleArray(array) {
-            const shuffled = [...array];
-            for (let i = shuffled.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-            }
-            return shuffled;
-        }
 
         // 초기화
         function init() {
@@ -832,6 +875,9 @@
             showScreen('entry');
             document.querySelectorAll('.nav-btn')[0].classList.add('active');
             init();
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
         }
 
         // 2-1. 학습 진행 페이지로
@@ -880,7 +926,7 @@
             const statusMessage = document.getElementById('status-message');
             
             if (isReviewMode) {
-                progressText.textContent = '다시 확인 ' + (reviewIndex + 1) + '/' + reviewWords.length;
+                progressText.textContent = '다시 확인 (' + (reviewIndex + 1) + '/' + reviewWords.length + ')';
                 progressText.style.color = '#FF9800';
                 statusBar.style.background = '#FFF3E0';
                 statusMessage.style.color = '#F57C00';
@@ -891,13 +937,19 @@
                 statusMessage.style.color = '#616161';
             }
 
-            // 보기 생성
+            // 예문 표시 (빈칸으로)
+            const sentenceText = document.getElementById('sentence-text');
+            const sentenceWithBlank = wordData.sentence.replace('_____', '<span class="blank" id="blank-word">_____</span>');
+            sentenceText.innerHTML = sentenceWithBlank;
+
+            // 타이머 표시
+            document.getElementById('timer-container').style.display = 'block';
+            startTimer();
+
+            // 보기 생성 (셔플)
+            const shuffledChoices = shuffleArray([...wordData.choices]);
             const choicesContainer = document.getElementById('choices-container');
             choicesContainer.innerHTML = '';
-            
-            // 보기 순서 랜덤화 (Fisher-Yates 셔플)
-            const shuffledChoices = shuffleArray(wordData.choices);
-            
             shuffledChoices.forEach(function(choice, index) {
                 const card = document.createElement('div');
                 card.className = 'choice-card';
@@ -908,18 +960,23 @@
 
             // 하단 바 숨기기
             document.getElementById('bottom-bar').classList.remove('show');
+            document.getElementById('answer-section').style.display = 'none';
+            document.getElementById('hint-section').style.display = 'none';
+        }
 
-            // 음원 자동 재생
-            setTimeout(function() {
-                playWordAudio(wordData.word);
-            }, 300);
+        // 배열 셔플
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
         }
 
         // 보기 선택
         function selectChoice(selectedChoice, selectedIndex) {
             const cards = document.querySelectorAll('.choice-card');
             
-            // 이미 선택된 카드인지 확인
             if (cards[selectedIndex].classList.contains('correct') || 
                 cards[selectedIndex].classList.contains('incorrect') || 
                 cards[selectedIndex].classList.contains('disabled')) {
@@ -930,8 +987,13 @@
                 return;
             }
 
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            document.getElementById('timer-container').style.display = 'none';
+
             const wordData = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
-            const isCorrect = selectedChoice === wordData.correct;
+            const isCorrect = selectedChoice === wordData.word;
 
             // 보기 카드 업데이트
             cards.forEach(function(card, idx) {
@@ -946,14 +1008,12 @@
                         if (!isCorrect) {
                             // 오답이면 다른 보기 활성화 유지
                         } else {
-                            // 정답이면 비활성화
                             card.classList.add('disabled');
                         }
                     } else if (currentState === 'incorrect1') {
                         if (idx === firstAttemptWrong) {
                             // 1차 오답은 유지
-                        } else if (card.querySelector('.choice-text').textContent.trim() === wordData.correct) {
-                            // 정답 표시
+                        } else if (card.querySelector('.choice-text').textContent.trim() === wordData.word) {
                             if (!isCorrect) {
                                 card.classList.add('correct');
                             }
@@ -964,90 +1024,115 @@
                 }
             });
 
+            // 빈칸 채우기
+            const blankWord = document.getElementById('blank-word');
+            if (isCorrect) {
+                blankWord.textContent = wordData.word;
+                blankWord.classList.add('filled');
+            }
+
             // 상태 변경 및 피드백
             if (currentState === 'question') {
                 if (isCorrect) {
                     currentState = 'correct1';
                     totalCorrect++;
-                    showFeedback('correct', ['🎉 정답이에요!', '✨ 잘했어요!', '👍 맞았어요!']);
+                    showFeedback('correct', ['🎉 정답이에요!', '✨ 잘했어요!', '👍 맞았어요!'], wordData);
                 } else {
                     currentState = 'incorrect1';
                     firstAttemptWrong = selectedIndex;
-                    // 힌트 표시 (예문 음원 재생)
-                    showFeedback('incorrect', [], true, wordData);
+                    showHintFeedback(wordData);
                 }
             } else if (currentState === 'incorrect1') {
                 if (isCorrect) {
                     currentState = 'correct2';
-                    showFeedback('correct', ['👏 이번엔 맞췄어요!']);
+                    blankWord.textContent = wordData.word;
+                    blankWord.classList.add('filled');
+                    showFeedback('correct', ['👏 이번엔 맞췄어요!'], wordData);
                 } else {
                     currentState = 'incorrect2';
                     if (!isReviewMode) {
                         reviewWords.push(currentIndex);
                     }
-                    // 정답 공개
-                    showFeedback('incorrect', ['정답은 ' + wordData.word + ' - ' + wordData.correct + '이에요. 단어를 다시 한 번 학습하세요.']);
+                    // 정답 표시 (파란색)
+                    blankWord.textContent = wordData.word;
+                    blankWord.classList.remove('filled');
+                    blankWord.classList.add('filled-blue');
+                    showFeedback('incorrect', ['정답: ' + wordData.sentenceKor + ' (' + wordData.word + ' - ' + wordData.meaning + ')'], wordData, true);
                 }
             }
         }
 
-        // 피드백 표시
-        function showFeedback(type, messages, showHint, wordData) {
-            showHint = showHint || false;
-            wordData = wordData || null;
+        // 정답 피드백 표시
+        function showFeedback(type, messages, wordData, isSecondIncorrect) {
+            isSecondIncorrect = isSecondIncorrect || false;
             
             const bottomBar = document.getElementById('bottom-bar');
-            const feedbackMessage = document.getElementById('feedback-message');
+            const resultMessage = document.getElementById('result-message');
+            const answerSection = document.getElementById('answer-section');
             const hintSection = document.getElementById('hint-section');
             const actionBtn = document.getElementById('action-btn');
 
-            // 힌트 표시 (1차 오답 - 예문 음원 재생)
-            if (showHint && wordData) {
-                feedbackMessage.style.display = 'none';
-                hintSection.style.display = 'block';
-                
-                // 예문 음원 자동 재생
-                setTimeout(function() {
-                    playExampleAudio(wordData.example);
-                }, 400);
+            hintSection.style.display = 'none';
+            resultMessage.style.display = 'block';
+            
+            const message = messages[Math.floor(Math.random() * messages.length)];
+            resultMessage.textContent = message;
+            resultMessage.className = 'result-message ' + type;
+
+            // 정답일 때 해석 표시
+            if (type === 'correct' || isSecondIncorrect) {
+                answerSection.style.display = 'block';
+                document.getElementById('answer-translation').textContent = wordData.sentenceKor;
+                document.getElementById('answer-word').textContent = '(' + wordData.word + ' - ' + wordData.meaning + ')';
             } else {
-                // 정답 또는 2차 오답: 결과 메시지 표시
-                feedbackMessage.style.display = 'block';
-                hintSection.style.display = 'none';
-                
-                // 메시지 랜덤 선택
-                const message = messages[Math.floor(Math.random() * messages.length)];
-                feedbackMessage.textContent = message;
-                feedbackMessage.className = 'feedback-message ' + type;
+                answerSection.style.display = 'none';
             }
 
-            // 1차 오답일 때는 버튼 숨김 (재선택 가능하도록)
-            if (currentState === 'incorrect1') {
-                actionBtn.style.display = 'none';
+            actionBtn.style.display = 'block';
+            
+            // 버튼 텍스트
+            if (isReviewMode) {
+                if (reviewIndex < reviewWords.length - 1) {
+                    actionBtn.textContent = '다음 단어 (' + (reviewIndex + 2) + '/' + reviewWords.length + ')';
+                } else {
+                    actionBtn.textContent = '결과 보기';
+                }
             } else {
-                actionBtn.style.display = 'block';
-                
-                // 버튼 텍스트
-                if (isReviewMode) {
-                    if (reviewIndex < reviewWords.length - 1) {
-                        actionBtn.textContent = '다음 단어';
+                if (currentIndex < 9) {
+                    actionBtn.textContent = '다음 단어 (' + (currentIndex + 2) + '/10)';
+                } else {
+                    if (reviewWords.length > 0) {
+                        actionBtn.textContent = '복습 시작';
                     } else {
                         actionBtn.textContent = '결과 보기';
-                    }
-                } else {
-                    if (currentIndex < 9) {
-                        actionBtn.textContent = '다음 단어';
-                    } else {
-                        if (reviewWords.length > 0) {
-                            actionBtn.textContent = '복습 시작 (' + reviewWords.length + '개)';
-                        } else {
-                            actionBtn.textContent = '결과 보기';
-                        }
                     }
                 }
             }
 
-            // 하단 바 표시
+            setTimeout(function() {
+                bottomBar.classList.add('show');
+            }, 200);
+        }
+
+        // 힌트 피드백 표시 (1차 오답)
+        function showHintFeedback(wordData) {
+            const bottomBar = document.getElementById('bottom-bar');
+            const resultMessage = document.getElementById('result-message');
+            const answerSection = document.getElementById('answer-section');
+            const hintSection = document.getElementById('hint-section');
+            const actionBtn = document.getElementById('action-btn');
+
+            resultMessage.style.display = 'none';
+            answerSection.style.display = 'none';
+            hintSection.style.display = 'block';
+            
+            // 힌트 예문 표시
+            const hintSentenceElem = document.getElementById('hint-sentence');
+            const hintWithBlank = wordData.hintSentence.replace('_____', '<span class="blank">_____</span>');
+            hintSentenceElem.innerHTML = hintWithBlank;
+
+            actionBtn.style.display = 'none';
+
             setTimeout(function() {
                 bottomBar.classList.add('show');
             }, 200);
@@ -1066,10 +1151,8 @@
                 currentIndex++;
                 if (currentIndex >= 10) {
                     if (reviewWords.length > 0) {
-                        // 복습 시작
                         isReviewMode = true;
                         reviewIndex = 0;
-                        // 네비게이션 버튼도 복습으로 변경
                         document.querySelectorAll('.nav-btn').forEach(function(btn) {
                             btn.classList.remove('active');
                         });
@@ -1084,26 +1167,70 @@
             }
         }
 
+        // 타이머 시작
+        function startTimer() {
+            timeLeft = 30;
+            updateTimerDisplay();
+            
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            timerInterval = setInterval(function() {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeout();
+                }
+            }, 1000);
+        }
+
+        // 타이머 표시 업데이트
+        function updateTimerDisplay() {
+            document.getElementById('timer-value').textContent = timeLeft + '초';
+            
+            const timerElem = document.getElementById('timer');
+            timerElem.classList.remove('green', 'yellow', 'red');
+            if (timeLeft >= 16) {
+                timerElem.classList.add('green');
+            } else if (timeLeft >= 6) {
+                timerElem.classList.add('yellow');
+            } else {
+                timerElem.classList.add('red');
+            }
+        }
+
+        // 시간 초과 처리
+        function handleTimeout() {
+            document.getElementById('timer-container').style.display = 'none';
+            const wordData = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
+
+            currentState = 'incorrect1';
+            showHintFeedback(wordData);
+        }
+
         // 결과 표시
         function displayResult() {
             const score = Math.round((totalCorrect / 10) * 100);
             document.getElementById('result-score').textContent = '총점: ' + score + '점';
 
             const resultIcon = document.getElementById('result-icon');
-            const resultMessageText = document.getElementById('result-message-text');
+            const resultFinalMessage = document.getElementById('result-final-message');
 
             if (score >= 90) {
                 resultIcon.textContent = '🏆';
-                resultMessageText.textContent = '완벽해요! 발음을 듣고 정확하게 뜻을 찾고 있어요! 🌟';
+                resultFinalMessage.textContent = '완벽해요! 단어 활용을 정확하게 익혔네요! 🌟';
             } else if (score >= 80) {
                 resultIcon.textContent = '🎉';
-                resultMessageText.textContent = '아주 잘했어요! 단어를 잘 기억하고 있어요! 🎉';
+                resultFinalMessage.textContent = '아주 잘했어요! 문맥 속에서 단어를 잘 활용하고 있어요! 🎉';
             } else if (score >= 70) {
                 resultIcon.textContent = '✨';
-                resultMessageText.textContent = '잘했어요! 조금만 더 연습하면 완벽할 거예요! ✨';
+                resultFinalMessage.textContent = '잘했어요! 조금만 더 연습하면 완벽할 거예요! ✨';
             } else {
                 resultIcon.textContent = '💪';
-                resultMessageText.textContent = '괜찮아요! 틀린 단어를 다시 복습해보세요! 💪';
+                resultFinalMessage.textContent = '괜찮아요! 틀린 단어를 다시 복습해보세요! 💪';
             }
         }
 
@@ -1130,7 +1257,6 @@
             closeRetryPopup();
             isRetryMode = true;
             
-            // 학습 데이터 초기화
             currentIndex = 0;
             reviewIndex = 0;
             totalCorrect = 0;
@@ -1156,60 +1282,6 @@
                     goToEntry();
                 }
             }
-        }
-
-        // 단어 TTS 재생
-        function playWordAudio(word) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                
-                const utterance = new SpeechSynthesisUtterance(word);
-                utterance.lang = 'en-US';
-                utterance.rate = 0.9;
-                utterance.pitch = 1;
-                
-                window.speechSynthesis.speak(utterance);
-
-                const speakerIcon = document.getElementById('speaker-icon');
-                if (speakerIcon) {
-                    speakerIcon.classList.remove('playing');
-                    void speakerIcon.offsetWidth;
-                    speakerIcon.classList.add('playing');
-                }
-            }
-        }
-
-        // 예문 TTS 재생
-        function playExampleAudio(example) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                
-                const utterance = new SpeechSynthesisUtterance(example);
-                utterance.lang = 'en-US';
-                utterance.rate = 0.85;
-                utterance.pitch = 1;
-                
-                window.speechSynthesis.speak(utterance);
-
-                const hintSpeakerIcon = document.getElementById('hint-speaker-icon');
-                if (hintSpeakerIcon) {
-                    hintSpeakerIcon.classList.remove('playing');
-                    void hintSpeakerIcon.offsetWidth;
-                    hintSpeakerIcon.classList.add('playing');
-                }
-            }
-        }
-
-        // 다시 듣기 (단어)
-        function replayAudio() {
-            const wordData = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
-            playWordAudio(wordData.word);
-        }
-
-        // 다시 듣기 (예문)
-        function replayExampleAudio() {
-            const wordData = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
-            playExampleAudio(wordData.example);
         }
     </script>
 </body>

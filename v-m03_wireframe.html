@@ -593,6 +593,43 @@
         .bottom-popup-btn.confirm:hover {
             background: #1976D2;
         }
+
+        /* 페이지 이탈 감지 오버레이 */
+        .leave-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            z-index: 99999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .leave-overlay.show {
+            display: flex;
+        }
+
+        .leave-alert {
+            background: white;
+            padding: 32px 48px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .leave-alert-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .leave-alert-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #212121;
+        }
     </style>
 </head>
 <body>
@@ -695,6 +732,14 @@
                 <button class="bottom-popup-btn cancel" onclick="closeRetryPopup()">취소</button>
                 <button class="bottom-popup-btn confirm" onclick="confirmRetry()">확인</button>
             </div>
+        </div>
+    </div>
+
+    <!-- 페이지 이탈 감지 오버레이 -->
+    <div class="leave-overlay" id="leaveOverlay">
+        <div class="leave-alert">
+            <div class="leave-alert-icon">👀</div>
+            <div class="leave-alert-text">학습 화면으로 돌아와주세요</div>
         </div>
     </div>
 
@@ -808,7 +853,7 @@
             const statusMessage = document.getElementById('status-message');
             
             if (isReviewMode) {
-                progressText.textContent = '다시 확인 (' + (reviewIndex + 1) + '/' + reviewWords.length + ')';
+                progressText.textContent = '다시 확인 ' + (reviewIndex + 1) + '/' + reviewWords.length;
                 progressText.style.color = '#FF9800';
                 statusBar.style.background = '#FFF3E0';
                 statusMessage.style.color = '#F57C00';
@@ -826,10 +871,18 @@
             document.getElementById('timer-container').style.display = 'block';
             startTimer();
 
-            // 보기 생성
+            // 보기 생성 (순서 랜덤)
             const choicesContainer = document.getElementById('choices-container');
             choicesContainer.innerHTML = '';
-            wordData.choices.forEach(function(choice, index) {
+            
+            // 보기 순서 랜덤 섞기 (Fisher-Yates shuffle)
+            const shuffledChoices = [...wordData.choices];
+            for (let i = shuffledChoices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledChoices[i], shuffledChoices[j]] = [shuffledChoices[j], shuffledChoices[i]];
+            }
+            
+            shuffledChoices.forEach(function(choice, index) {
                 const card = document.createElement('div');
                 card.className = 'choice-card';
                 card.innerHTML = '<div class="choice-text">' + choice + '</div>';
@@ -963,16 +1016,16 @@
                 // 버튼 텍스트
                 if (isReviewMode) {
                     if (reviewIndex < reviewWords.length - 1) {
-                        actionBtn.textContent = '다음 단어 (' + (reviewIndex + 2) + '/' + reviewWords.length + ')';
+                        actionBtn.textContent = '다음 단어';
                     } else {
                         actionBtn.textContent = '결과 보기';
                     }
                 } else {
                     if (currentIndex < 9) {
-                        actionBtn.textContent = '다음 단어 (' + (currentIndex + 2) + '/10)';
+                        actionBtn.textContent = '다음 단어';
                     } else {
                         if (reviewWords.length > 0) {
-                            actionBtn.textContent = '복습 시작';
+                            actionBtn.textContent = '다음 단어';
                         } else {
                             actionBtn.textContent = '결과 보기';
                         }
@@ -1172,6 +1225,85 @@
         function replayExample() {
             playExampleAudio();
         }
+
+        // 페이지 이탈 감지
+        let isPageLeft = false;
+        let savedTimeLeft = 0;
+
+        function handlePageLeave() {
+            // 학습 진행 페이지에서만 적용
+            const learningScreen = document.getElementById('learning');
+            if (!learningScreen.classList.contains('active')) return;
+            
+            // 이미 결과가 나온 상태면 무시
+            if (currentState === 'correct1' || currentState === 'correct2' || currentState === 'incorrect2') return;
+
+            if (!isPageLeft) {
+                isPageLeft = true;
+                // 타이머 일시정지
+                if (timerInterval) {
+                    savedTimeLeft = timeLeft;
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                // Dim 표시
+                document.getElementById('leaveOverlay').classList.add('show');
+            }
+        }
+
+        function handlePageReturn() {
+            if (isPageLeft) {
+                isPageLeft = false;
+                // Dim 해제
+                document.getElementById('leaveOverlay').classList.remove('show');
+                
+                // 학습 진행 페이지이고 타이머가 표시 중이면 타이머 재개
+                const learningScreen = document.getElementById('learning');
+                const timerContainer = document.getElementById('timer-container');
+                if (learningScreen.classList.contains('active') && 
+                    timerContainer.style.display !== 'none' &&
+                    currentState === 'question') {
+                    timeLeft = savedTimeLeft;
+                    timerInterval = setInterval(function() {
+                        timeLeft--;
+                        updateTimerDisplay();
+                        if (timeLeft <= 0) {
+                            clearInterval(timerInterval);
+                            handleTimeout();
+                        }
+                    }, 1000);
+                }
+            }
+        }
+
+        // 탭 전환 감지
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                handlePageLeave();
+            } else {
+                handlePageReturn();
+            }
+        });
+
+        // 마우스가 창 밖으로 나갈 때 감지
+        document.addEventListener('mouseleave', function() {
+            handlePageLeave();
+        });
+
+        // 마우스가 창 안으로 들어올 때 감지
+        document.addEventListener('mouseenter', function() {
+            handlePageReturn();
+        });
+
+        // 창 포커스 잃을 때 감지
+        window.addEventListener('blur', function() {
+            handlePageLeave();
+        });
+
+        // 창 포커스 얻을 때 감지
+        window.addEventListener('focus', function() {
+            handlePageReturn();
+        });
     </script>
 </body>
 </html>
