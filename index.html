@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quantum Learning Modules — Wireframe Index</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'IBM Plex Sans KR','Malgun Gothic',sans-serif;background:#0f1117;color:#e4e4e7;min-height:100vh}
+.hero{padding:60px 32px 40px;max-width:960px;margin:0 auto}
+.hero h1{font-size:32px;font-weight:700;letter-spacing:-.5px;margin-bottom:8px}
+.hero h1 span{background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:15px;color:#71717a;line-height:1.6;max-width:560px}
+.grid{max-width:960px;margin:0 auto;padding:0 32px 60px}
+.section{margin-bottom:40px}
+.section-hdr{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #27272a}
+.section-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.section-icon.vocab{background:#1e3a5f}.section-icon.listen{background:#1e3a2f}.section-icon.speak{background:#3a1e3f}
+.section-title{font-size:18px;font-weight:600;color:#e4e4e7}
+.section-sub{font-size:13px;color:#71717a;margin-left:auto;font-family:'JetBrains Mono',monospace}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.card{display:block;text-decoration:none;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:20px;transition:all .2s;position:relative;overflow:hidden}
+.card:hover{border-color:#3f3f46;background:#1c1c21;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.card-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.card-id{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;padding:3px 8px;border-radius:6px;letter-spacing:.5px}
+.card-id.mv{background:#1e3a5f;color:#60a5fa}.card-id.ml{background:#1e3a2f;color:#4ade80}.card-id.ms{background:#3a1e3f;color:#c084fc}
+.card-name{font-size:15px;font-weight:600;color:#e4e4e7}
+.card-desc{font-size:13px;color:#71717a;line-height:1.5}
+.card-course{position:absolute;top:16px;right:16px;font-size:11px;font-family:'JetBrains Mono',monospace;color:#52525b;padding:2px 8px;border:1px solid #27272a;border-radius:4px}
+.footer{text-align:center;padding:32px;font-size:12px;color:#3f3f46;border-top:1px solid #1c1c1e}
+@media(max-width:640px){
+.hero{padding:40px 20px 24px}.hero h1{font-size:24px}
+.grid{padding:0 20px 40px}.cards{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1><span>Quantum</span> Learning Modules</h1>
+  <p>DYB Education 온라인 학습 서비스 Quantum의 학습 모듈 와이어프레임(프로토타입) 모음입니다. 각 카드를 클릭하면 해당 모듈의 인터랙티브 와이어프레임으로 이동합니다.</p>
+</div>
+
+<div class="grid">
+
+  <div class="section">
+    <div class="section-hdr">
+      <div class="section-icon vocab">📘</div>
+      <div class="section-title">Vocabulary Modules</div>
+      <div class="section-sub">MV01 – MV09</div>
+    </div>
+    <div class="cards">
+      <a class="card" href="mv01_wireframe.html">
+        <div class="card-top"><span class="card-id mv">MV01</span><span class="card-name">아는 단어 체크</span></div>
+        <div class="card-desc">학습할 단어 중 이미 아는 단어를 사전 체크하여 학습 범위를 조절</div>
+        <span class="card-course">All</span>
+      </a>
+      <a class="card" href="mv02_wireframe.html">
+        <div class="card-top"><span class="card-id mv">MV02</span><span class="card-name">플래시카드</span></div>
+        <div class="card-desc">단어 카드를 넘기며 영어-뜻 매칭 학습. 앞면/뒷면 자동 재생</div>
+        <span class="card-course">All</span>
+      </a>
+      <a class="card" href="mv03_wireframe.html">
+        <div class="card-top"><span class="card-id mv">MV03</span><span class="card-name">단어 뜻 맞추기</span></div>
+        <div class="card-desc">영어 단어를 보고 4지 선다로 뜻 맞추기. 2회 시도 구조</div>
+        <span class="card-course">All</span>
+      </a>
+      <a class="card" href="mv04_wireframe.html">
+        <div class="card-top"><span class="card-id mv">MV04</span><span class="card-name">뜻 보고 단어 맞추기</span></div>
+        <div class="card-desc">한글 뜻을 보고 4지 선다로 영어 단어 맞추기</div>
+        <span class="card-course">All</span>
+      </a>
+      <a class="card" href="mv05_wireframe.html">
+        <div class="card-top"><span class="card-id mv">MV05</span><span class="card-name">발음 듣고 뜻 맞추기</span></div>
+        <div class="card-desc">영어 발음을 듣고 4지 선다로 뜻 맞추기. 청각 기반 어휘 인지</div>
+        <span class="card-course">All</span>
+      </a>
+      <a class="card" href="mv06_wireframe.html">
+        <div class="card-top"><span class="card-id mv">MV06</span><span class="card-name">발음 듣고 철자 빈칸 채우기</span></div>
+        <div class="card-desc">발음을 듣고 빈칸에 알맞은 철자를 입력하여 스펠링 훈련</div>
+        <span class="card-course">All</span>
+      </a>
+      <a class="card" href="mv07_wireframe.html">
+        <div class="card-top"><span class="card-id mv">MV07</span><span class="card-name">철자 빈칸 채우기</span></div>
+        <div class="card-desc">뜻을 보고 빈칸에 알맞은 철자를 입력하여 스펠링 완성</div>
+        <span class="card-course">All</span>
+      </a>
+      <a class="card" href="mv08_wireframe.html">
+        <div class="card-top"><span class="card-id mv">MV08</span><span class="card-name">단어 타이핑</span></div>
+        <div class="card-desc">뜻을 보고 전체 영어 단어를 직접 타이핑하여 암기 확인</div>
+        <span class="card-course">All</span>
+      </a>
+      <a class="card" href="mv09_wireframe.html">
+        <div class="card-top"><span class="card-id mv">MV09</span><span class="card-name">예문 빈칸 채우기</span></div>
+        <div class="card-desc">예문 속 빈칸에 알맞은 단어를 선택하여 문맥 활용력 훈련</div>
+        <span class="card-course">All</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-hdr">
+      <div class="section-icon listen">🎧</div>
+      <div class="section-title">Listening Modules</div>
+      <div class="section-sub">ML01 – ML02</div>
+    </div>
+    <div class="cards">
+      <a class="card" href="ml01_wireframe.html">
+        <div class="card-top"><span class="card-id ml">ML01</span><span class="card-name">지문 듣고 단어 수집</span></div>
+        <div class="card-desc">Reading 지문 음원을 들으며 모르는 단어를 수집. 2회 청독 구조</div>
+        <span class="card-course">Circular</span>
+      </a>
+      <a class="card" href="ml02_wireframe.html">
+        <div class="card-top"><span class="card-id ml">ML02</span><span class="card-name">문장 듣고 빈칸 채우기</span></div>
+        <div class="card-desc">문장 음원을 듣고 빈칸에 알맞은 단어를 4지 선다로 선택</div>
+        <span class="card-course">Circular</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-hdr">
+      <div class="section-icon speak">🗣️</div>
+      <div class="section-title">Speaking Modules</div>
+      <div class="section-sub">MS01 – MS05</div>
+    </div>
+    <div class="cards">
+      <a class="card" href="ms01_wireframe.html">
+        <div class="card-top"><span class="card-id ms">MS01</span><span class="card-name">지문 번갈아 읽기</span></div>
+        <div class="card-desc">TTS와 학생이 한 문장씩 번갈아 읽기. 2회 진행, STT 유사도 측정</div>
+        <span class="card-course">Circular</span>
+      </a>
+      <a class="card" href="ms02_wireframe.html">
+        <div class="card-top"><span class="card-id ms">MS02</span><span class="card-name">문장 읽기 발음 평가</span></div>
+        <div class="card-desc">취약 문장 집중 발음 연습. 점수, 취약 단어, 원어민 비교 피드백</div>
+        <span class="card-course">Circular</span>
+      </a>
+      <a class="card" href="ms03_wireframe.html">
+        <div class="card-top"><span class="card-id ms">MS03</span><span class="card-name">문장 쉐도잉 발음 평가</span></div>
+        <div class="card-desc">빈칸 처리된 문장으로 기억 의존 쉐도잉. 재시도 시 힌트 확대</div>
+        <span class="card-course">Circular</span>
+      </a>
+      <a class="card" href="ms04_wireframe.html">
+        <div class="card-top"><span class="card-id ms">MS04</span><span class="card-name">AI 지문이해체크</span></div>
+        <div class="card-desc">AI와 음성 대화로 지문 이해도 확인. 채팅 UI, 힌트 제공</div>
+        <span class="card-course">Circular</span>
+      </a>
+      <a class="card" href="ms05_wireframe.html">
+        <div class="card-top"><span class="card-id ms">MS05</span><span class="card-name">AI 패턴 말하기</span></div>
+        <div class="card-desc">핵심 표현 학습 → 빈칸 읽기 → 나만의 문장 만들기. AI 평가</div>
+        <span class="card-course">Circular</span>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">Quantum Learning Modules — EduBrain / DYB Education</div>
+
+</body>
+</html>
