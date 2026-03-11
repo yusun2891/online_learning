@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MV09: 예문 빈칸 채우기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+            background: #f5f5f5;
+        }
+
+        /* 네비게이션 */
+        .global-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 16px 32px;
+            border-bottom: 2px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #212121;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .mode-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #F3F4F6;
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        .mode-btn {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: transparent;
+            color: #6B7280;
+        }
+
+        .mode-btn.active {
+            background: white;
+            color: #2196F3;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-btn:hover {
+            border-color: #2196F3;
+            color: #2196F3;
+        }
+
+        .nav-btn.active {
+            background: #2196F3;
+            color: white;
+            border-color: #2196F3;
+        }
+
+        .screen {
+            padding-top: 64px;
+            display: none;
+            min-height: 100vh;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* 헤더 */
+        .header {
+            background: white;
+            padding: 20px 32px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left .textbook {
+            font-size: 13px;
+            color: #757575;
+            margin-bottom: 4px;
+        }
+
+        .header-left .unit {
+            font-size: 16px;
+            color: #212121;
+            font-weight: 600;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .module-name {
+            font-size: 13px;
+            color: #757575;
+        }
+
+        .progress {
+            font-size: 16px;
+            color: #2196F3;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 24px;
+            color: #757575;
+        }
+
+        /* 진입 페이지 */
+        .entry-container {
+            max-width: 600px;
+            margin: 80px auto;
+            padding: 48px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .entry-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+        }
+
+        .entry-title {
+            font-size: 36px;
+            font-weight: bold;
+            color: #212121;
+            margin-bottom: 16px;
+        }
+
+        .entry-count {
+            font-size: 18px;
+            color: #757575;
+            margin-bottom: 8px;
+        }
+
+        .entry-info {
+            font-size: 14px;
+            color: #9E9E9E;
+            margin-bottom: 32px;
+        }
+
+        .entry-description {
+            font-size: 16px;
+            color: #616161;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .start-btn {
+            width: 100%;
+            padding: 20px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .start-btn:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+        }
+
+        /* 학습 진행 페이지 */
+        .learning-container {
+            padding: 48px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-bottom: 280px;
+            overflow-y: auto;
+        }
+
+        .status-bar {
+            background: #E3F2FD;
+            padding: 20px 32px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .status-message {
+            font-size: 17px;
+            color: #616161;
+        }
+
+        /* 타이머 */
+        .timer-container {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .timer {
+            display: inline-block;
+            padding: 12px 32px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .timer-label {
+            font-size: 12px;
+            color: #757575;
+            margin-bottom: 4px;
+        }
+
+        .timer-value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .timer.green .timer-value {
+            color: #4CAF50;
+        }
+
+        .timer.yellow .timer-value {
+            color: #FF9800;
+        }
+
+        .timer.red .timer-value {
+            color: #F44336;
+        }
+
+        /* 예문 표시 */
+        .sentence-display {
+            text-align: center;
+            margin-bottom: 40px;
+            background: white;
+            padding: 40px 32px;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        .sentence-text {
+            font-size: 28px;
+            font-weight: 500;
+            color: #212121;
+            line-height: 1.6;
+        }
+
+        .sentence-text .blank {
+            display: inline-block;
+            min-width: 120px;
+            border-bottom: 3px solid #2196F3;
+            margin: 0 4px;
+            color: transparent;
+        }
+
+        .sentence-text .blank.filled {
+            color: #4CAF50;
+            border-bottom-color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .sentence-text .blank.filled-blue {
+            color: #2196F3;
+            border-bottom-color: #2196F3;
+            font-weight: bold;
+        }
+
+        /* 보기 선택 */
+        .choices-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 80px;
+        }
+
+        .choice-card {
+            background: white;
+            padding: 32px 24px;
+            border-radius: 12px;
+            border: 3px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .choice-card:hover {
+            border-color: #2196F3;
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(33, 150, 243, 0.2);
+        }
+
+        .choice-text {
+            font-size: 22px;
+            color: #212121;
+            font-weight: 600;
+        }
+
+        .choice-card.correct {
+            border-color: #4CAF50;
+            background: #E8F5E9;
+        }
+
+        .choice-card.correct .choice-text {
+            color: #2E7D32;
+            font-weight: bold;
+        }
+
+        .choice-card.correct::after {
+            content: '✓';
+            display: block;
+            font-size: 24px;
+            color: #4CAF50;
+            margin-top: 8px;
+        }
+
+        .choice-card.incorrect {
+            border-color: #F44336;
+            background: #FFEBEE;
+            cursor: not-allowed;
+        }
+
+        .choice-card.incorrect .choice-text {
+            color: #C62828;
+        }
+
+        .choice-card.incorrect::after {
+            content: '✗';
+            display: block;
+            font-size: 24px;
+            color: #F44336;
+            margin-top: 8px;
+        }
+
+        .choice-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 하단 고정 버튼 영역 */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 24px 32px;
+            border-top: 1px solid #e0e0e0;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+            transform: translateY(100%);
+            transition: transform 0.3s ease-out;
+            z-index: 999;
+        }
+
+        .bottom-bar.show {
+            transform: translateY(0);
+        }
+
+        .result-message {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .result-message.correct {
+            color: #4CAF50;
+        }
+
+        .result-message.incorrect {
+            color: #F44336;
+        }
+
+        /* 정답 해석 표시 */
+        /* 단어 뜻 - 정답 카드 내에 표시 */
+
+        /* 정답 hero 중앙 표시 */
+        .choices-container.answered { display: flex; justify-content: center; align-items: center; min-height: 180px; }
+        .choices-container.answered .choice-card { display: none; }
+        .choices-container.answered .choice-card.correct-hero {
+            display: block; width: 320px; transform: scale(1.15);
+            border-color: #4CAF50; background: #E8F5E9;
+            box-shadow: 0 8px 24px rgba(76,175,80,0.3); animation: popIn 0.35s ease-out;
+        }
+        .hero-word { font-size: 24px; font-weight: 700; color: #1B5E20; margin-bottom: 6px; }
+        .hero-meaning { font-size: 17px; font-weight: 500; color: #2E7D32; }
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            70% { transform: scale(1.2); }
+            100% { transform: scale(1.15); opacity: 1; }
+        }
+
+        /* 정답 공개 (2차 오답 시) */
+        .choice-card.reveal {
+            border-color: #4CAF50 !important; background: #E8F5E9 !important;
+            transform: scale(1.05); box-shadow: 0 4px 20px rgba(76,175,80,0.4);
+            opacity: 1 !important; cursor: default; position: relative;
+        }
+        .choice-card.reveal .choice-text { color: #2E7D32; font-weight: bold; }
+        .choice-card.reveal .hero-word { color: #1B5E20; }
+        .choice-card.reveal .hero-meaning { color: #2E7D32; }
+        .choice-card.reveal::before {
+            content: '✓ 정답'; position: absolute; top: 8px; right: 12px;
+            background: #4CAF50; color: white; font-size: 11px; font-weight: bold;
+            padding: 2px 8px; border-radius: 4px;
+        }
+        .hint-placeholder {
+            margin-bottom: 16px;
+            min-height: 0;
+            transition: min-height 0.3s;
+        }
+
+        .hint-section {
+            background: #FFF9C4;
+            padding: 24px;
+            border-radius: 12px;
+            visibility: hidden;
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: opacity 0.3s, visibility 0.3s, max-height 0.3s;
+        }
+
+        .hint-section.show {
+            visibility: visible;
+            opacity: 1;
+            max-height: 300px;
+        }
+
+        .hint-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #F57C00;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .hint-sentence {
+            font-size: 18px;
+            color: #212121;
+            line-height: 1.8;
+            text-align: center;
+            font-weight: 500;
+            padding: 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .hint-sentence .blank {
+            display: inline-block;
+            min-width: 100px;
+            border-bottom: 2px solid #F57C00;
+            margin: 0 4px;
+        }
+
+        /* 버튼 */
+        .action-btn {
+            width: 100%;
+            padding: 18px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: #1976D2;
+        }
+
+        /* 결과 페이지 */
+        .result-container {
+            max-width: 600px;
+            margin: 80px auto;
+            padding: 48px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .result-icon {
+            font-size: 80px;
+            margin-bottom: 24px;
+        }
+
+        .result-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #212121;
+            margin-bottom: 24px;
+        }
+
+        .result-score {
+            font-size: 48px;
+            color: #2196F3;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .result-points {
+            font-size: 18px;
+            color: #FF9800;
+            font-weight: bold;
+            margin-bottom: 32px;
+        }
+
+        .result-final-message {
+            font-size: 16px;
+            color: #616161;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .result-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .result-btn-primary {
+            width: 100%;
+            padding: 18px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .result-btn-primary:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+        }
+
+        .result-btn-secondary {
+            width: 100%;
+            padding: 18px;
+            background: white;
+            color: #2196F3;
+            border: 2px solid #2196F3;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .result-btn-secondary:hover {
+            background: #E3F2FD;
+        }
+
+        .retry-info {
+            font-size: 13px;
+            color: #757575;
+            margin-top: 8px;
+        }
+
+        /* 바텀 팝업 */
+        .bottom-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .bottom-popup-overlay.show {
+            display: block;
+            opacity: 1;
+        }
+
+        .bottom-popup {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 24px 24px 0 0;
+            padding: 32px 24px 24px;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+            z-index: 10000;
+        }
+
+        .bottom-popup-overlay.show .bottom-popup {
+            transform: translateY(0);
+        }
+
+        .bottom-popup-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #212121;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .bottom-popup-desc {
+            font-size: 14px;
+            color: #757575;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .bottom-popup-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .bottom-popup-btn {
+            flex: 1;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .bottom-popup-btn.cancel {
+            background: #F5F5F5;
+            color: #616161;
+        }
+
+        .bottom-popup-btn.cancel:hover {
+            background: #EEEEEE;
+        }
+
+        .bottom-popup-btn.confirm {
+            background: #2196F3;
+            color: white;
+        }
+
+        .bottom-popup-btn.confirm:hover {
+            background: #1976D2;
+        }
+        .blur-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            z-index: 9998;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .blur-overlay.show {
+            display: flex;
+        }
+
+        .blur-overlay-message {
+            background: white;
+            padding: 32px 48px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .blur-overlay-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .blur-overlay-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #212121;
+        }
+    </style>
+</head>
+<body>
+    <!-- 글로벌 네비게이션 -->
+    <nav class="global-nav">
+        <div class="nav-left">
+            <div class="nav-title">MV09: 예문 빈칸 채우기 - 와이어프레임</div>
+        </div>
+        <div class="nav-right">
+            <div class="nav-buttons">
+                <button class="nav-btn active" onclick="goToEntry()">1. 진입</button>
+                <button class="nav-btn" onclick="goToLearning()">2-1. 학습 진행</button>
+                <button class="nav-btn" onclick="goToReview()">2-2. 복습</button>
+                <button class="nav-btn" onclick="goToResult()">3. 결과</button>
+            </div>
+            <div class="mode-toggle">
+                <button class="mode-btn active" onclick="setMode('ko', this)">영한</button>
+                <button class="mode-btn" onclick="setMode('en', this)">영영</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 1. 진입 페이지 -->
+    <div id="entry" class="screen active">
+        <div class="entry-container">
+            <div class="entry-icon">📝</div>
+            <h1 class="entry-title">예문 빈칸 채우기</h1>
+            <div class="entry-count">총 10개 단어</div>
+            <div class="entry-info">Reading Book 3A > Unit 3: Space Journey</div>
+            <p class="entry-description">
+                예문의 빈칸에 알맞은 단어를 선택하며 단어 활용법을 익혀보세요.
+            </p>
+            <button class="start-btn" onclick="startLearning()">학습 시작</button>
+        </div>
+    </div>
+
+    <!-- 2. 학습 진행 페이지 -->
+    <div id="learning" class="screen">
+        <div class="header">
+            <div class="header-left">
+                <div class="textbook">Reading Book 3A</div>
+                <div class="unit">Unit 3: Space Journey</div>
+            </div>
+            <div class="header-right">
+                <div class="module-name">Step 5 • 예문 빈칸 채우기</div>
+                <div class="progress" id="progress-text">1/10</div>
+                <button class="close-btn" onclick="exitLearning()">✕</button>
+            </div>
+        </div>
+        
+        <div class="learning-container">
+            <div class="status-bar" id="status-bar">
+                <div class="status-message" id="status-message">빈칸에 들어갈 알맞은 단어를 선택하세요</div>
+            </div>
+
+            <div class="timer-container" id="timer-container">
+                <div class="timer green" id="timer">
+                    <div class="timer-label">남은 시간</div>
+                    <div class="timer-value" id="timer-value">30초</div>
+                </div>
+            </div>
+
+            <div class="sentence-display">
+                <div class="sentence-text" id="sentence-text">
+                    Plants <span class="blank" id="blank-word">absorb</span> sunlight to make food.
+                </div>
+            </div>
+
+            <div class="hint-placeholder" id="hint-placeholder">
+                <div class="hint-section" id="hint-section">
+                    <div class="hint-title">💡 힌트: 다른 예문을 읽고 단어를 유추해보세요</div>
+                    <div class="hint-sentence" id="hint-sentence">
+                        The sponge can <span class="blank">_____</span> water quickly.
+                    </div>
+                </div>
+            </div>
+
+            <div class="choices-container" id="choices-container">
+                <!-- 동적으로 생성됨 -->
+            </div>
+        </div>
+
+        <div class="bottom-bar" id="bottom-bar">
+            <div class="result-message" id="result-message"></div>
+            <button class="action-btn" id="action-btn" onclick="nextWord()">다음 단어</button>
+        </div>
+    </div>
+
+    <!-- 3. 결과 페이지 -->
+    <div id="result" class="screen">
+        <div class="result-container">
+            <div class="result-icon" id="result-icon">🏆</div>
+            <div class="result-title">예문 빈칸 채우기 완료</div>
+            <div class="result-score" id="result-score">총점: 92점</div>
+            <div class="result-points">획득 포인트: 100 P</div>
+            <div class="result-final-message" id="result-final-message">
+                완벽해요! 단어 활용을 정확하게 익혔네요! 🌟
+            </div>
+            <div class="result-buttons">
+                <button class="result-btn-primary" onclick="nextModule()">다음 학습</button>
+                <button class="result-btn-secondary" onclick="showRetryPopup()">
+                    다시 학습하기
+                    <div class="retry-info">복습하고 보너스 포인트도 챙기세요!</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 다시 학습하기 바텀 팝업 -->
+    <div class="bottom-popup-overlay" id="retryPopup" onclick="closeRetryPopup(event)">
+        <div class="bottom-popup" onclick="event.stopPropagation()">
+            <div class="bottom-popup-title">다시 공부해볼까요?</div>
+            <div class="bottom-popup-desc">(원래 점수는 바뀌지 않아요)</div>
+            <div class="bottom-popup-buttons">
+                <button class="bottom-popup-btn cancel" onclick="closeRetryPopup()">취소</button>
+                <button class="bottom-popup-btn confirm" onclick="confirmRetry()">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 페이지 이탈 감지 오버레이 -->
+    <div class="blur-overlay" id="blurOverlay">
+        <div class="blur-overlay-message">
+            <div class="blur-overlay-icon">👀</div>
+            <div class="blur-overlay-text">학습 화면으로 돌아와주세요</div>
+        </div>
+    </div>
+
+    <script>
+        // ===== Web Audio API 효과음 =====
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+        function ensureAudioCtx() {
+            if (!audioCtx) audioCtx = new AudioCtx();
+            return audioCtx;
+        }
+        function playSound(type) {
+            const ctx = ensureAudioCtx();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            
+            if (type === 'correct') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+                osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
+                osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.4);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, ctx.currentTime);
+                osc.frequency.setValueAtTime(150, ctx.currentTime + 0.15);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.3);
+            } else if (type === 'timeout') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, ctx.currentTime);
+                osc.frequency.setValueAtTime(200, ctx.currentTime + 0.2);
+                osc.frequency.setValueAtTime(150, ctx.currentTime + 0.4);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.5);
+            }
+        }
+
+        // ===== 영한/영영 모드 =====
+        let meaningMode = 'ko';
+        function getMeaning(w) {
+            return meaningMode === 'ko' ? w.meaning : w.enDef;
+        }
+        function setMode(m, btn) {
+            meaningMode = m;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        // 10개 단어 데이터
+        const words = [
+            { 
+                word: 'absorb', 
+                meaning: '흡수하다',
+                enDef: 'to take in or soak up',
+                sentence: 'Plants _____ sunlight to make food.',
+                sentenceKor: '식물은 음식을 만들기 위해 햇빛을 흡수해요.',
+                hintSentence: 'The sponge can _____ water quickly.',
+                choices: ['absorb', 'reflect', 'shine', 'appear'] 
+            },
+            { 
+                word: 'experiment', 
+                meaning: '실험',
+                enDef: 'a test done to learn something',
+                sentence: 'We did a science _____ in class today.',
+                sentenceKor: '우리는 오늘 수업 시간에 과학 실험을 했어요.',
+                hintSentence: 'The _____ was very fun and exciting.',
+                choices: ['experiment', 'mixture', 'object', 'prism'] 
+            },
+            { 
+                word: 'reflect', 
+                meaning: '반사하다',
+                enDef: 'to throw back light or heat',
+                sentence: 'Mirrors _____ light very well.',
+                sentenceKor: '거울은 빛을 아주 잘 반사해요.',
+                hintSentence: 'The lake can _____ the mountains.',
+                choices: ['reflect', 'absorb', 'shine', 'consist'] 
+            },
+            { 
+                word: 'mixture', 
+                meaning: '혼합물',
+                enDef: 'a combination of different things',
+                sentence: 'The _____ of red and blue makes purple.',
+                sentenceKor: '빨간색과 파란색의 혼합물은 보라색을 만들어요.',
+                hintSentence: 'This cake is a _____ of flour, eggs, and sugar.',
+                choices: ['mixture', 'object', 'experiment', 'prism'] 
+            },
+            { 
+                word: 'object', 
+                meaning: '물체',
+                enDef: 'a thing that can be seen or touched',
+                sentence: 'Heavy _____ fall at the same speed as light ones.',
+                sentenceKor: '무거운 물체는 가벼운 것과 같은 속도로 떨어져요.',
+                hintSentence: 'What is that _____ on the table?',
+                choices: ['object', 'mixture', 'sunlight', 'experiment'] 
+            },
+            { 
+                word: 'appear', 
+                meaning: '나타나다',
+                enDef: 'to become visible or come into sight',
+                sentence: 'The sun _____ to move across the sky.',
+                sentenceKor: '태양은 하늘을 가로질러 움직이는 것처럼 보여요.',
+                hintSentence: 'Stars _____ in the sky at night.',
+                choices: ['appear', 'reflect', 'absorb', 'shine'] 
+            },
+            { 
+                word: 'shine', 
+                meaning: '빛나다',
+                enDef: 'to give off bright light',
+                sentence: 'The sun _____ brightly during the day.',
+                sentenceKor: '태양은 낮 동안 밝게 빛나요.',
+                hintSentence: 'The diamond will _____ in the light.',
+                choices: ['shine', 'appear', 'reflect', 'absorb'] 
+            },
+            { 
+                word: 'sunlight', 
+                meaning: '햇빛',
+                enDef: 'light that comes from the sun',
+                sentence: 'Plants need _____ to grow.',
+                sentenceKor: '식물은 자라기 위해 햇빛이 필요해요.',
+                hintSentence: 'The room was filled with bright _____.',
+                choices: ['sunlight', 'mixture', 'object', 'prism'] 
+            },
+            { 
+                word: 'prism', 
+                meaning: '프리즘',
+                enDef: 'a glass shape that splits light into colors',
+                sentence: 'A _____ separates white light into colors.',
+                sentenceKor: '프리즘은 백색광을 여러 색으로 분리해요.',
+                hintSentence: 'We used a _____ in our science class.',
+                choices: ['prism', 'object', 'mixture', 'experiment'] 
+            },
+            { 
+                word: 'consist', 
+                meaning: '구성되다',
+                enDef: 'to be made up of', 
+                sentence: 'Water _____ of hydrogen and oxygen.',
+                sentenceKor: '물은 수소와 산소로 구성되어 있어요.',
+                hintSentence: 'The team _____ of five players.',
+                choices: ['consist', 'absorb', 'reflect', 'appear'] 
+            }
+        ];
+
+        // 학습 상태 변수
+        let currentIndex = 0;
+        let currentState = 'question';
+        let firstAttemptWrong = null;
+        let reviewWords = [];
+        let isReviewMode = false;
+        let reviewIndex = 0;
+        let timerInterval = null;
+        let timeLeft = 30;
+        let totalCorrect = 0;
+        let isRetryMode = false;
+
+        // 초기화
+        function init() {
+            currentIndex = 0;
+            currentState = 'question';
+            firstAttemptWrong = null;
+            reviewWords = [];
+            isReviewMode = false;
+            reviewIndex = 0;
+            totalCorrect = 0;
+        }
+
+        // 화면 전환
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+        }
+
+        // 1. 진입 페이지로
+        function goToEntry() {
+            showScreen('entry');
+            document.querySelectorAll('.nav-btn')[0].classList.add('active');
+            init();
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+        }
+
+        // 2-1. 학습 진행 페이지로
+        function goToLearning() {
+            showScreen('learning');
+            document.querySelectorAll('.nav-btn')[1].classList.add('active');
+            isReviewMode = false;
+            currentIndex = 0;
+            loadQuestion();
+        }
+
+        // 2-2. 복습 페이지로
+        function goToReview() {
+            if (reviewWords.length === 0) {
+                reviewWords = [2, 5, 7];
+            }
+            showScreen('learning');
+            document.querySelectorAll('.nav-btn')[2].classList.add('active');
+            isReviewMode = true;
+            reviewIndex = 0;
+            loadQuestion();
+        }
+
+        // 3. 결과 페이지로
+        function goToResult() {
+            showScreen('result');
+            document.querySelectorAll('.nav-btn')[3].classList.add('active');
+            displayResult();
+        }
+
+        // 학습 시작
+        function startLearning() {
+            init();
+            goToLearning();
+        }
+
+        // 문제 로드
+        function loadQuestion() {
+            const wordData = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
+            currentState = 'question';
+            firstAttemptWrong = null;
+
+            // 진행 상황 업데이트
+            const progressText = document.getElementById('progress-text');
+            const statusBar = document.getElementById('status-bar');
+            const statusMessage = document.getElementById('status-message');
+            
+            if (isReviewMode) {
+                progressText.textContent = '다시 확인 (' + (reviewIndex + 1) + '/' + reviewWords.length + ')';
+                progressText.style.color = '#FF9800';
+                statusBar.style.background = '#FFF3E0';
+                statusMessage.style.color = '#F57C00';
+            } else {
+                progressText.textContent = (currentIndex + 1) + '/10';
+                progressText.style.color = '#2196F3';
+                statusBar.style.background = '#E3F2FD';
+                statusMessage.style.color = '#616161';
+            }
+
+            // 예문 표시 (빈칸으로)
+            const sentenceText = document.getElementById('sentence-text');
+            const sentenceWithBlank = wordData.sentence.replace('_____', '<span class="blank" id="blank-word">_____</span>');
+            sentenceText.innerHTML = sentenceWithBlank;
+
+            // 타이머 표시
+            document.getElementById('timer-container').style.display = 'block';
+            startTimer();
+
+            // 보기 생성 (셔플)
+            const shuffledChoices = shuffleArray([...wordData.choices]);
+            const choicesContainer = document.getElementById('choices-container');
+            choicesContainer.innerHTML = '';
+            shuffledChoices.forEach(function(choice, index) {
+                const card = document.createElement('div');
+                card.className = 'choice-card';
+                card.innerHTML = '<div class="choice-text">' + choice + '</div>';
+                card.onclick = function() { selectChoice(choice, index); };
+                choicesContainer.appendChild(card);
+            });
+
+            // 하단 바 숨기기
+            document.getElementById('bottom-bar').classList.remove('show');
+            document.getElementById('hint-section').classList.remove('show');
+            document.getElementById('choices-container').classList.remove('answered');
+        }
+
+        // 배열 셔플
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // 보기 선택
+        function selectChoice(selectedChoice, selectedIndex) {
+            const cards = document.querySelectorAll('.choice-card');
+            
+            if (cards[selectedIndex].classList.contains('correct') || 
+                cards[selectedIndex].classList.contains('incorrect') || 
+                cards[selectedIndex].classList.contains('disabled')) {
+                return;
+            }
+
+            if (currentState === 'correct1' || currentState === 'correct2' || currentState === 'incorrect2') {
+                return;
+            }
+
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            document.getElementById('timer-container').style.display = 'none';
+
+            const wordData = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
+            const isCorrect = selectedChoice === wordData.word;
+
+            // 보기 카드 업데이트
+            cards.forEach(function(card, idx) {
+                if (idx === selectedIndex) {
+                    if (isCorrect) {
+                        card.classList.add('correct');
+                    } else {
+                        card.classList.add('incorrect');
+                    }
+                } else {
+                    if (currentState === 'question') {
+                        if (!isCorrect) {
+                            // 오답이면 다른 보기 활성화 유지
+                        } else {
+                            card.classList.add('disabled');
+                        }
+                    } else if (currentState === 'incorrect1') {
+                        if (idx === firstAttemptWrong) {
+                            // 1차 오답은 유지
+                        } else if (card.querySelector('.choice-text').textContent.trim() === wordData.word) {
+                            if (!isCorrect) {
+                                card.classList.add('correct');
+                            }
+                        } else {
+                            card.classList.add('disabled');
+                        }
+                    }
+                }
+            });
+
+            // 빈칸 채우기
+            const blankWord = document.getElementById('blank-word');
+            if (isCorrect) {
+                blankWord.textContent = wordData.word;
+                blankWord.classList.add('filled');
+            }
+
+            // 상태 변경 및 피드백
+            if (currentState === 'question') {
+                if (isCorrect) {
+                    currentState = 'correct1';
+                    totalCorrect++;
+                    showCorrectHero(cards, selectedIndex, ['🎉 정답이에요!', '✨ 잘했어요!', '👍 맞았어요!'], wordData);
+                } else {
+                    currentState = 'incorrect1';
+                    firstAttemptWrong = selectedIndex;
+                    showHintFeedback(wordData);
+                }
+            } else if (currentState === 'incorrect1') {
+                if (isCorrect) {
+                    currentState = 'correct2';
+                    blankWord.textContent = wordData.word;
+                    blankWord.classList.add('filled');
+                    showCorrectHero(cards, selectedIndex, ['👏 이번엔 맞췄어요!'], wordData);
+                } else {
+                    currentState = 'incorrect2';
+                    if (!isReviewMode) {
+                        reviewWords.push(currentIndex);
+                    }
+                    // 정답 표시 (파란색)
+                    blankWord.textContent = wordData.word;
+                    blankWord.classList.remove('filled');
+                    blankWord.classList.add('filled-blue');
+                    revealAnswer(wordData, cards);
+                }
+            }
+        }
+
+        // ===== 정답 hero 연출 =====
+        function showCorrectHero(cards, idx, msgs, wordData) {
+            playSound('correct');
+            const c = document.getElementById('choices-container');
+            cards[idx].classList.add('correct', 'correct-hero');
+            // 영어 단어 + 뜻 병기
+            const choiceText = cards[idx].querySelector('.choice-text');
+            choiceText.innerHTML = '<div class="hero-word">' + wordData.word + '</div><div class="hero-meaning">' + getMeaning(wordData) + '</div>';
+            cards[idx].innerHTML += '<span class="choice-icon">✅</span>';
+            c.classList.add('answered');
+
+            const msg = msgs[Math.floor(Math.random() * msgs.length)];
+            document.getElementById('result-message').textContent = msg;
+            document.getElementById('result-message').className = 'result-message correct';
+            document.getElementById('result-message').style.display = 'block';
+            document.getElementById('action-btn').style.display = 'block';
+            updateActionBtn();
+            document.getElementById('hint-section').classList.remove('show');
+            document.getElementById('bottom-bar').classList.add('show');
+        }
+
+        // ===== 2차 오답 - 정답 공개 =====
+        function revealAnswer(wordData, cards) {
+            playSound('wrong');
+            const correctWord = wordData.word;
+            cards.forEach(function(card) {
+                const choiceText = card.querySelector('.choice-text');
+                if (choiceText && choiceText.textContent.trim() === correctWord) {
+                    card.classList.add('reveal');
+                    choiceText.innerHTML = '<div class="hero-word">' + wordData.word + '</div><div class="hero-meaning">' + getMeaning(wordData) + '</div>';
+                } else if (!card.classList.contains('incorrect')) {
+                    card.classList.add('disabled');
+                }
+            });
+            const encourages = ['다시 한번 공부해봐요! 💪', '괜찮아요! 복습에서 다시 도전해요! 📚', '한 번 더 연습하면 기억할 수 있어요! ✨'];
+            const msg = encourages[Math.floor(Math.random() * encourages.length)];
+            document.getElementById('result-message').textContent = msg;
+            document.getElementById('result-message').className = 'result-message incorrect';
+            document.getElementById('result-message').style.display = 'block';
+            document.getElementById('action-btn').style.display = 'block';
+            updateActionBtn();
+            document.getElementById('hint-section').classList.remove('show');
+            document.getElementById('bottom-bar').classList.add('show');
+        }
+
+        // ===== 버튼 텍스트 업데이트 =====
+        function updateActionBtn() {
+            const actionBtn = document.getElementById('action-btn');
+            if (isReviewMode) {
+                if (reviewIndex < reviewWords.length - 1) {
+                    actionBtn.textContent = '다음 단어 (' + (reviewIndex + 2) + '/' + reviewWords.length + ')';
+                } else {
+                    actionBtn.textContent = '결과 보기';
+                }
+            } else {
+                if (currentIndex < 9) {
+                    actionBtn.textContent = '다음 단어 (' + (currentIndex + 2) + '/10)';
+                } else {
+                    if (reviewWords.length > 0) {
+                        actionBtn.textContent = '복습 시작';
+                    } else {
+                        actionBtn.textContent = '결과 보기';
+                    }
+                }
+            }
+        }
+
+        // 정답 피드백 표시 (기존 함수 - 더 이상 직접 호출하지 않음, 호환용 유지)
+        function showFeedback(type, messages, wordData, isSecondIncorrect) {
+            // showCorrectHero 또는 revealAnswer로 대체됨
+        }
+
+        // 힌트 피드백 표시 (1차 오답)
+        function showHintFeedback(wordData) {
+            playSound('wrong');
+
+            const bottomBar = document.getElementById('bottom-bar');
+            const hintSection = document.getElementById('hint-section');
+
+            // 힌트 예문 표시
+            const hintSentenceElem = document.getElementById('hint-sentence');
+            const hintWithBlank = wordData.hintSentence.replace('_____', '<span class="blank">_____</span>');
+            hintSentenceElem.innerHTML = hintWithBlank;
+
+            // 힌트를 문제 영역에 표시, bottom-bar 숨김
+            hintSection.classList.add('show');
+            bottomBar.classList.remove('show');
+        }
+
+        // 다음 단어
+        function nextWord() {
+            if (isReviewMode) {
+                reviewIndex++;
+                if (reviewIndex >= reviewWords.length) {
+                    goToResult();
+                } else {
+                    loadQuestion();
+                }
+            } else {
+                currentIndex++;
+                if (currentIndex >= 10) {
+                    if (reviewWords.length > 0) {
+                        isReviewMode = true;
+                        reviewIndex = 0;
+                        document.querySelectorAll('.nav-btn').forEach(function(btn) {
+                            btn.classList.remove('active');
+                        });
+                        document.querySelectorAll('.nav-btn')[2].classList.add('active');
+                        loadQuestion();
+                    } else {
+                        goToResult();
+                    }
+                } else {
+                    loadQuestion();
+                }
+            }
+        }
+
+        // 타이머 시작
+        function startTimer() {
+            timeLeft = 30;
+            updateTimerDisplay();
+            
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            timerInterval = setInterval(function() {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeout();
+                }
+            }, 1000);
+        }
+
+        // 타이머 표시 업데이트
+        function updateTimerDisplay() {
+            document.getElementById('timer-value').textContent = timeLeft + '초';
+            
+            const totalTime = 30;
+            const ratio = timeLeft / totalTime;
+            const timerElem = document.getElementById('timer');
+            timerElem.classList.remove('green', 'yellow', 'red');
+            if (ratio > 0.5) {
+                timerElem.classList.add('green');
+            } else if (ratio > 0.25) {
+                timerElem.classList.add('yellow');
+            } else {
+                timerElem.classList.add('red');
+            }
+        }
+
+        // 시간 초과 처리
+        function handleTimeout() {
+            playSound('timeout');
+            document.getElementById('timer-container').style.display = 'none';
+            const wordData = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
+
+            currentState = 'incorrect1';
+            showHintFeedback(wordData);
+        }
+
+        // 결과 표시
+        function displayResult() {
+            const score = Math.round((totalCorrect / 10) * 100);
+            document.getElementById('result-score').textContent = '총점: ' + score + '점';
+
+            const resultIcon = document.getElementById('result-icon');
+            const resultFinalMessage = document.getElementById('result-final-message');
+
+            if (score >= 90) {
+                resultIcon.textContent = '🏆';
+                resultFinalMessage.textContent = '완벽해요! 단어 활용을 정확하게 익혔네요! 🌟';
+            } else if (score >= 80) {
+                resultIcon.textContent = '🎉';
+                resultFinalMessage.textContent = '아주 잘했어요! 문맥 속에서 단어를 잘 활용하고 있어요! 🎉';
+            } else if (score >= 70) {
+                resultIcon.textContent = '✨';
+                resultFinalMessage.textContent = '잘했어요! 조금만 더 연습하면 완벽할 거예요! ✨';
+            } else {
+                resultIcon.textContent = '💪';
+                resultFinalMessage.textContent = '괜찮아요! 틀린 단어를 다시 복습해보세요! 💪';
+            }
+        }
+
+        // 다음 모듈로
+        function nextModule() {
+            alert('다음 모듈로 이동합니다!');
+            goToEntry();
+        }
+
+        // 다시 학습하기 팝업 열기
+        function showRetryPopup() {
+            document.getElementById('retryPopup').classList.add('show');
+        }
+
+        // 다시 학습하기 팝업 닫기
+        function closeRetryPopup(event) {
+            if (!event || event.target.id === 'retryPopup') {
+                document.getElementById('retryPopup').classList.remove('show');
+            }
+        }
+
+        // 다시 학습하기 확인
+        function confirmRetry() {
+            closeRetryPopup();
+            isRetryMode = true;
+            
+            currentIndex = 0;
+            reviewIndex = 0;
+            totalCorrect = 0;
+            reviewWords = [];
+            isReviewMode = false;
+            
+            goToLearning();
+        }
+
+        // ===== 페이지 이탈 감지 =====
+        let isPageLeft = false;
+        function handleLeave() {
+            const learningScreen = document.getElementById('learning');
+            if (!learningScreen || !learningScreen.classList.contains('active')) return;
+            if (!isPageLeft) {
+                isPageLeft = true;
+                // 타이머는 계속 진행 (일시정지하지 않음)
+                document.getElementById('blurOverlay').classList.add('show');
+            }
+        }
+        function handleReturn() {
+            if (!isPageLeft) return;
+            isPageLeft = false;
+            document.getElementById('blurOverlay').classList.remove('show');
+        }
+        document.addEventListener('visibilitychange', () => document.hidden ? handleLeave() : handleReturn());
+        document.addEventListener('mouseleave', handleLeave);
+        document.addEventListener('mouseenter', handleReturn);
+        window.addEventListener('blur', handleLeave);
+        window.addEventListener('focus', handleReturn);
+
+        // 나가기
+        function exitLearning() {
+            if (isRetryMode) {
+                if (confirm('다시 학습을 종료하시겠습니까?\n\n다시 학습 중에는 보너스 포인트가 지급되지 않으며\n진행 상황이 저장되지 않습니다.')) {
+                    isRetryMode = false;
+                    goToEntry();
+                }
+            } else {
+                if (confirm('학습을 종료하시겠습니까?\n\n지금까지의 학습 내용이 저장됩니다.')) {
+                    goToEntry();
+                }
+            }
+        }
+    </script>
+</body>
+</html>

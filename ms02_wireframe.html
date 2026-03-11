@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MS02: 문장 읽기 발음 평가</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Malgun Gothic',sans-serif;background:#f5f5f5}
+.gnav{position:fixed;top:0;left:0;right:0;background:#fff;padding:16px 32px;border-bottom:2px solid #e0e0e0;box-shadow:0 2px 8px rgba(0,0,0,.1);z-index:1000;display:flex;align-items:center}
+.gnav-l{display:flex;align-items:center;gap:16px}.gnav-t{font-size:16px;font-weight:600;color:#212121}
+.gnav-b{display:flex;gap:8px}.nb{padding:10px 20px;background:#fff;border:2px solid #e0e0e0;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;transition:all .2s}
+.nb:hover{border-color:#2196F3;color:#2196F3}.nb.on{background:#2196F3;color:#fff;border-color:#2196F3}
+.scr{display:none;min-height:100vh;padding-top:64px}.scr.on{display:block}
+.hdr{position:sticky;top:64px;background:#fff;padding:20px 32px;border-bottom:1px solid #e0e0e0;display:flex;justify-content:space-between;align-items:center;z-index:500}
+.hdr-l .tb{font-size:13px;color:#757575;margin-bottom:4px}.hdr-l .ut{font-size:16px;color:#212121;font-weight:600}
+.hdr-r{display:flex;align-items:center;gap:24px}.mn{font-size:13px;color:#757575}.prg{font-size:16px;font-weight:600;color:#2196F3}
+.xb{width:32px;height:32px;border:none;background:none;cursor:pointer;font-size:24px;color:#757575}
+
+.ent{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:40px}
+.ecard{max-width:600px;width:100%;background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.1);padding:48px;text-align:center}
+.eicon{font-size:56px;margin-bottom:20px}.etitle{font-size:26px;font-weight:700;color:#212121;margin-bottom:14px}
+.einfo{font-size:17px;color:#2196F3;font-weight:600;margin-bottom:6px}
+.etb{font-size:13px;color:#9E9E9E;margin-bottom:28px}
+.edesc{font-size:15px;color:#616161;line-height:1.6;margin-bottom:36px}
+.startb{width:100%;padding:18px;background:#2196F3;color:#fff;border:none;border-radius:12px;font-size:17px;font-weight:600;cursor:pointer}
+.startb:hover{background:#1976D2;transform:translateY(-2px)}
+
+.lc{padding:24px 48px;max-width:800px;margin:0 auto;padding-bottom:100px}
+.smsg{background:#E3F2FD;padding:14px 20px;border-radius:12px;text-align:center;margin-bottom:12px;font-size:14px;color:#1976D2;font-weight:600}
+.prog-row{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:0 4px}
+.prog-txt{font-size:12px;color:#9E9E9E;font-weight:600;white-space:nowrap}
+.prog-bar{flex:1;height:4px;background:#E0E0E0;border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:#2196F3;border-radius:2px;transition:width .3s;width:0}
+.spd-ctrl{display:flex;gap:4px;flex-shrink:0}
+.sb{padding:4px 10px;border:1.5px solid #E0E0E0;border-radius:6px;background:#fff;font-size:12px;font-weight:600;cursor:pointer;color:#757575;transition:all .2s}
+.sb.on{border-color:#2196F3;color:#2196F3;background:#E3F2FD}.sb:hover{border-color:#2196F3}
+
+/* Sentence card */
+.scard{background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);padding:32px;margin-bottom:16px}
+.scard .stxt{font-size:20px;line-height:1.8;color:#212121;text-align:center;margin-bottom:24px}
+.scard .stxt .weak{border-bottom:3px solid #F44336;color:#D32F2F;font-weight:700;padding-bottom:2px}
+.audio-row{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:20px}
+.audio-btn{width:44px;height:44px;border-radius:50%;border:2px solid #E0E0E0;background:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.audio-btn:hover{border-color:#2196F3;background:#E3F2FD}
+.audio-btn.playing{border-color:#2196F3;background:#E3F2FD}
+.audio-label{font-size:13px;color:#757575}
+.wave{display:flex;align-items:center;gap:2px;height:18px}
+.wave span{width:3px;background:#2196F3;border-radius:2px;animation:wv .6s ease-in-out infinite}
+.wave span:nth-child(1){height:6px;animation-delay:0s}.wave span:nth-child(2){height:12px;animation-delay:.1s}
+.wave span:nth-child(3){height:8px;animation-delay:.2s}.wave span:nth-child(4){height:14px;animation-delay:.15s}
+@keyframes wv{0%,100%{transform:scaleY(.5)}50%{transform:scaleY(1.2)}}
+
+/* Record area */
+.rec-area{text-align:center;margin-bottom:16px}
+.rec-st{font-size:14px;color:#757575;margin-bottom:10px}
+.rec-btn{width:64px;height:64px;border-radius:50%;border:none;font-size:24px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .25s}
+.rec-btn.ready{background:#F44336;color:#fff;box-shadow:0 4px 16px rgba(244,67,54,.3);position:relative}
+.rec-btn.ready::after{content:'';position:absolute;width:76px;height:76px;border-radius:50%;border:2px solid rgba(244,67,54,.3);animation:ring 1.5s ease-out infinite}
+@keyframes ring{0%{transform:scale(.8);opacity:1}100%{transform:scale(1.3);opacity:0}}
+.rec-btn.recording{background:#D32F2F;color:#fff;box-shadow:0 4px 16px rgba(211,47,47,.4);animation:rp 1s infinite}
+@keyframes rp{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.rec-btn.off{background:#E0E0E0;color:#9E9E9E;cursor:not-allowed}
+.rec-time{font-size:13px;color:#F44336;font-weight:700;margin-top:8px}
+.analyzing{font-size:15px;color:#757575;margin-top:16px}
+
+/* Result panel */
+.rpanel{background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);padding:32px;display:none}
+.rpanel.sh{display:block}
+.rscore-big{text-align:center;margin-bottom:20px}
+.rscore-big .num{font-size:56px;font-weight:800}.rscore-big .lbl{font-size:14px;color:#757575}
+.rscore-big.good .num{color:#4CAF50}.rscore-big.ok .num{color:#FF9800}.rscore-big.bad .num{color:#F44336}
+.rmsg{text-align:center;font-size:15px;font-weight:600;margin-bottom:20px}
+.rmsg.good{color:#4CAF50}.rmsg.ok{color:#FF9800}.rmsg.bad{color:#F44336}
+.weak-section{margin-bottom:20px}
+.weak-title{font-size:13px;color:#757575;font-weight:600;margin-bottom:8px}
+.weak-list{display:flex;flex-wrap:wrap;gap:8px}
+.weak-tag{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#FFEBEE;border-radius:10px;font-size:14px;color:#D32F2F;font-weight:600;cursor:pointer;transition:all .2s}
+.weak-tag:hover{background:#FFCDD2}
+.weak-tag .sp{font-size:12px}
+.compare{display:flex;gap:12px;justify-content:center;margin-bottom:24px}
+.cmp-btn{flex:1;max-width:200px;padding:12px;border-radius:10px;border:2px solid #E0E0E0;background:#fff;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+.cmp-btn:hover{border-color:#2196F3;background:#E3F2FD}
+.cmp-btn.playing{border-color:#2196F3;background:#E3F2FD}
+.racts{display:flex;gap:12px;justify-content:center}
+.ra-btn{padding:14px 32px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.ra-retry{background:#fff;color:#FF9800;border:2px solid #FF9800}.ra-retry:hover{background:#FFF3E0}
+.ra-next{background:#2196F3;color:#fff}.ra-next:hover{background:#1976D2}
+.ra-must{font-size:12px;color:#F44336;text-align:center;margin-top:8px}
+
+/* Result page */
+.rc{max-width:600px;margin:80px auto;padding:48px;background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.1);text-align:center}
+.ricon{font-size:72px;margin-bottom:20px}.rtitle{font-size:26px;font-weight:bold;color:#212121;margin-bottom:20px}
+.rscN{font-size:48px;font-weight:800;color:#2196F3}.rscL{font-size:14px;color:#757575;margin-bottom:16px}
+.rsc2{font-size:18px;color:#FF9800;font-weight:bold;margin-bottom:20px}
+.r-list{text-align:left;margin-bottom:24px}
+.r-item{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-radius:8px;margin-bottom:4px;background:#F5F5F5}
+.r-item .r-stx{font-size:13px;color:#333;flex:1;margin-right:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r-item .r-sc{font-size:14px;font-weight:700;flex-shrink:0}.r-item .r-sc.good{color:#4CAF50}.r-item .r-sc.ok{color:#FF9800}.r-item .r-sc.bad{color:#F44336}
+.r-item .r-try{font-size:11px;color:#9E9E9E;flex-shrink:0;margin-left:8px}
+.rmsg2{font-size:16px;color:#616161;line-height:1.6;margin-bottom:28px}
+.rbs{display:flex;flex-direction:column;gap:10px}
+.rb1{width:100%;padding:16px;background:#2196F3;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer}.rb1:hover{background:#1976D2}
+.rb2{width:100%;padding:16px;background:#fff;color:#2196F3;border:2px solid #2196F3;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer}.rb2:hover{background:#E3F2FD}
+.ri{font-size:12px;color:#757575;margin-top:6px}
+
+.po{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:none;z-index:9999}.po.sh{display:block}
+.psh{position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:24px 24px 0 0;padding:28px 20px 20px;transform:translateY(100%);transition:transform .3s;z-index:10000}.po.sh .psh{transform:translateY(0)}
+.pt2{font-size:18px;font-weight:bold;color:#212121;margin-bottom:12px;text-align:center}.pbs{display:flex;gap:10px}
+.ppb{flex:1;padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none}.ppb.cc{background:#F5F5F5;color:#616161}.ppb.cf{background:#2196F3;color:#fff}
+.lo{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:5000;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all .3s}.lo.sh{opacity:1;visibility:visible}
+@media(max-width:768px){.gnav{flex-direction:column;gap:12px;padding:12px 16px}.gnav-l{flex-direction:column;gap:8px;width:100%}
+.lc{padding:16px;padding-bottom:100px}.scr{padding-top:120px}.hdr{top:120px}.scard{padding:20px}.scard .stxt{font-size:17px}}
+</style>
+</head>
+<body>
+<div class="gnav"><div class="gnav-l"><div class="gnav-t">📱 MS02: 문장 읽기 발음 평가</div><div class="gnav-b">
+<button class="nb on" onclick="goTo('entry')">1. 진입</button>
+<button class="nb" onclick="navMain()">2. 학습 진행</button>
+<button class="nb" onclick="goTo('result')">3. 결과</button>
+</div></div></div>
+
+<div class="po" id="rP" onclick="clR(event)"><div class="psh" onclick="event.stopPropagation()"><div class="pt2">다시 연습해볼까요?</div><div class="pbs"><button class="ppb cc" onclick="clR()">취소</button><button class="ppb cf" onclick="clR();doRetry()">확인</button></div></div></div>
+<div class="po" id="exitP"><div class="psh" onclick="event.stopPropagation()"><div class="pt2" id="exitMT"></div><div style="font-size:13px;color:#757575;text-align:center;margin-bottom:14px" id="exitMD"></div><div class="pbs"><button class="ppb cc" id="exitMC"></button><button class="ppb cf" id="exitMP"></button></div></div></div>
+<div class="lo" id="lO"><div><div style="font-size:56px;text-align:center;margin-bottom:12px">👀</div><div style="font-size:18px;color:#fff;font-weight:600;text-align:center">학습 화면으로 돌아와주세요</div></div></div>
+
+<!-- Entry -->
+<div id="sE" class="scr on"><div class="ent"><div class="ecard">
+<div class="eicon">🎯</div><div class="etitle">문장 읽기 발음 평가</div>
+<div class="einfo">5개 문장 집중 연습</div>
+<div class="etb">Reading Level C > Unit 8: The Blockbuster Effect</div>
+<div class="edesc">발음이 약한 문장을 집중 연습해볼까요?<br>점수를 확인하고, 더 잘 읽을 수 있을 때까지 도전해보세요!</div>
+<button class="startb" onclick="startAll()">학습 시작</button>
+</div></div></div>
+
+<!-- Main -->
+<div id="sM" class="scr">
+<div class="hdr"><div class="hdr-l"><div class="tb">Reading Level C</div><div class="ut">Unit 8: The Blockbuster Effect</div></div>
+<div class="hdr-r"><div class="mn">Step 4 • 발음 평가</div><div class="prg" id="prg">1/5</div><button class="xb" onclick="doExit()">✕</button></div></div>
+<div class="lc">
+  <div class="smsg" id="sMsg">문장을 듣고 따라 읽어보세요.</div>
+  <div class="prog-row"><span class="prog-txt" id="pLbl">0 / 5 문장</span><div class="prog-bar"><div class="prog-fill" id="pFill"></div></div>
+  <div class="spd-ctrl"><button class="sb" onclick="setSpd(.6,this)">0.6x</button><button class="sb" onclick="setSpd(.8,this)">0.8x</button><button class="sb on" onclick="setSpd(1,this)">1.0x</button><button class="sb" onclick="setSpd(1.2,this)">1.2x</button></div></div>
+
+  <!-- Sentence + Record card -->
+  <div class="scard" id="sCard">
+    <div class="stxt" id="sTxt"></div>
+    <div class="audio-row" id="audioRow">
+      <button class="audio-btn" id="listenBtn" onclick="playTTS()">🔊</button>
+      <span class="audio-label">원어민 발음 듣기</span>
+    </div>
+    <div class="rec-area" id="recArea">
+      <div class="rec-st" id="recSt">준비되면 녹음 버튼을 눌러주세요</div>
+      <button class="rec-btn off" id="recBtn" onclick="toggleRec()">🎤</button>
+      <div class="rec-time" id="recTime" style="display:none">0:00</div>
+      <div class="analyzing" id="analyzing" style="display:none">⏳ 분석 중…</div>
+    </div>
+  </div>
+
+  <!-- Result panel (shows after recording) -->
+  <div class="rpanel" id="rPanel">
+    <div class="rscore-big" id="rsBig"><div class="num" id="rsNum">0</div><div class="lbl">발음 점수</div></div>
+    <div class="rmsg" id="rsMsg"></div>
+    <div class="stxt" id="rsTxt" style="font-size:18px;margin-bottom:20px;text-align:center"></div>
+    <div class="weak-section" id="weakSec">
+      <div class="weak-title">📌 발음이 약한 단어</div>
+      <div class="weak-list" id="weakList"></div>
+    </div>
+    <div class="compare">
+      <button class="cmp-btn" id="myAudioBtn" onclick="playMy()">🎤 내 발음 듣기</button>
+      <button class="cmp-btn" id="nativeBtn" onclick="playTTS()">🔊 원어민 발음 듣기</button>
+    </div>
+    <div class="racts" id="rActs"></div>
+    <div class="ra-must" id="raMust" style="display:none">30점 이상이어야 다음으로 넘어갈 수 있어요</div>
+  </div>
+</div>
+</div>
+
+<!-- Result page -->
+<div id="sR" class="scr"><div class="rc">
+<div class="ricon">🎯</div><div class="rtitle">문장 읽기 발음 평가 완료</div>
+<div class="rscN" id="fScN">78</div><div class="rscL">점</div>
+<div class="rsc2">획득 포인트: 50 P</div>
+<div class="r-list" id="rList"></div>
+<div class="rmsg2" id="fMsg"></div>
+<div class="rbs"><button class="rb1" onclick="alert('다음 모듈로 이동합니다!')">다음 학습</button>
+<button class="rb2" onclick="showRt()">다시 학습하기<div class="ri">복습하고 보너스 포인트도 챙기세요!</div></button></div>
+</div></div>
+
+<script>
+// Sample weak sentences (from MS01 similarity data)
+// Each weak word now has a simulated pronunciation score
+var sentences=[
+  {txt:"His movies rarely play in theaters, finding audiences instead on streaming platforms.",weak:[{w:"rarely",sc:32},{w:"audiences",sc:28},{w:"streaming",sc:41}]},
+  {txt:"Technology was expected to democratize filmmaking, letting independent voices flourish.",weak:[{w:"democratize",sc:18},{w:"independent",sc:35},{w:"flourish",sc:22}]},
+  {txt:"Yet the big studios have only tightened their grip on the box office.",weak:[{w:"tightened",sc:38},{w:"grip",sc:44}]},
+  {txt:"The reason is simple: audiences crave spectacle that only massive budgets can deliver.",weak:[{w:"spectacle",sc:25},{w:"massive",sc:40},{w:"deliver",sc:33}]},
+  {txt:"Meanwhile, mid-budget dramas — once the backbone of Hollywood — have nearly vanished.",weak:[{w:"backbone",sc:30},{w:"Hollywood",sc:45},{w:"vanished",sc:27}]}
+];
+
+var cIdx=0,spd=1,recState='idle',recTimer=null,recSecs=0,cur='entry',ttsHeard=false,ttsPlaying=false;
+var bestScores=[],attempts=[];
+var left=false;
+
+function setSpd(v,b){spd=v;document.querySelectorAll('.sb').forEach(function(x){x.classList.remove('on')});b.classList.add('on')}
+
+function speak(text){
+  return new Promise(function(r){
+    var u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=spd;
+    u.onend=function(){r()};u.onerror=function(){r()};speechSynthesis.speak(u);
+  });
+}
+
+function playTTS(){
+  speechSynthesis.cancel();
+  ttsPlaying=true;
+  var btn=document.getElementById('listenBtn');
+  btn.innerHTML='<div class="wave"><span></span><span></span><span></span><span></span></div>';
+  var u=new SpeechSynthesisUtterance(sentences[cIdx].txt);u.lang='en-US';u.rate=spd;
+  u.onend=function(){
+    ttsPlaying=false;
+    btn.textContent='🔊';
+    if(!left){ttsHeard=true;enableRec()}
+  };
+  u.onerror=function(){
+    ttsPlaying=false;
+    btn.textContent='🔊';
+  };
+  speechSynthesis.speak(u);
+}
+
+function playMy(){/* In real app: play recorded audio */
+  var btn=document.getElementById('myAudioBtn');
+  btn.textContent='🎤 재생 중…';btn.classList.add('playing');
+  speak(sentences[cIdx].txt).then(function(){btn.textContent='🎤 내 발음 듣기';btn.classList.remove('playing')});
+}
+
+function enableRec(){
+  if(!ttsHeard)return;
+  var btn=document.getElementById('recBtn');btn.className='rec-btn ready';
+  document.getElementById('recSt').textContent='준비되면 녹음 버튼을 눌러주세요';
+}
+
+function toggleRec(){
+  var btn=document.getElementById('recBtn');
+  if(btn.classList.contains('off'))return;
+  if(recState==='idle'){
+    // Stop TTS if replaying (2nd+ listen)
+    if(ttsPlaying){speechSynthesis.cancel();ttsPlaying=false;document.getElementById('listenBtn').textContent='🔊'}
+    recState='recording';recSecs=0;
+    btn.className='rec-btn recording';btn.textContent='⏹';
+    document.getElementById('recSt').textContent='녹음 중…';
+    document.getElementById('recTime').style.display='block';
+    document.getElementById('recTime').textContent='0:00';
+    recTimer=setInterval(function(){recSecs++;var m=Math.floor(recSecs/60),s=recSecs%60;
+      document.getElementById('recTime').textContent=m+':'+(s<10?'0':'')+s},1000);
+  }else{
+    recState='idle';clearInterval(recTimer);
+    document.getElementById('recTime').style.display='none';
+    btn.className='rec-btn off';btn.textContent='🎤';
+    document.getElementById('recSt').textContent='';
+    document.getElementById('analyzing').style.display='block';
+    // Simulate analysis
+    setTimeout(function(){showResult()},800);
+  }
+}
+
+function showResult(){
+  document.getElementById('analyzing').style.display='none';
+  document.getElementById('sCard').style.display='none';
+  document.getElementById('rPanel').classList.add('sh');
+
+  // Simulate score (20~95)
+  var s=sentences[cIdx];
+  var score=Math.floor(Math.random()*76)+20;
+  // Demo: first 2 sentences more likely to fail
+  if(cIdx<2&&(!attempts[cIdx]||attempts[cIdx]<2))score=Math.floor(Math.random()*40)+15;
+
+  if(!attempts[cIdx])attempts[cIdx]=0;
+  attempts[cIdx]++;
+  if(!bestScores[cIdx]||score>bestScores[cIdx])bestScores[cIdx]=score;
+
+  // Score display
+  var big=document.getElementById('rsBig');
+  var cls=score>=70?'good':score>=30?'ok':'bad';
+  big.className='rscore-big '+cls;
+  document.getElementById('rsNum').textContent=score;
+
+  var msg=document.getElementById('rsMsg');
+  if(score>=80){msg.className='rmsg good';msg.textContent='훌륭해요! 아주 잘 읽었어요! 🌟'}
+  else if(score>=50){msg.className='rmsg ok';msg.textContent='좋아요! 조금만 더 연습하면 완벽할 거예요!'}
+  else if(score>=30){msg.className='rmsg ok';msg.textContent='괜찮아요! 다시 시도해서 점수를 올려보세요.'}
+  else{msg.className='rmsg bad';msg.textContent='다시 한번 읽어주세요!'}
+
+  // Sentence with weak words highlighted (with word scores)
+  var html=s.txt;
+  if(score<80){s.weak.forEach(function(item){html=html.replace(new RegExp('('+item.w+')','gi'),'<span class="weak">$1</span>')})}
+  document.getElementById('rsTxt').innerHTML=html;
+
+  // Weak words with pronunciation scores
+  var wl=document.getElementById('weakList');wl.innerHTML='';
+  if(score<80){
+    document.getElementById('weakSec').style.display='block';
+    s.weak.forEach(function(item){
+      // Randomize word score a bit based on sentence score
+      var wsc=Math.min(100,Math.max(5,item.sc+Math.floor(Math.random()*20)-10+Math.floor(score/5)));
+      var tag=document.createElement('div');tag.className='weak-tag';
+      tag.innerHTML=item.w+' <span style="font-size:12px;opacity:.7">'+wsc+'점</span> <span class="sp">🔊</span>';
+      tag.onclick=function(){speechSynthesis.cancel();speak(item.w)};
+      wl.appendChild(tag);
+    });
+  }else{document.getElementById('weakSec').style.display='none'}
+
+  // Action buttons
+  var acts=document.getElementById('rActs');acts.innerHTML='';
+  var must=document.getElementById('raMust');
+  var tries=attempts[cIdx]||0;
+  var isLast=cIdx>=sentences.length-1;
+  var nextLabel=isLast?'결과 보기':'다음 문장 →';
+  if(score<30&&tries<3){
+    // Must retry, still has attempts
+    acts.innerHTML='<button class="ra-btn ra-retry" onclick="retryQ()">🔄 다시 시도 ('+tries+'/3)</button>';
+    must.style.display='block';
+    must.textContent='30점 이상이어야 다음으로 넘어갈 수 있어요 ('+tries+'/3회)';
+  }else if(score<30&&tries>=3){
+    // Max attempts reached, allow next even though low score
+    acts.innerHTML='<button class="ra-btn ra-next" onclick="nextQ()">'+nextLabel+'</button>';
+    must.style.display='block';
+    must.textContent='최대 시도 횟수에 도달했어요. 가장 높은 점수로 저장됩니다.';
+  }else if(tries<3){
+    // Passed, can retry or next
+    acts.innerHTML='<button class="ra-btn ra-retry" onclick="retryQ()">🔄 다시 시도 ('+tries+'/3)</button>'
+      +'<button class="ra-btn ra-next" onclick="nextQ()">'+nextLabel+'</button>';
+    must.style.display='none';
+  }else{
+    // Passed and max attempts
+    acts.innerHTML='<button class="ra-btn ra-next" onclick="nextQ()">'+nextLabel+'</button>';
+    must.style.display='none';
+  }
+}
+
+function retryQ(){
+  document.getElementById('rPanel').classList.remove('sh');
+  document.getElementById('sCard').style.display='block';
+  ttsHeard=false;
+  loadQ();
+}
+
+function nextQ(){
+  cIdx++;
+  if(cIdx>=sentences.length){showFinalResult();goTo('result');return}
+  document.getElementById('rPanel').classList.remove('sh');
+  document.getElementById('sCard').style.display='block';
+  loadQ();
+}
+
+function loadQ(){
+  document.getElementById('prg').textContent=(cIdx+1)+'/'+sentences.length;
+  document.getElementById('pLbl').textContent=cIdx+' / '+sentences.length+' 문장';
+  document.getElementById('pFill').style.width=(cIdx/sentences.length*100)+'%';
+  document.getElementById('sTxt').textContent=sentences[cIdx].txt;
+  document.getElementById('recBtn').className='rec-btn off';document.getElementById('recBtn').textContent='🎤';
+  document.getElementById('recSt').textContent='음원을 먼저 들어보세요';
+  document.getElementById('recTime').style.display='none';
+  document.getElementById('analyzing').style.display='none';
+  document.getElementById('listenBtn').textContent='🔊';
+  ttsHeard=false;
+  document.getElementById('sMsg').textContent='문장을 듣고 따라 읽어보세요.';
+  // Auto play TTS
+  setTimeout(function(){playTTS()},300);
+}
+
+function showFinalResult(){
+  var avg=0;
+  bestScores.forEach(function(s){avg+=s});
+  avg=Math.round(avg/sentences.length);
+  document.getElementById('fScN').textContent=avg;
+  var m=document.getElementById('fMsg');
+  if(avg>=80)m.textContent='훌륭해요! 발음이 아주 정확해요! 🌟';
+  else if(avg>=60)m.textContent='잘했어요! 꾸준히 연습하면 더 좋아질 거예요!';
+  else m.textContent='괜찮아요! 다시 한번 연습해보세요! 💪';
+  // Build sentence list
+  var list=document.getElementById('rList');list.innerHTML='';
+  sentences.forEach(function(s,i){
+    var sc=bestScores[i]||0;
+    var cls=sc>=70?'good':sc>=30?'ok':'bad';
+    var div=document.createElement('div');div.className='r-item';
+    div.innerHTML='<div class="r-stx">'+s.txt.substring(0,50)+'…</div><div class="r-sc '+cls+'">'+sc+'점</div><div class="r-try">'+((attempts[i]||1))+'회</div>';
+    list.appendChild(div);
+  });
+}
+
+var isRetryMode=false;
+function navMain(){cIdx=0;bestScores=[];attempts=[];isRetryMode=false;goTo('main');setTimeout(function(){loadQ()},200)}
+function startAll(){cIdx=0;bestScores=[];attempts=[];isRetryMode=false;goTo('main');setTimeout(function(){loadQ()},200)}
+function showRt(){document.getElementById('rP').classList.add('sh')}
+function clR(e){if(!e||e.target.id==='rP')document.getElementById('rP').classList.remove('sh')}
+function doRetry(){isRetryMode=true;cIdx=0;bestScores=[];attempts=[];goTo('main');setTimeout(function(){loadQ()},200)}
+function doExit(){
+  speechSynthesis.cancel();recState='idle';clearInterval(recTimer);
+  if(isRetryMode){
+    showExitModal('다시 학습을 종료하시겠습니까?','진행 상황이 저장되지 않습니다.','종료','취소',function(){goTo('entry')},null);
+  } else {
+    showExitModal('학습을 종료하시겠습니까?','진행 상황이 저장됩니다.','나가기','계속하기',function(){goTo('entry')},null);
+  }
+}
+function showExitModal(title,desc,okLabel,cancelLabel,onOk,onCancel){
+  document.getElementById('exitMT').textContent=title;
+  document.getElementById('exitMD').textContent=desc;
+  var okBtn=document.getElementById('exitMP');okBtn.textContent=okLabel;
+  var ccBtn=document.getElementById('exitMC');ccBtn.textContent=cancelLabel;
+  okBtn.onclick=function(){document.getElementById('exitP').classList.remove('sh');onOk()};
+  ccBtn.onclick=function(){document.getElementById('exitP').classList.remove('sh');if(onCancel)onCancel()};
+  document.getElementById('exitP').classList.add('sh');
+}
+
+function goTo(n){
+  speechSynthesis.cancel();recState='idle';clearInterval(recTimer);
+  document.querySelectorAll('.scr').forEach(function(s){s.classList.remove('on')});
+  document.querySelectorAll('.nb').forEach(function(b){b.classList.remove('on')});
+  var map={entry:'sE',main:'sM',result:'sR'},idx={entry:0,main:1,result:2};
+  document.getElementById(map[n]).classList.add('on');
+  document.querySelectorAll('.nb')[idx[n]].classList.add('on');
+  cur=n;window.scrollTo(0,0);
+  document.getElementById('rPanel').classList.remove('sh');
+  document.getElementById('sCard').style.display='block';
+}
+
+var wasRecording=false;
+function onL(){if(cur==='main'&&!left){left=true;
+  // If TTS was playing, it was interrupted - mark not heard
+  if(ttsPlaying){ttsPlaying=false;document.getElementById('listenBtn').textContent='🔊'}
+  speechSynthesis.cancel();
+  wasRecording=false;
+  if(recState==='recording'){wasRecording=true;recState='idle';clearInterval(recTimer);document.getElementById('recTime').style.display='none'}
+  document.getElementById('lO').classList.add('sh')}}
+function onR(){if(left){left=false;document.getElementById('lO').classList.remove('sh');
+  if(document.getElementById('sCard').style.display==='none')return; // result panel showing
+  if(!ttsHeard){
+    // Audio not fully heard: replay from beginning, rec button off
+    document.getElementById('recBtn').className='rec-btn off';
+    document.getElementById('recSt').textContent='음원을 먼저 들어보세요';
+    setTimeout(function(){playTTS()},500);
+  }else if(wasRecording){
+    // Was recording when left: discard recording, restore to ready state
+    document.getElementById('recBtn').className='rec-btn ready';document.getElementById('recBtn').textContent='🎤';
+    document.getElementById('recSt').textContent='준비되면 녹음 버튼을 눌러주세요';
+    wasRecording=false;
+  }
+}}
+document.addEventListener('visibilitychange',function(){document.hidden?onL():onR()});
+document.addEventListener('mouseleave',onL);document.addEventListener('mouseenter',onR);
+</script>
+</body>
+</html>

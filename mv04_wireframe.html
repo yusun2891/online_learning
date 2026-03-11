@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V-M04: 영어 단어 찾기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+            background: #f5f5f5;
+        }
+
+        /* 네비게이션 */
+        .global-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 16px 32px;
+            border-bottom: 2px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #212121;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-btn:hover {
+            border-color: #2196F3;
+            color: #2196F3;
+        }
+
+        .nav-btn.active {
+            background: #2196F3;
+            color: white;
+            border-color: #2196F3;
+        }
+
+        /* 영한/영영 모드 토글 */
+        .mode-toggle { display: flex; align-items: center; gap: 8px; background: #F3F4F6; padding: 4px; border-radius: 8px; }
+        .mode-btn { padding: 6px 14px; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; background: transparent; color: #6B7280; }
+        .mode-btn.active { background: white; color: #2196F3; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+        .screen {
+            padding-top: 64px;
+            display: none;
+            min-height: 100vh;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* 헤더 */
+        .header {
+            background: white;
+            padding: 20px 32px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left .textbook {
+            font-size: 13px;
+            color: #757575;
+            margin-bottom: 4px;
+        }
+
+        .header-left .unit {
+            font-size: 16px;
+            color: #212121;
+            font-weight: 600;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .module-name {
+            font-size: 13px;
+            color: #757575;
+        }
+
+        .progress {
+            font-size: 16px;
+            color: #2196F3;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 24px;
+            color: #757575;
+        }
+
+        /* 진입 페이지 */
+        .entry-container {
+            max-width: 600px;
+            margin: 80px auto;
+            padding: 48px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .entry-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+        }
+
+        .entry-title {
+            font-size: 36px;
+            font-weight: bold;
+            color: #212121;
+            margin-bottom: 16px;
+        }
+
+        .entry-count {
+            font-size: 18px;
+            color: #757575;
+            margin-bottom: 8px;
+        }
+
+        .entry-info {
+            font-size: 14px;
+            color: #9E9E9E;
+            margin-bottom: 32px;
+        }
+
+        .entry-description {
+            font-size: 16px;
+            color: #616161;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .start-btn {
+            width: 100%;
+            padding: 20px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .start-btn:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+        }
+
+        /* 학습 진행 페이지 */
+        .learning-container {
+            padding: 48px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-bottom: 180px;
+            overflow-y: auto;
+        }
+
+        .status-bar {
+            background: #E3F2FD;
+            padding: 20px 32px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .status-message {
+            font-size: 17px;
+            color: #616161;
+        }
+
+        /* 타이머 */
+        .timer-container {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .timer {
+            display: inline-block;
+            padding: 12px 32px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .timer-label {
+            font-size: 12px;
+            color: #757575;
+            margin-bottom: 4px;
+        }
+
+        .timer-value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .timer.green .timer-value {
+            color: #4CAF50;
+        }
+
+        .timer.yellow .timer-value {
+            color: #FF9800;
+        }
+
+        .timer.red .timer-value {
+            color: #F44336;
+        }
+
+        /* 한글 뜻 표시 */
+        .meaning-display {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .meaning-kr {
+            font-size: 48px;
+            font-weight: bold;
+            color: #212121;
+        }
+
+        .meaning-kr.en-mode {
+            font-size: 28px;
+            line-height: 1.5;
+        }
+
+        /* 보기 선택 */
+        .choices-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 80px;
+        }
+
+        .choice-card {
+            background: white;
+            padding: 32px 24px;
+            border-radius: 12px;
+            border: 3px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            position: relative;
+        }
+
+        .choice-card:hover {
+            border-color: #2196F3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+        }
+
+        .choice-text {
+            font-size: 28px;
+            font-weight: 600;
+            color: #212121;
+        }
+
+        .choice-card.selected {
+            border-color: #2196F3;
+            background: #E3F2FD;
+        }
+
+        .choice-card.correct {
+            border-color: #4CAF50;
+            background: #E8F5E9;
+        }
+
+        .choice-card.incorrect {
+            border-color: #F44336;
+            background: #FFEBEE;
+            cursor: not-allowed;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .choice-card.incorrect .choice-text {
+            color: #C62828;
+        }
+
+        .choice-card.disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            pointer-events: none;
+            background: #F5F5F5;
+            border-color: #E0E0E0;
+        }
+
+        .choice-card.disabled .choice-text {
+            color: #9E9E9E;
+        }
+
+        .choice-icon {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 24px;
+        }
+
+        /* 오답 X 오버레이 */
+        .choice-card.incorrect::after {
+            content: '✗';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 72px;
+            color: rgba(244, 67, 54, 0.2);
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        /* 오답 흔들림 애니메이션 */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+        }
+        .choice-card.shake { animation: shake 0.4s ease-in-out; }
+
+        /* 정답 hero 중앙 표시 */
+        .choices-container.answered {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 180px;
+        }
+        .choices-container.answered .choice-card { display: none; }
+        .choices-container.answered .choice-card.correct-hero {
+            display: block;
+            width: 280px;
+            transform: scale(1.15);
+            border-color: #4CAF50;
+            background: #E8F5E9;
+            box-shadow: 0 8px 24px rgba(76, 175, 80, 0.3);
+            animation: popIn 0.35s ease-out;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            70% { transform: scale(1.2); }
+            100% { transform: scale(1.15); opacity: 1; }
+        }
+
+        /* 정답 공개 (2차 오답 시) */
+        .choice-card.reveal {
+            border-color: #4CAF50 !important;
+            background: #E8F5E9 !important;
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(76, 175, 80, 0.4);
+            opacity: 1 !important;
+            cursor: default;
+            position: relative;
+        }
+        .choice-card.reveal .choice-text {
+            color: #2E7D32;
+            font-weight: bold;
+        }
+        .choice-card.reveal::before {
+            content: '✓ 정답';
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            background: #4CAF50;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        /* 안내 문구 */
+        .guide-message {
+            text-align: center;
+            font-size: 14px;
+            color: #F57C00;
+            font-weight: 500;
+            margin-top: -24px;
+            margin-bottom: 24px;
+        }
+
+        /* 하단 고정 바 */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            box-shadow: 0 -2px 12px rgba(0,0,0,0.1);
+            transform: translateY(100%);
+            transition: transform 0.3s ease-out;
+            z-index: 999;
+        }
+
+        .bottom-bar.show {
+            transform: translateY(0);
+        }
+
+        .bottom-content {
+            padding: 24px 32px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .result-message {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .result-message.correct {
+            color: #4CAF50;
+        }
+
+        .result-message.incorrect {
+            color: #F44336;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 18px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: #1976D2;
+        }
+
+        /* 결과 페이지 */
+        .result-container {
+            max-width: 600px;
+            margin: 80px auto;
+            padding: 48px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .result-icon {
+            font-size: 80px;
+            margin-bottom: 24px;
+        }
+
+        .result-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #212121;
+            margin-bottom: 32px;
+        }
+
+        .result-score {
+            font-size: 48px;
+            font-weight: bold;
+            color: #2196F3;
+            margin-bottom: 16px;
+        }
+
+        .result-message-text {
+            font-size: 18px;
+            color: #616161;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .result-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .result-btn-primary {
+            width: 100%;
+            padding: 18px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .result-btn-primary:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+        }
+
+        .result-btn-secondary {
+            width: 100%;
+            padding: 18px;
+            background: white;
+            color: #2196F3;
+            border: 2px solid #2196F3;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .result-btn-secondary:hover {
+            background: #E3F2FD;
+        }
+
+        .retry-info {
+            font-size: 13px;
+            color: #757575;
+            margin-top: 8px;
+        }
+
+        /* 팝업 */
+        /* 다시 학습하기 바텀 팝업 */
+        .bottom-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .bottom-popup-overlay.show {
+            display: block;
+            opacity: 1;
+        }
+
+        .bottom-popup {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 24px 24px 0 0;
+            padding: 32px 24px 24px;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+            z-index: 10000;
+        }
+
+        .bottom-popup-overlay.show .bottom-popup {
+            transform: translateY(0);
+        }
+
+        .bottom-popup-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #212121;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .bottom-popup-desc {
+            font-size: 14px;
+            color: #757575;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .bottom-popup-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .bottom-popup-btn {
+            flex: 1;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .bottom-popup-btn.cancel {
+            background: #F5F5F5;
+            color: #616161;
+        }
+
+        .bottom-popup-btn.cancel:hover {
+            background: #EEEEEE;
+        }
+
+        .bottom-popup-btn.confirm {
+            background: #2196F3;
+            color: white;
+        }
+
+        .bottom-popup-btn.confirm:hover {
+            background: #1976D2;
+        }
+
+        /* 페이지 이탈 경고 */
+        .blur-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1500;
+        }
+
+        .blur-overlay.show {
+            display: flex;
+        }
+
+        .blur-message {
+            background: white;
+            padding: 32px 48px;
+            border-radius: 16px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #212121;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <!-- 네비게이션 -->
+    <div class="global-nav">
+        <div class="nav-title">V-M04: 영어 단어 찾기</div>
+        <div class="nav-buttons">
+            <button class="nav-btn active" onclick="goToEntry()">1. 진입</button>
+            <button class="nav-btn" onclick="goToLearning()">2-1. 학습 진행</button>
+            <button class="nav-btn" onclick="goToReview()">2-2. 복습</button>
+            <button class="nav-btn" onclick="goToResult()">3. 결과</button>
+        </div>
+        <div class="mode-toggle">
+            <button class="mode-btn active" onclick="setMode('ko',this)">영한</button>
+            <button class="mode-btn" onclick="setMode('en',this)">영영</button>
+        </div>
+    </div>
+
+    <!-- 1. 진입 페이지 -->
+    <div id="screen-entry" class="screen active">
+        <div class="entry-container">
+            <div class="entry-icon">🔤</div>
+            <div class="entry-title">영어 단어 찾기</div>
+            <div class="entry-count">총 10개 단어</div>
+            <div class="entry-info">Reading Master 3A > Unit 3: Space Journey</div>
+            <div class="entry-description">
+                한글 뜻을 보고 정확한 영어 단어를 찾을 수 있는지 점검해 보세요.
+            </div>
+            <button class="start-btn" onclick="startLearning()">학습 시작</button>
+        </div>
+    </div>
+
+    <!-- 2. 학습 진행 페이지 -->
+    <div id="screen-learning" class="screen">
+        <div class="header">
+            <div class="header-left">
+                <div class="textbook">Reading Master 3A</div>
+                <div class="unit">Unit 3: Space Journey</div>
+            </div>
+            <div class="header-right">
+                <span class="module-name">영어 단어 찾기</span>
+                <span class="progress" id="progress">3/10</span>
+                <button class="close-btn" onclick="exitLearning()">✕</button>
+            </div>
+        </div>
+
+        <div class="learning-container">
+            <div class="status-bar">
+                <span class="status-message" id="status-message">뜻을 보고 알맞은 영어 단어를 선택하세요</span>
+            </div>
+
+            <!-- 타이머 -->
+            <div class="timer-container" id="timer-container">
+                <div class="timer green" id="timer">
+                    <div class="timer-label">남은 시간</div>
+                    <div class="timer-value" id="timer-value">20초</div>
+                </div>
+            </div>
+
+            <!-- 한글 뜻 표시 -->
+            <div class="meaning-display">
+                <div class="meaning-kr" id="meaning-kr">여정, 여행</div>
+            </div>
+
+            <!-- 보기 선택 -->
+            <div class="choices-container" id="choices-container">
+                <div class="choice-card" onclick="selectChoice(0)">
+                    <div class="choice-text">journey</div>
+                </div>
+                <div class="choice-card" onclick="selectChoice(1)">
+                    <div class="choice-text">travel</div>
+                </div>
+                <div class="choice-card" onclick="selectChoice(2)">
+                    <div class="choice-text">adventure</div>
+                </div>
+                <div class="choice-card" onclick="selectChoice(3)">
+                    <div class="choice-text">voyage</div>
+                </div>
+            </div>
+            <div class="guide-message" id="guideMessage" style="display:none">다시 골라보세요!</div>
+        </div>
+        <div class="bottom-bar" id="bottom-bar">
+            <div class="bottom-content">
+                <div class="result-message" id="result-message">🎉 정답이에요!</div>
+                <button class="action-btn" id="action-btn" onclick="nextWord()">다음 단어 (4/10)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 결과 페이지 -->
+    <div id="screen-result" class="screen">
+        <div class="result-container">
+            <div class="result-icon" id="result-icon">🏆</div>
+            <div class="result-title">영어 단어 찾기 완료</div>
+            <div class="result-score" id="result-score">총점: 90점</div>
+            <div class="result-message-text" id="result-message-text">
+                완벽해요! 단어를 정확하게 익혔네요! 🌟
+            </div>
+            <div class="result-buttons">
+                <button class="result-btn-primary" onclick="nextModule()">다음 학습</button>
+                <button class="result-btn-secondary" onclick="showRetryPopup()">
+                    다시 학습하기
+                    <div class="retry-info">복습하고 보너스 포인트도 챙기세요!</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 다시 학습하기 바텀 팝업 -->
+    <div class="bottom-popup-overlay" id="retryPopup" onclick="closeRetryPopup(event)">
+        <div class="bottom-popup" onclick="event.stopPropagation()">
+            <div class="bottom-popup-title">다시 공부해볼까요?</div>
+            <div class="bottom-popup-desc">(원래 점수는 바뀌지 않아요)</div>
+            <div class="bottom-popup-buttons">
+                <button class="bottom-popup-btn cancel" onclick="closeRetryPopup()">취소</button>
+                <button class="bottom-popup-btn confirm" onclick="confirmRetry()">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 페이지 이탈 경고 -->
+    <div id="blurOverlay" class="blur-overlay">
+        <div class="blur-message">학습 화면으로 돌아와주세요</div>
+    </div>
+
+    <script>
+        // ===== 효과음 (Web Audio API) =====
+        let audioCtx = null;
+        function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+        document.addEventListener('click', initAudio, { once: true });
+        function playSound(type) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            const t = audioCtx.currentTime;
+            if (type === 'correct') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(523, t); osc.frequency.setValueAtTime(659, t + 0.12);
+                gain.gain.setValueAtTime(0.3, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.35);
+                osc.start(t); osc.stop(t + 0.35);
+            } else if (type === 'wrong') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(180, t);
+                gain.gain.setValueAtTime(0.2, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.25);
+                osc.start(t); osc.stop(t + 0.25);
+            } else if (type === 'timeout') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(300, t); osc.frequency.linearRampToValueAtTime(200, t + 0.3);
+                gain.gain.setValueAtTime(0.25, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.4);
+                osc.start(t); osc.stop(t + 0.4);
+            }
+        }
+
+        const words = [
+            { meaning: '흡수하다; 흡착하다, 흡입하다', enDef: 'to take in or soak up', correct: 'absorb', choices: ['absorb', 'reflect', 'shine', 'appear'] },
+            { meaning: '실험', enDef: 'a test done to learn something new', correct: 'experiment', choices: ['experiment', 'prism', 'mixture', 'object'] },
+            { meaning: '…로 구성되다', enDef: 'to be made up of', correct: 'consist of', choices: ['consist of', 'count', 'absorb', 'reflect'] },
+            { meaning: '반사하다', enDef: 'to throw back light or heat', correct: 'reflect', choices: ['reflect', 'absorb', 'shine', 'appear'] },
+            { meaning: '혼합물; 결합물', enDef: 'a combination of different things', correct: 'mixture', choices: ['mixture', 'object', 'experiment', 'prism'] },
+            { meaning: '물건; 물체, 사물', enDef: 'a thing that you can see or touch', correct: 'object', choices: ['object', 'mixture', 'prism', 'sunlight'] },
+            { meaning: '…처럼 보이다, 나타나다', enDef: 'to seem or come into sight', correct: 'appear', choices: ['appear', 'shine', 'reflect', 'actually'] },
+            { meaning: '비치다', enDef: 'to give off light', correct: 'shine', choices: ['shine', 'reflect', 'sunlight', 'appear'] },
+            { meaning: '햇빛', enDef: 'light from the sun', correct: 'sunlight', choices: ['sunlight', 'shine', 'prism', 'mixture'] },
+            { meaning: '프리즘, 분광기', enDef: 'a glass shape that splits light into colors', correct: 'prism', choices: ['prism', 'mixture', 'object', 'experiment'] }
+        ];
+
+        let meaningMode = 'ko';
+        function getDisplayMeaning(w) { return meaningMode === 'ko' ? w.meaning : w.enDef; }
+        function setMode(m, btn) {
+            meaningMode = m;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        let currentIndex = 0, reviewIndex = 0, isReviewMode = false, reviewWords = [];
+        let currentState = 'initial', firstAttemptWrong = -1, totalCorrect = 0, isRetryMode = false;
+        let timeLeft = 20, timerInterval = null;
+
+        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+        function goToEntry() { showScreen('screen-entry'); document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); document.querySelectorAll('.nav-btn')[0].classList.add('active'); }
+        function goToLearning() { showScreen('screen-learning'); document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); document.querySelectorAll('.nav-btn')[1].classList.add('active'); loadQuestion(); }
+        function goToReview() { if (!reviewWords.length) { alert('복습할 단어가 없습니다!'); return; } isReviewMode = true; reviewIndex = 0; showScreen('screen-learning'); document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); document.querySelectorAll('.nav-btn')[2].classList.add('active'); loadQuestion(); }
+        function goToResult() { showScreen('screen-result'); document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); document.querySelectorAll('.nav-btn')[3].classList.add('active'); displayResult(); }
+
+        function loadQuestion() {
+            const w = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
+            currentState = 'initial'; firstAttemptWrong = -1;
+            document.getElementById('progress').textContent = isReviewMode ? '다시 확인 ' + (reviewIndex+1) + '/' + reviewWords.length : (currentIndex+1) + '/10';
+            document.getElementById('meaning-kr').textContent = getDisplayMeaning(w);
+            document.getElementById('meaning-kr').classList.toggle('en-mode', meaningMode === 'en');
+            const shuffled = [...w.choices].sort(() => Math.random() - 0.5);
+            const c = document.getElementById('choices-container');
+            c.classList.remove('answered'); c.innerHTML = '';
+            shuffled.forEach((ch, i) => { const d = document.createElement('div'); d.className = 'choice-card'; d.onclick = () => selectChoice(i); d.innerHTML = '<div class="choice-text">' + ch + '</div>'; d.dataset.word = ch; c.appendChild(d); });
+            document.getElementById('guideMessage').style.display = 'none';
+            document.getElementById('bottom-bar').classList.remove('show');
+            document.getElementById('timer-container').style.display = '';
+            startTimer();
+        }
+
+        function selectChoice(idx) {
+            const w = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
+            const cards = document.querySelectorAll('.choice-card');
+            if (cards[idx].classList.contains('disabled') || cards[idx].classList.contains('incorrect')) return;
+            if (['correct1','correct2','incorrect2'].includes(currentState)) return;
+            if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+            const isCorrect = cards[idx].dataset.word === w.correct;
+
+            if (currentState === 'initial') {
+                if (isCorrect) { currentState = 'correct1'; totalCorrect++; playSound('correct'); showCorrectHero(cards, idx, ['🎉 정답이에요!','✨ 잘했어요!','👍 맞았어요!']); }
+                else { currentState = 'incorrect1'; firstAttemptWrong = idx; playSound('wrong'); cards[idx].classList.add('incorrect','shake'); document.getElementById('timer-container').style.display = 'none'; document.getElementById('guideMessage').style.display = 'block'; }
+            } else if (currentState === 'incorrect1') {
+                if (isCorrect) { currentState = 'correct2'; playSound('correct'); document.getElementById('guideMessage').style.display = 'none'; showCorrectHero(cards, idx, ['👏 이번엔 맞췄어요!']); }
+                else { currentState = 'incorrect2'; playSound('wrong'); cards[idx].classList.add('incorrect','shake'); if (!isReviewMode) reviewWords.push(currentIndex); document.getElementById('guideMessage').style.display = 'none'; revealAnswer(w, cards); }
+            }
+        }
+
+        function showCorrectHero(cards, idx, msgs) {
+            const c = document.getElementById('choices-container');
+            cards[idx].classList.add('correct','correct-hero');
+            cards[idx].innerHTML += '<span class="choice-icon">✅</span>';
+            c.classList.add('answered');
+            const msg = msgs[Math.floor(Math.random() * msgs.length)];
+            document.getElementById('result-message').textContent = msg;
+            document.getElementById('result-message').className = 'result-message correct';
+            document.getElementById('result-message').style.display = 'block';
+            document.getElementById('action-btn').style.display = 'block';
+            updateActionBtn();
+            document.getElementById('bottom-bar').classList.add('show');
+        }
+
+        function revealAnswer(w, cards) {
+            cards.forEach(card => {
+                if (card.dataset.word === w.correct) { card.classList.add('reveal'); }
+                else if (!card.classList.contains('incorrect')) { card.classList.add('disabled'); }
+            });
+            const msgs = ['다시 한번 공부해봐요! 💪','괜찮아요! 복습에서 다시 도전해요! 📚','한 번 더 연습하면 기억할 수 있어요! ✨'];
+            document.getElementById('result-message').textContent = msgs[Math.floor(Math.random() * msgs.length)];
+            document.getElementById('result-message').className = 'result-message incorrect';
+            document.getElementById('result-message').style.display = 'block';
+            document.getElementById('action-btn').style.display = 'block';
+            updateActionBtn();
+            document.getElementById('bottom-bar').classList.add('show');
+        }
+
+        function updateActionBtn() {
+            const btn = document.getElementById('action-btn');
+            if (isReviewMode) { btn.textContent = reviewIndex < reviewWords.length - 1 ? '다음 단어 (' + (reviewIndex+2) + '/' + reviewWords.length + ')' : '결과 보기'; }
+            else { if (currentIndex < 9) btn.textContent = '다음 단어 (' + (currentIndex+2) + '/10)'; else btn.textContent = reviewWords.length > 0 ? '복습 시작' : '결과 보기'; }
+        }
+
+        function nextWord() {
+            if (isReviewMode) { reviewIndex++; if (reviewIndex >= reviewWords.length) goToResult(); else loadQuestion(); }
+            else { currentIndex++; if (currentIndex >= 10) { if (reviewWords.length > 0) { isReviewMode = true; reviewIndex = 0; document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); document.querySelectorAll('.nav-btn')[2].classList.add('active'); loadQuestion(); } else goToResult(); } else loadQuestion(); }
+        }
+
+        function startTimer() {
+            timeLeft = 20; updateTimerDisplay();
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => { timeLeft--; updateTimerDisplay(); if (timeLeft <= 0) { clearInterval(timerInterval); timerInterval = null; handleTimeout(); } }, 1000);
+        }
+        function updateTimerDisplay() {
+            document.getElementById('timer-value').textContent = timeLeft + '초';
+            const t = document.getElementById('timer'); t.classList.remove('green','yellow','red');
+            if (timeLeft >= 11) t.classList.add('green'); else if (timeLeft >= 6) t.classList.add('yellow'); else t.classList.add('red');
+        }
+        function handleTimeout() { currentState = 'incorrect1'; playSound('timeout'); document.getElementById('timer-container').style.display = 'none'; document.getElementById('guideMessage').style.display = 'block'; }
+
+        function displayResult() {
+            const score = Math.round((totalCorrect / 10) * 100);
+            document.getElementById('result-score').textContent = '총점: ' + score + '점';
+            const ri = document.getElementById('result-icon'), rm = document.getElementById('result-message-text');
+            if (score >= 90) { ri.textContent = '🏆'; rm.textContent = '완벽해요! 단어를 정확하게 익혔네요! 🌟'; }
+            else if (score >= 80) { ri.textContent = '🎉'; rm.textContent = '아주 잘했어요! 단어를 잘 기억하고 있어요! 🎉'; }
+            else if (score >= 70) { ri.textContent = '✨'; rm.textContent = '잘했어요! 조금만 더 연습하면 완벽할 거예요! ✨'; }
+            else { ri.textContent = '💪'; rm.textContent = '괜찮아요! 틀린 단어를 다시 복습해보세요! 💪'; }
+        }
+
+        function nextModule() { alert('다음 학습 모듈로 이동합니다.'); goToEntry(); }
+        function showRetryPopup() { document.getElementById('retryPopup').classList.add('show'); }
+        function closeRetryPopup(e) { if (!e || e.target.id === 'retryPopup') document.getElementById('retryPopup').classList.remove('show'); }
+        function confirmRetry() { closeRetryPopup(); isRetryMode = true; currentIndex = 0; reviewIndex = 0; totalCorrect = 0; reviewWords = []; isReviewMode = false; goToLearning(); }
+        function exitLearning() {
+            if (isRetryMode) { if (confirm('다시 학습을 종료하시겠습니까?\n\n다시 학습 중에는 보너스 포인트가 지급되지 않으며\n진행 상황이 저장되지 않습니다.')) { isRetryMode = false; goToEntry(); } }
+            else { if (confirm('학습을 종료하시겠습니까?\n\n지금까지의 학습 내용이 저장됩니다.')) goToEntry(); }
+        }
+        function startLearning() { isRetryMode = false; goToLearning(); }
+
+        // ===== 페이지 이탈 감지 (타이머 계속 진행) =====
+        let isPageLeft = false;
+        function handleLeave() {
+            const currentScreen = document.querySelector('.screen.active').id;
+            if (currentScreen !== 'screen-learning') return;
+            // 이미 정답/2차오답 처리 완료 상태면 무시
+            if (currentState === 'correct1' || currentState === 'correct2' || currentState === 'incorrect2') return;
+            if (!isPageLeft) {
+                isPageLeft = true;
+                // 타이머는 계속 진행, Dim만 표시
+                document.getElementById('blurOverlay').classList.add('show');
+            }
+        }
+        function handleReturn() {
+            if (!isPageLeft) return;
+            isPageLeft = false;
+            document.getElementById('blurOverlay').classList.remove('show');
+        }
+        document.addEventListener('visibilitychange', () => document.hidden ? handleLeave() : handleReturn());
+        document.addEventListener('mouseleave', handleLeave);
+        document.addEventListener('mouseenter', handleReturn);
+        window.addEventListener('blur', handleLeave);
+        window.addEventListener('focus', handleReturn);
+    </script>
+</body>
+</html>

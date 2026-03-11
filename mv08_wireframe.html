@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MV08: 단어 타이핑</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+            background: #f5f5f5;
+        }
+
+        /* 네비게이션 */
+        .global-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 16px 32px;
+            border-bottom: 2px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #212121;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .mode-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #F3F4F6;
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        .mode-btn {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: transparent;
+            color: #6B7280;
+        }
+
+        .mode-btn.active {
+            background: white;
+            color: #2196F3;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-btn:hover {
+            border-color: #2196F3;
+            color: #2196F3;
+        }
+
+        .nav-btn.active {
+            background: #2196F3;
+            color: white;
+            border-color: #2196F3;
+        }
+
+        .screen {
+            padding-top: 64px;
+            display: none;
+            min-height: 100vh;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* 헤더 */
+        .header {
+            background: white;
+            padding: 20px 32px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left .textbook {
+            font-size: 13px;
+            color: #757575;
+            margin-bottom: 4px;
+        }
+
+        .header-left .unit {
+            font-size: 16px;
+            color: #212121;
+            font-weight: 600;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .module-name {
+            font-size: 13px;
+            color: #757575;
+        }
+
+        .progress {
+            font-size: 16px;
+            color: #2196F3;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 24px;
+            color: #757575;
+        }
+
+        /* 진입 페이지 */
+        .entry-container {
+            max-width: 600px;
+            margin: 80px auto;
+            padding: 48px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .entry-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+        }
+
+        .entry-title {
+            font-size: 36px;
+            font-weight: bold;
+            color: #212121;
+            margin-bottom: 16px;
+        }
+
+        .entry-count {
+            font-size: 18px;
+            color: #757575;
+            margin-bottom: 8px;
+        }
+
+        .entry-info {
+            font-size: 14px;
+            color: #9E9E9E;
+            margin-bottom: 32px;
+        }
+
+        .entry-description {
+            font-size: 16px;
+            color: #616161;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .start-btn {
+            width: 100%;
+            padding: 20px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .start-btn:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+        }
+
+        /* 학습 진행 페이지 */
+        .learning-container {
+            padding: 48px;
+            max-width: 900px;
+            margin: 0 auto;
+            padding-bottom: 220px;
+            overflow-y: auto;
+        }
+
+        .status-bar {
+            background: #E3F2FD;
+            padding: 20px 32px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .status-message {
+            font-size: 17px;
+            color: #616161;
+        }
+
+        /* 뜻 표시 영역 */
+        .meaning-display {
+            text-align: center;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+            padding: 40px 32px;
+            border-radius: 16px;
+            border: 3px solid #4CAF50;
+        }
+
+        .meaning-text {
+            font-size: 28px;
+            color: #2E7D32;
+            font-weight: bold;
+        }
+
+        .meaning-text.en-mode {
+            font-size: 20px;
+            line-height: 1.5;
+        }
+
+        /* 정답 슬롯 영역 */
+        .slots-container {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .slot {
+            width: 48px;
+            height: 56px;
+            border: 3px solid #e0e0e0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #212121;
+            background: white;
+            transition: all 0.2s;
+        }
+
+        .slot.active {
+            border-color: #2196F3;
+            background: #E3F2FD;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+        }
+
+        .slot.active::after {
+            content: '|';
+            animation: blink 1s infinite;
+            color: #2196F3;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .slot.filled {
+            background: #E8F5E9;
+            border-color: #4CAF50;
+            color: #2E7D32;
+        }
+
+        .slot.correct {
+            background: #E8F5E9;
+            border-color: #4CAF50;
+            color: #2E7D32;
+        }
+
+        .slot.locked {
+            background: #E8F5E9;
+            border-color: #4CAF50;
+            color: #2E7D32;
+        }
+
+        .slot.incorrect {
+            background: #FFEBEE;
+            border-color: #F44336;
+            color: #C62828;
+            animation: shake 0.3s ease-in-out;
+        }
+
+        .slot.auto-filled {
+            background: #E3F2FD;
+            border-color: #2196F3;
+            color: #1565C0;
+            animation: autoFillPop 0.5s ease-out;
+        }
+
+        @keyframes autoFillPop {
+            0% { transform: scale(0.5); opacity: 0; }
+            60% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* 단어 완성 시 pop 애니메이션 */
+        .slots-container.word-complete .slot.correct,
+        .slots-container.word-complete .slot.filled,
+        .slots-container.word-complete .slot.locked {
+            animation: slotPop 0.4s ease-out;
+            background: #C8E6C9;
+            border-color: #388E3C;
+        }
+
+        @keyframes slotPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+
+        /* 하단 고정 버튼 영역 */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 24px 32px;
+            border-top: 1px solid #e0e0e0;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+            transform: translateY(100%);
+            transition: transform 0.3s ease-out;
+            z-index: 999;
+        }
+
+        .bottom-bar.show {
+            transform: translateY(0);
+        }
+
+        .result-message {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .result-message.correct {
+            color: #4CAF50;
+        }
+
+        .result-message.incorrect {
+            color: #F44336;
+        }
+
+        /* 힌트 예약 공간 */
+        .hint-placeholder {
+            height: 52px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hint-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: #FFF9C4;
+            padding: 10px 24px;
+            border-radius: 12px;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .hint-section.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .hint-text {
+            font-size: 15px;
+            color: #E65100;
+            font-weight: bold;
+        }
+
+        .audio-icon {
+            width: 36px;
+            height: 36px;
+            background: #FF9800;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .audio-icon:hover {
+            background: #F57C00;
+            transform: scale(1.05);
+        }
+
+        .audio-icon.playing {
+            animation: audioPulse 1s infinite;
+        }
+
+        @keyframes audioPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 152, 0, 0); }
+        }
+
+        .audio-icon svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        /* 단어 정보 표시 */
+        .word-info {
+            text-align: center;
+            margin-bottom: 16px;
+            padding: 16px;
+            background: #F5F5F5;
+            border-radius: 8px;
+        }
+
+        .word-info-text {
+            font-size: 20px;
+            color: #424242;
+        }
+
+        .word-info-text .word {
+            font-weight: bold;
+            color: #1565C0;
+        }
+
+        /* 버튼 */
+        .action-btn {
+            width: 100%;
+            padding: 18px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: #1976D2;
+        }
+
+        /* 결과 페이지 */
+        .result-container {
+            max-width: 600px;
+            margin: 80px auto;
+            padding: 48px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .result-icon {
+            font-size: 80px;
+            margin-bottom: 24px;
+        }
+
+        .result-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #212121;
+            margin-bottom: 24px;
+        }
+
+        .result-score {
+            font-size: 48px;
+            color: #2196F3;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .result-points {
+            font-size: 18px;
+            color: #FF9800;
+            font-weight: bold;
+            margin-bottom: 32px;
+        }
+
+        .result-page-message {
+            font-size: 16px;
+            color: #616161;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .result-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .result-btn-primary {
+            width: 100%;
+            padding: 18px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .result-btn-primary:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+        }
+
+        .result-btn-secondary {
+            width: 100%;
+            padding: 18px;
+            background: white;
+            color: #2196F3;
+            border: 2px solid #2196F3;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .result-btn-secondary:hover {
+            background: #E3F2FD;
+        }
+
+        .retry-info {
+            font-size: 13px;
+            color: #757575;
+            margin-top: 8px;
+        }
+
+        /* 바텀 팝업 */
+        .bottom-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .bottom-popup-overlay.show {
+            display: block;
+            opacity: 1;
+        }
+
+        .bottom-popup {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 24px 24px 0 0;
+            padding: 32px 24px 24px;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+            z-index: 10000;
+        }
+
+        .bottom-popup-overlay.show .bottom-popup {
+            transform: translateY(0);
+        }
+
+        .bottom-popup-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #212121;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .bottom-popup-desc {
+            font-size: 14px;
+            color: #757575;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .bottom-popup-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .popup-btn {
+            flex: 1;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .popup-btn.cancel {
+            background: #F5F5F5;
+            border: none;
+            color: #757575;
+        }
+
+        .popup-btn.confirm {
+            background: #2196F3;
+            border: none;
+            color: white;
+        }
+
+        /* 페이지 이탈 감지 오버레이 */
+        .blur-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            z-index: 9998;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .blur-overlay.show {
+            display: flex;
+        }
+
+        .blur-overlay-message {
+            background: white;
+            padding: 32px 48px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .blur-overlay-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .blur-overlay-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #212121;
+        }
+    </style>
+</head>
+<body>
+    <!-- 글로벌 네비게이션 -->
+    <nav class="global-nav">
+        <div class="nav-left">
+            <div class="nav-title">MV08: 단어 타이핑 - 와이어프레임</div>
+        </div>
+        <div class="nav-right">
+            <div class="nav-buttons">
+                <button class="nav-btn active" onclick="goToEntry()">1. 진입</button>
+                <button class="nav-btn" onclick="goToLearning()">2-1. 학습 진행</button>
+                <button class="nav-btn" onclick="goToReview()">2-2. 복습</button>
+                <button class="nav-btn" onclick="goToResult()">3. 결과</button>
+            </div>
+            <div class="mode-toggle">
+                <button class="mode-btn active" onclick="setMode('ko', this)">영한</button>
+                <button class="mode-btn" onclick="setMode('en', this)">영영</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 1. 진입 페이지 -->
+    <div id="screen-entry" class="screen active">
+        <div class="entry-container">
+            <div class="entry-icon">⌨️</div>
+            <div class="entry-title">단어 타이핑</div>
+            <div class="entry-count">총 10개 단어</div>
+            <div class="entry-info">Reading Level 3-1 > Unit 5</div>
+            <div class="entry-description">
+                단어의 뜻을 보고 알맞은 영어 단어를 타이핑하세요.
+            </div>
+            <button class="start-btn" onclick="startLearning()">학습 시작</button>
+        </div>
+    </div>
+
+    <!-- 2. 학습 진행 페이지 -->
+    <div id="screen-learning" class="screen">
+        <div class="header">
+            <div class="header-left">
+                <div class="textbook">Reading Level 3-1</div>
+                <div class="unit">Unit 5: The Amazing World</div>
+            </div>
+            <div class="header-right">
+                <div class="module-name">Step 8 · 단어 타이핑</div>
+                <div class="progress" id="progress-text">1/10</div>
+                <button class="close-btn" onclick="exitLearning()">✕</button>
+            </div>
+        </div>
+
+        <div class="learning-container">
+            <div class="status-bar">
+                <span class="status-message">💡 단어의 뜻을 보고 알맞은 영어 단어를 타이핑하세요.</span>
+            </div>
+
+            <div class="meaning-display">
+                <div class="meaning-text" id="meaning-text">아름다운</div>
+            </div>
+
+            <div class="hint-placeholder" id="hint-placeholder">
+                <div class="hint-section" id="hint-section">
+                    <div class="audio-icon" id="hint-audio-icon" onclick="playPronunciation()">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                        </svg>
+                    </div>
+                    <div class="hint-text" id="hint-text">💡 힌트: 단어 발음을 듣고 다시 도전해보세요!</div>
+                </div>
+            </div>
+
+            <div class="slots-container" id="slots-container">
+                <!-- 슬롯이 여기 동적으로 생성됨 -->
+            </div>
+
+
+        </div>
+
+        <!-- 하단 고정 버튼 영역 -->
+        <div class="bottom-bar" id="bottom-bar">
+            <div class="result-message" id="result-message" style="display: none;">🎉 정답이에요!</div>
+            <div class="word-info" id="word-info" style="display: none;">
+                <div class="word-info-text">
+                    <span class="word" id="word-display">beautiful</span> - <span id="meaning-display-bottom">아름다운</span>
+                </div>
+            </div>
+            <button class="action-btn" id="action-btn" onclick="nextWord()" style="display: none;">다음 단어 (2/10)</button>
+        </div>
+    </div>
+
+    <!-- 3. 결과 페이지 -->
+    <div id="screen-result" class="screen">
+        <div class="result-container">
+            <div class="result-icon" id="result-icon">🏆</div>
+            <div class="result-title">단어 타이핑 완료</div>
+            <div class="result-score" id="result-score">총점: 85점</div>
+            <div class="result-points">획득 포인트: 85 P</div>
+            <div class="result-page-message" id="result-page-message">
+                아주 잘했어요! 단어 철자를 잘 기억하고 있어요! 🎉
+            </div>
+            <div class="result-buttons">
+                <button class="result-btn-primary" onclick="nextModule()">다음 학습</button>
+                <button class="result-btn-secondary" onclick="showRetryPopup()">다시 학습하기</button>
+                <div class="retry-info">복습하고 보너스 포인트도 챙기세요!</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 다시 학습하기 바텀 팝업 -->
+    <div class="bottom-popup-overlay" id="retryPopup" onclick="closeRetryPopup(event)">
+        <div class="bottom-popup">
+            <div class="bottom-popup-title">다시 공부해볼까요?</div>
+            <div class="bottom-popup-desc">(원래 점수는 바뀌지 않아요)</div>
+            <div class="bottom-popup-buttons">
+                <button class="popup-btn cancel" onclick="closeRetryPopup()">취소</button>
+                <button class="popup-btn confirm" onclick="confirmRetry()">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 페이지 이탈 감지 오버레이 -->
+    <div class="blur-overlay" id="blurOverlay">
+        <div class="blur-overlay-message">
+            <div class="blur-overlay-icon">👀</div>
+            <div class="blur-overlay-text">학습 화면으로 돌아와주세요</div>
+        </div>
+    </div>
+
+    <script>
+        // ===== Web Audio API 효과음 =====
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+        function ensureAudioCtx() {
+            if (!audioCtx) audioCtx = new AudioCtx();
+            return audioCtx;
+        }
+        function playSound(type) {
+            const ctx = ensureAudioCtx();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            
+            if (type === 'correct') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+                osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
+                osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.4);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, ctx.currentTime);
+                osc.frequency.setValueAtTime(150, ctx.currentTime + 0.15);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.3);
+            } else if (type === 'complete') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+                osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.12);
+                osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.24);
+                osc.frequency.setValueAtTime(1046.50, ctx.currentTime + 0.36);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.6);
+            }
+        }
+
+        // ===== 영한/영영 모드 =====
+        let meaningMode = 'ko';
+        function getDisplayMeaning(w) {
+            return meaningMode === 'ko' ? w.meaning : w.enDef;
+        }
+        function setMode(m, btn) {
+            meaningMode = m;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const meaningEl = document.getElementById('meaning-text');
+            if (meaningEl && document.getElementById('screen-learning').classList.contains('active')) {
+                const wordData = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
+                meaningEl.textContent = getDisplayMeaning(wordData);
+                meaningEl.classList.toggle('en-mode', m === 'en');
+            }
+        }
+
+        // 샘플 단어 데이터
+        const words = [
+            { word: 'beautiful', meaning: '아름다운', enDef: 'pleasing to look at' },
+            { word: 'adventure', meaning: '모험', enDef: 'an exciting experience' },
+            { word: 'discover', meaning: '발견하다', enDef: 'to find something' },
+            { word: 'excellent', meaning: '훌륭한', enDef: 'very good' },
+            { word: 'wonderful', meaning: '놀라운', enDef: 'extremely good' },
+            { word: 'important', meaning: '중요한', enDef: 'of great value' },
+            { word: 'different', meaning: '다른', enDef: 'not the same' },
+            { word: 'together', meaning: '함께', enDef: 'with each other' },
+            { word: 'remember', meaning: '기억하다', enDef: 'to recall something' },
+            { word: 'surprise', meaning: '놀라게 하다', enDef: 'to cause wonder' }
+        ];
+
+        // 상태 변수
+        let currentIndex = 0;
+        let wrongCount = 0;
+        let totalScore = 0;
+        let wordScores = [];
+        let reviewWords = [];
+        let isReviewMode = false;
+        let reviewIndex = 0;
+        let isRetryMode = false;
+        let inputLetters = [];
+        let lockedSlots = [];
+        let currentSlotIndex = 0;
+        let isWordComplete = false;
+
+        // 초기화
+        function init() {
+            currentIndex = 0;
+            wrongCount = 0;
+            totalScore = 0;
+            wordScores = [];
+            reviewWords = [];
+            isReviewMode = false;
+            reviewIndex = 0;
+            loadQuestion();
+        }
+
+        // 문제 로드
+        function loadQuestion() {
+            // 발음 반복 중지
+            stopPronunciationLoop();
+            
+            const wordData = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
+            const word = wordData.word;
+
+            // 상태 초기화
+            wrongCount = 0;
+            inputLetters = new Array(word.length).fill('');
+            lockedSlots = new Array(word.length).fill(false);
+            currentSlotIndex = 0;
+            isWordComplete = false;
+
+            // UI 업데이트
+            const meaningEl = document.getElementById('meaning-text');
+            meaningEl.textContent = getDisplayMeaning(wordData);
+            meaningEl.classList.toggle('en-mode', meaningMode === 'en');
+
+            // 진행 상황 업데이트
+            if (isReviewMode) {
+                document.getElementById('progress-text').textContent = `다시 확인 ${reviewIndex + 1}/${reviewWords.length}`;
+            } else {
+                document.getElementById('progress-text').textContent = `${currentIndex + 1}/10`;
+            }
+
+            // 슬롯 생성
+            const slotsContainer = document.getElementById('slots-container');
+            slotsContainer.classList.remove('word-complete');
+            slotsContainer.innerHTML = '';
+            for (let i = 0; i < word.length; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'slot';
+                slot.id = `slot-${i}`;
+                if (i === 0) slot.classList.add('active');
+                slotsContainer.appendChild(slot);
+            }
+
+            // 키보드 활성화
+            enableKeyboard();
+
+            // 하단 바 숨김
+            document.getElementById('bottom-bar').classList.remove('show');
+            document.getElementById('result-message').style.display = 'none';
+            document.getElementById('hint-section').classList.remove('show');
+            document.getElementById('word-info').style.display = 'none';
+            document.getElementById('action-btn').style.display = 'none';
+        }
+
+        // 키보드 활성화 (물리 키보드용 - 빈 함수)
+        function enableKeyboard() {
+            // 물리 키보드는 항상 활성화
+        }
+
+        // 키보드 비활성화 (물리 키보드용 - 빈 함수)
+        function disableKeyboard() {
+            // isWordComplete로 제어
+        }
+
+        // 키 입력
+        function pressKey(letter) {
+            if (isWordComplete) return;
+
+            const wordData = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
+            const word = wordData.word;
+
+            // 다음 입력 가능한 슬롯 찾기
+            let targetSlot = -1;
+            for (let i = 0; i < word.length; i++) {
+                if (!lockedSlots[i] && inputLetters[i] === '') {
+                    targetSlot = i;
+                    break;
+                }
+            }
+
+            if (targetSlot === -1) return;
+
+            // 글자 입력
+            inputLetters[targetSlot] = letter;
+            const slot = document.getElementById(`slot-${targetSlot}`);
+            slot.textContent = letter;
+            slot.classList.remove('active');
+
+            // 다음 빈 슬롯 찾기 및 활성화
+            let nextEmpty = -1;
+            for (let i = targetSlot + 1; i < word.length; i++) {
+                if (!lockedSlots[i] && inputLetters[i] === '') {
+                    nextEmpty = i;
+                    break;
+                }
+            }
+
+            if (nextEmpty !== -1) {
+                document.getElementById(`slot-${nextEmpty}`).classList.add('active');
+                currentSlotIndex = nextEmpty;
+            }
+
+            // 모든 슬롯이 채워졌는지 확인
+            const allFilled = inputLetters.every((l, i) => lockedSlots[i] || l !== '');
+            if (allFilled) {
+                // 자동 채점
+                setTimeout(() => checkAnswer(), 100);
+            }
+        }
+
+        // 백스페이스
+        function pressBackspace() {
+            if (isWordComplete) return;
+
+            const wordData = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
+            const word = wordData.word;
+
+            // 현재 활성 슬롯에서 지우거나, 마지막 입력된 슬롯에서 지우기
+            let targetSlot = -1;
+
+            // 뒤에서부터 입력된 슬롯 찾기 (잠기지 않은 것만)
+            for (let i = word.length - 1; i >= 0; i--) {
+                if (!lockedSlots[i] && inputLetters[i] !== '') {
+                    targetSlot = i;
+                    break;
+                }
+            }
+
+            if (targetSlot === -1) return;
+
+            // 글자 삭제
+            inputLetters[targetSlot] = '';
+            const slot = document.getElementById(`slot-${targetSlot}`);
+            slot.textContent = '';
+
+            // 활성 슬롯 업데이트
+            document.querySelectorAll('.slot').forEach(s => s.classList.remove('active'));
+            slot.classList.add('active');
+            currentSlotIndex = targetSlot;
+        }
+
+        // 정답 체크
+        function checkAnswer() {
+            const wordData = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
+            const word = wordData.word;
+
+            // 모든 슬롯 검사
+            let allCorrect = true;
+            const incorrectIndices = [];
+            const correctIndices = [];
+
+            for (let i = 0; i < word.length; i++) {
+                if (lockedSlots[i]) continue; // 이미 맞춘 슬롯은 스킵
+
+                if (inputLetters[i].toLowerCase() === word[i].toLowerCase()) {
+                    correctIndices.push(i);
+                } else {
+                    incorrectIndices.push(i);
+                    allCorrect = false;
+                }
+            }
+
+            if (allCorrect) {
+                // 전체 정답
+                handleCorrectAnswer(correctIndices);
+            } else {
+                // 오답 처리
+                handleWrongAnswer(correctIndices, incorrectIndices);
+            }
+        }
+
+        // 정답 처리
+        function handleCorrectAnswer(correctIndices) {
+            isWordComplete = true;
+            
+            // 발음 반복 중지
+            stopPronunciationLoop();
+            playSound('complete');
+
+            const wordData = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
+
+            // 모든 슬롯 초록색으로
+            correctIndices.forEach(i => {
+                const slot = document.getElementById(`slot-${i}`);
+                slot.classList.remove('active');
+                slot.classList.add('correct');
+            });
+
+            // 이전에 맞춘 슬롯들도 모두 correct 클래스로
+            for (let i = 0; i < wordData.word.length; i++) {
+                const slot = document.getElementById(`slot-${i}`);
+                slot.classList.remove('active', 'locked');
+                slot.classList.add('correct');
+            }
+
+            // pop 애니메이션
+            document.getElementById('slots-container').classList.add('word-complete');
+
+            disableKeyboard();
+
+            let messages = [];
+            if (wrongCount === 0) {
+                messages = ['🎉 정답이에요!', '✨ 잘했어요!', '👍 맞았어요!'];
+                if (!isReviewMode) wordScores[currentIndex] = 10;
+            } else if (wrongCount === 1) {
+                messages = ['👏 이번엔 맞췄어요!'];
+                if (!isReviewMode) wordScores[currentIndex] = 7;
+            } else if (wrongCount === 2) {
+                messages = ['😊 끝까지 해냈어요!'];
+                if (!isReviewMode) wordScores[currentIndex] = 4;
+            }
+
+            const message = messages[Math.floor(Math.random() * messages.length)];
+            
+            document.getElementById('result-message').textContent = message;
+            document.getElementById('result-message').className = 'result-message correct';
+            document.getElementById('result-message').style.display = 'block';
+            document.getElementById('hint-section').classList.remove('show');
+            document.getElementById('word-info').style.display = 'block';
+            document.getElementById('word-display').textContent = wordData.word;
+            document.getElementById('meaning-display-bottom').textContent = getDisplayMeaning(wordData);
+
+            updateActionButton();
+
+            setTimeout(() => {
+                document.getElementById('bottom-bar').classList.add('show');
+            }, 200);
+        }
+
+        // 오답 처리
+        function handleWrongAnswer(correctIndices, incorrectIndices) {
+            wrongCount++;
+
+            const wordData = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
+            const word = wordData.word;
+
+            // 맞은 슬롯은 초록색으로 잠금
+            correctIndices.forEach(i => {
+                const slot = document.getElementById(`slot-${i}`);
+                slot.classList.add('locked');
+                lockedSlots[i] = true;
+            });
+
+            // 틀린 슬롯은 빨간색 표시
+            incorrectIndices.forEach(i => {
+                const slot = document.getElementById(`slot-${i}`);
+                slot.classList.add('incorrect');
+            });
+
+            if (wrongCount === 3) {
+                // 3차 오답: shake 후 정답 공개
+                isWordComplete = true;
+                
+                // 발음 반복 중지
+                stopPronunciationLoop();
+                playSound('wrong');
+
+                setTimeout(() => {
+                    // 틀린 슬롯에 정답 채우기 (파란색)
+                    incorrectIndices.forEach(i => {
+                        const slot = document.getElementById(`slot-${i}`);
+                        slot.textContent = word[i];
+                        slot.classList.remove('incorrect');
+                        slot.classList.add('auto-filled');
+                    });
+
+                    disableKeyboard();
+
+                    if (!isReviewMode) {
+                        wordScores[currentIndex] = 0;
+                        reviewWords.push(currentIndex);
+                    }
+
+                    // 격려 메시지 랜덤 노출
+                    const encourageMessages = [
+                        '다시 한번 공부해봐요! 💪',
+                        '괜찮아요! 복습에서 다시 도전해요! 📚',
+                        '한 번 더 연습하면 기억할 수 있어요! ✨'
+                    ];
+                    const msg = encourageMessages[Math.floor(Math.random() * encourageMessages.length)];
+                    document.getElementById('result-message').textContent = msg;
+                    document.getElementById('result-message').className = 'result-message incorrect';
+                    document.getElementById('result-message').style.display = 'block';
+                    document.getElementById('hint-section').classList.remove('show');
+                    document.getElementById('word-info').style.display = 'none';
+
+                    updateActionButton();
+
+                    setTimeout(() => {
+                        document.getElementById('bottom-bar').classList.add('show');
+                    }, 200);
+                }, 500);
+            } else {
+                // 1차, 2차 오답
+                playSound('wrong');
+                setTimeout(() => {
+                    // 틀린 슬롯 비우기
+                    incorrectIndices.forEach(i => {
+                        const slot = document.getElementById(`slot-${i}`);
+                        slot.textContent = '';
+                        slot.classList.remove('incorrect');
+                        inputLetters[i] = '';
+                    });
+
+                    // 첫 번째 빈 슬롯 활성화
+                    for (let i = 0; i < word.length; i++) {
+                        if (!lockedSlots[i] && inputLetters[i] === '') {
+                            document.getElementById(`slot-${i}`).classList.add('active');
+                            currentSlotIndex = i;
+                            break;
+                        }
+                    }
+
+                    // 피드백 표시
+                    showFeedback(incorrectIndices);
+                }, 300);
+            }
+        }
+
+        // 피드백 표시
+        function showFeedback(incorrectIndices) {
+            const wordData = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
+            const bottomBar = document.getElementById('bottom-bar');
+            const hintSection = document.getElementById('hint-section');
+
+            if (wrongCount === 1) {
+                // 1차 오답: 힌트 숨김, 하단 바 없이 재입력만 가능
+                hintSection.classList.remove('show');
+                bottomBar.classList.remove('show');
+            } else if (wrongCount === 2) {
+                // 2차 오답: 힌트를 뜻 아래에 표시, 하단 바 없이 재입력 가능
+                hintSection.classList.add('show');
+                bottomBar.classList.remove('show');
+                
+                setTimeout(() => {
+                    startPronunciationLoop();
+                }, 300);
+            }
+        }
+
+        // 발음 재생 (반복)
+        let pronunciationInterval = null;
+
+        function playPronunciation() {
+            const wordData = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
+            const word = wordData.word;
+            
+            // Web Speech API 사용 (실제 서비스에서는 녹음된 음원 사용)
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.8;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function startPronunciationLoop() {
+            // 기존 반복 중지
+            stopPronunciationLoop();
+            isHintPlaying = true;
+            
+            // 첫 재생
+            playPronunciationWithRepeat();
+        }
+
+        let isHintPlaying = false;
+
+        function playPronunciationWithRepeat() {
+            const wordData = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
+            const word = wordData.word;
+            const audioIcon = document.getElementById('hint-audio-icon');
+            
+            if (audioIcon) audioIcon.classList.add('playing');
+            
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.8;
+                
+                utterance.onend = function() {
+                    if (audioIcon) audioIcon.classList.remove('playing');
+                    if (isHintPlaying) {
+                        pronunciationInterval = setTimeout(() => {
+                            if (isHintPlaying) {
+                                playPronunciationWithRepeat();
+                            }
+                        }, 200); // 0.2초 텀
+                    }
+                };
+                
+                window.speechSynthesis.speak(utterance);
+            } else {
+                setTimeout(() => {
+                    if (audioIcon) audioIcon.classList.remove('playing');
+                    if (isHintPlaying) {
+                        pronunciationInterval = setTimeout(() => {
+                            if (isHintPlaying) playPronunciationWithRepeat();
+                        }, 200);
+                    }
+                }, 1000);
+            }
+        }
+
+        function stopPronunciationLoop() {
+            isHintPlaying = false;
+            if (pronunciationInterval) {
+                clearTimeout(pronunciationInterval);
+                pronunciationInterval = null;
+            }
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            const audioIcon = document.getElementById('hint-audio-icon');
+            if (audioIcon) audioIcon.classList.remove('playing');
+        }
+
+        // 액션 버튼 업데이트
+        function updateActionButton() {
+            const actionBtn = document.getElementById('action-btn');
+            actionBtn.style.display = 'block';
+
+            if (isReviewMode) {
+                if (reviewIndex < reviewWords.length - 1) {
+                    actionBtn.textContent = `다음 단어 (${reviewIndex + 2}/${reviewWords.length})`;
+                } else {
+                    actionBtn.textContent = '결과 보기';
+                }
+            } else {
+                if (currentIndex < 9) {
+                    actionBtn.textContent = `다음 단어 (${currentIndex + 2}/10)`;
+                } else {
+                    if (reviewWords.length > 0) {
+                        actionBtn.textContent = `복습 시작 (${reviewWords.length}개)`;
+                    } else {
+                        actionBtn.textContent = '결과 보기';
+                    }
+                }
+            }
+        }
+
+        // 다음 단어
+        function nextWord() {
+            if (isReviewMode) {
+                reviewIndex++;
+                if (reviewIndex >= reviewWords.length) {
+                    goToResult();
+                } else {
+                    loadQuestion();
+                }
+            } else {
+                currentIndex++;
+                if (currentIndex >= 10) {
+                    if (reviewWords.length > 0) {
+                        // 복습 시작
+                        isReviewMode = true;
+                        reviewIndex = 0;
+                        document.querySelectorAll('.nav-btn').forEach(btn => {
+                            btn.classList.remove('active');
+                        });
+                        document.querySelectorAll('.nav-btn')[2].classList.add('active');
+                        loadQuestion();
+                    } else {
+                        goToResult();
+                    }
+                } else {
+                    loadQuestion();
+                }
+            }
+        }
+
+        // 화면 전환 함수들
+        function goToEntry() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-entry').classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.nav-btn')[0].classList.add('active');
+        }
+
+        function goToLearning() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-learning').classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.nav-btn')[1].classList.add('active');
+            if (currentIndex === 0 && !isReviewMode) {
+                loadQuestion();
+            }
+        }
+
+        function goToReview() {
+            if (reviewWords.length === 0) {
+                reviewWords = [0, 2, 5]; // 데모용
+            }
+            isReviewMode = true;
+            reviewIndex = 0;
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-learning').classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.nav-btn')[2].classList.add('active');
+            loadQuestion();
+        }
+
+        function goToResult() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-result').classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.nav-btn')[3].classList.add('active');
+            displayResult();
+        }
+
+        // 결과 표시
+        function displayResult() {
+            const score = wordScores.reduce((a, b) => a + (b || 0), 0);
+            document.getElementById('result-score').textContent = `총점: ${score}점`;
+
+            const resultIcon = document.getElementById('result-icon');
+            const resultMessage = document.getElementById('result-page-message');
+
+            if (score >= 90) {
+                resultIcon.textContent = '🏆';
+                resultMessage.textContent = '완벽해요! 철자를 정확하게 알고 있어요! 🌟';
+            } else if (score >= 80) {
+                resultIcon.textContent = '🎉';
+                resultMessage.textContent = '아주 잘했어요! 단어 철자를 잘 기억하고 있어요! 🎉';
+            } else if (score >= 70) {
+                resultIcon.textContent = '✨';
+                resultMessage.textContent = '잘했어요! 조금만 더 연습하면 완벽할 거예요! ✨';
+            } else {
+                resultIcon.textContent = '💪';
+                resultMessage.textContent = '괜찮아요! 틀린 단어를 다시 복습해보세요! 💪';
+            }
+        }
+
+        // 다음 모듈로
+        function nextModule() {
+            alert('다음 모듈로 이동합니다!');
+            goToEntry();
+        }
+
+        // 다시 학습하기 팝업
+        function showRetryPopup() {
+            document.getElementById('retryPopup').classList.add('show');
+        }
+
+        function closeRetryPopup(event) {
+            if (!event || event.target.id === 'retryPopup') {
+                document.getElementById('retryPopup').classList.remove('show');
+            }
+        }
+
+        function confirmRetry() {
+            closeRetryPopup();
+            isRetryMode = true;
+            currentIndex = 0;
+            reviewIndex = 0;
+            totalScore = 0;
+            reviewWords = [];
+            isReviewMode = false;
+            wordScores = [];
+            goToLearning();
+        }
+
+        // 나가기
+        function exitLearning() {
+            if (isRetryMode) {
+                if (confirm('다시 학습을 종료하시겠습니까?\n\n다시 학습 중에는 보너스 포인트가 지급되지 않으며\n진행 상황이 저장되지 않습니다.')) {
+                    isRetryMode = false;
+                    goToEntry();
+                }
+            } else {
+                if (confirm('학습을 종료하시겠습니까?\n\n지금까지의 학습 내용이 저장됩니다.')) {
+                    goToEntry();
+                }
+            }
+        }
+
+        // 학습 시작
+        function startLearning() {
+            isRetryMode = false;
+            init();
+            goToLearning();
+        }
+
+        // ===== 페이지 이탈 감지 =====
+        let isPageLeft = false;
+        function handleLeave() {
+            const learningScreen = document.getElementById('screen-learning');
+            if (!learningScreen || !learningScreen.classList.contains('active')) return;
+            if (isWordComplete) return;
+            if (!isPageLeft) {
+                isPageLeft = true;
+                if (isHintPlaying) {
+                    stopPronunciationLoop();
+                    isPageLeft = 'hint_was_playing';
+                }
+                document.getElementById('blurOverlay').classList.add('show');
+            }
+        }
+        function handleReturn() {
+            if (!isPageLeft) return;
+            const wasPlaying = isPageLeft === 'hint_was_playing';
+            isPageLeft = false;
+            document.getElementById('blurOverlay').classList.remove('show');
+            if (wasPlaying && !isWordComplete) {
+                startPronunciationLoop();
+            }
+        }
+        document.addEventListener('visibilitychange', () => document.hidden ? handleLeave() : handleReturn());
+        document.addEventListener('mouseleave', handleLeave);
+        document.addEventListener('mouseenter', handleReturn);
+        window.addEventListener('blur', handleLeave);
+        window.addEventListener('focus', handleReturn);
+
+        // 물리 키보드 이벤트
+        document.addEventListener('keydown', function(e) {
+            if (!document.getElementById('screen-learning').classList.contains('active')) return;
+
+            if (e.key === 'Enter') {
+                // 액션 버튼이 보이면 다음 단어로 이동
+                const actionBtn = document.getElementById('action-btn');
+                if (actionBtn.style.display !== 'none') {
+                    e.preventDefault();
+                    nextWord();
+                }
+            } else if (e.key === 'Backspace') {
+                if (isWordComplete) return;
+                e.preventDefault();
+                pressBackspace();
+            } else if (/^[a-zA-Z]$/.test(e.key)) {
+                if (isWordComplete) return;
+                pressKey(e.key.toLowerCase());
+            }
+        });
+    </script>
+</body>
+</html>

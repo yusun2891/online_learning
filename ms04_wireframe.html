@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MS04: AI 지문이해체크</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Malgun Gothic',sans-serif;background:#f5f5f5}
+.gnav{position:fixed;top:0;left:0;right:0;background:#fff;padding:16px 32px;border-bottom:2px solid #e0e0e0;box-shadow:0 2px 8px rgba(0,0,0,.1);z-index:1000;display:flex;align-items:center}
+.gnav-l{display:flex;align-items:center;gap:16px}.gnav-t{font-size:16px;font-weight:600;color:#212121}
+.gnav-b{display:flex;gap:8px}.nb{padding:10px 20px;background:#fff;border:2px solid #e0e0e0;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;transition:all .2s}
+.nb:hover{border-color:#2196F3;color:#2196F3}.nb.on{background:#2196F3;color:#fff;border-color:#2196F3}
+.scr{display:none;min-height:100vh;padding-top:64px}.scr.on{display:block}
+.hdr{position:sticky;top:64px;background:#fff;padding:16px 32px;border-bottom:1px solid #e0e0e0;display:flex;justify-content:space-between;align-items:center;z-index:500}
+.hdr-l .tb{font-size:13px;color:#757575;margin-bottom:4px}.hdr-l .ut{font-size:16px;color:#212121;font-weight:600}
+.hdr-r{display:flex;align-items:center;gap:24px}.mn{font-size:13px;color:#757575}.prg{font-size:16px;font-weight:600;color:#2196F3}
+.xb{width:32px;height:32px;border:none;background:none;cursor:pointer;font-size:24px;color:#757575}
+.ent{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:40px}
+.ecard{max-width:600px;width:100%;background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.1);padding:48px;text-align:center}
+.eicon{font-size:56px;margin-bottom:20px}.etitle{font-size:26px;font-weight:700;color:#212121;margin-bottom:14px}
+.einfo{font-size:17px;color:#2196F3;font-weight:600;margin-bottom:6px}
+.etb{font-size:13px;color:#9E9E9E;margin-bottom:28px}
+.edesc{font-size:15px;color:#616161;line-height:1.6;margin-bottom:36px}
+.startb{width:100%;padding:18px;background:#2196F3;color:#fff;border:none;border-radius:12px;font-size:17px;font-weight:600;cursor:pointer}
+.startb:hover{background:#1976D2}
+.chat-wrap{max-width:700px;margin:0 auto;padding:16px 20px;padding-bottom:160px}
+.msg{display:flex;gap:10px;margin-bottom:14px;opacity:0;transform:translateY(10px);animation:fadeIn .3s forwards}
+@keyframes fadeIn{to{opacity:1;transform:translateY(0)}}
+.msg.ai{justify-content:flex-start}.msg.stu{justify-content:flex-end}
+.avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items;center;justify-content:center;font-size:18px;flex-shrink:0}
+.ai .avatar{background:#E3F2FD;border:2px solid #42A5F5}
+.stu .avatar{background:#FFF3E0;border:2px solid #FFB74D}
+.bubble-wrap{max-width:75%}
+.bubble{padding:14px 18px;border-radius:16px;font-size:15px;line-height:1.7}
+.ai .bubble{background:#fff;border:1px solid #E0E0E0;border-bottom-left-radius:4px;color:#333}
+.stu .bubble{background:#E3F2FD;border:1px solid #90CAF9;border-bottom-right-radius:4px;color:#1565C0}
+.hint-box{margin-top:8px;padding:10px 14px;background:#FFF8E1;border-radius:10px;border:1px solid #FFE082;font-size:13px;color:#F57F17;line-height:1.5}
+.hint-box .hi{font-weight:700;margin-right:4px}
+.typing{display:flex;gap:4px;padding:10px 16px}
+.typing span{width:8px;height:8px;border-radius:50%;background:#BDBDBD;animation:dot .6s infinite}
+.typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.rec-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid #e0e0e0;box-shadow:0 -4px 12px rgba(0,0,0,.1);z-index:100;padding:16px 24px;text-align:center}
+.rec-bar .rec-st{font-size:14px;color:#757575;margin-bottom:10px}
+.rec-bar .rec-row{display:flex;align-items:center;justify-content:center;gap:16px}
+.rec-btn{width:56px;height:56px;border-radius:50%;border:none;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s}
+.rec-btn.ready{background:#F44336;color:#fff;box-shadow:0 4px 16px rgba(244,67,54,.3);position:relative}
+.rec-btn.ready::after{content:'';position:absolute;width:68px;height:68px;border-radius:50%;border:2px solid rgba(244,67,54,.3);animation:ring 1.5s ease-out infinite}
+@keyframes ring{0%{transform:scale(.8);opacity:1}100%{transform:scale(1.3);opacity:0}}
+.rec-btn.recording{background:#D32F2F;color:#fff;animation:rp 1s infinite}
+@keyframes rp{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.rec-btn.off{background:#E0E0E0;color:#9E9E9E;cursor:not-allowed}
+.rec-time{font-size:13px;color:#F44336;font-weight:700;min-width:36px}
+.rc{max-width:600px;margin:80px auto;padding:48px;background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.1);text-align:center}
+.ricon{font-size:72px;margin-bottom:20px}.rtitle{font-size:26px;font-weight:bold;color:#212121;margin-bottom:20px}
+.rscN{font-size:48px;font-weight:800;color:#2196F3}.rscL{font-size:14px;color:#757575;margin-bottom:16px}
+.rsc2{font-size:18px;color:#FF9800;font-weight:bold;margin-bottom:20px}
+.rmsg{font-size:16px;color:#616161;margin-bottom:28px}
+.rbs{display:flex;flex-direction:column;gap:10px}
+.rb1{width:100%;padding:16px;background:#2196F3;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer}
+.rb2{width:100%;padding:16px;background:#fff;color:#2196F3;border:2px solid #2196F3;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer}
+.ri{font-size:12px;color:#757575;margin-top:6px}
+.po{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:none;z-index:9999}.po.sh{display:block}
+.psh{position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:24px 24px 0 0;padding:28px 20px 20px;transform:translateY(100%);transition:transform .3s;z-index:10000}.po.sh .psh{transform:translateY(0)}
+.pt2{font-size:18px;font-weight:bold;color:#212121;margin-bottom:12px;text-align:center}.pbs{display:flex;gap:10px}
+.ppb{flex:1;padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none}.ppb.cc{background:#F5F5F5;color:#616161}.ppb.cf{background:#2196F3;color:#fff}
+.lo{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:5000;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all .3s}.lo.sh{opacity:1;visibility:visible}
+@media(max-width:768px){.gnav{flex-direction:column;gap:12px;padding:12px 16px}.gnav-l{flex-direction:column;gap:8px;width:100%}
+.scr{padding-top:120px}.hdr{top:120px}.chat-wrap{padding:12px;padding-bottom:160px}.bubble{font-size:14px}}
+</style>
+</head>
+<body>
+<div class="gnav"><div class="gnav-l"><div class="gnav-t">📱 MS04: AI 지문이해체크</div><div class="gnav-b">
+<button class="nb on" onclick="goTo('entry')">1. 진입</button>
+<button class="nb" onclick="navMain()">2. 학습 진행</button>
+<button class="nb" onclick="goTo('result')">3. 결과</button>
+</div></div></div>
+<div class="po" id="rP" onclick="clR(event)"><div class="psh" onclick="event.stopPropagation()"><div class="pt2">다시 대화해볼까요?</div><div class="pbs"><button class="ppb cc" onclick="clR()">취소</button><button class="ppb cf" onclick="clR();doRetry()">확인</button></div></div></div>
+<div class="po" id="exitP"><div class="psh" onclick="event.stopPropagation()"><div class="pt2" id="exitMT"></div><div style="font-size:13px;color:#757575;text-align:center;margin-bottom:14px" id="exitMD"></div><div class="pbs"><button class="ppb cc" id="exitMC"></button><button class="ppb cf" id="exitMP"></button></div></div></div>
+<div class="lo" id="lO"><div><div style="font-size:56px;text-align:center;margin-bottom:12px">👀</div><div style="font-size:18px;color:#fff;font-weight:600;text-align:center">학습 화면으로 돌아와주세요</div></div></div>
+
+<div id="sE" class="scr on"><div class="ent"><div class="ecard">
+<div class="eicon">🤖</div><div class="etitle">AI 지문이해체크</div>
+<div class="einfo">AI와 영어 대화</div>
+<div class="etb">Reading Level C > Unit 8: The Blockbuster Effect</div>
+<div class="edesc">AI와 영어로 대화하며 지문 내용을 확인해보세요!</div>
+<button class="startb" onclick="startAll()">학습 시작</button>
+</div></div></div>
+
+<div id="sM" class="scr">
+<div class="hdr"><div class="hdr-l"><div class="tb">Reading Level C</div><div class="ut">Unit 8: The Blockbuster Effect</div></div>
+<div class="hdr-r"><div class="mn">Step 5 • AI 지문이해체크</div><div class="prg" id="prg">Mission 1/7</div><button class="xb" onclick="doExit()">✕</button></div></div>
+<div class="chat-wrap"><div id="chatArea"></div></div>
+<div class="rec-bar">
+  <div class="rec-st" id="recSt">듣는 중…</div>
+  <div class="rec-row"><button class="rec-btn off" id="recBtn" onclick="toggleRec()">🎤</button><div class="rec-time" id="recTime" style="display:none">0:00</div></div>
+</div>
+</div>
+
+<div id="sR" class="scr"><div class="rc">
+<div class="ricon">🤖</div><div class="rtitle">AI 지문이해체크 완료</div>
+<div class="rscN" id="fScN">0</div><div class="rscL">점</div>
+<div class="rsc2">획득 포인트: 50 P</div>
+<div class="rmsg" id="fMsg"></div>
+<div class="rbs"><button class="rb1" onclick="alert('다음 모듈로 이동합니다!')">다음 학습</button>
+<button class="rb2" onclick="showRt()">다시 학습하기<div class="ri">복습하고 보너스 포인트도 챙기세요!</div></button></div>
+</div></div>
+
+<script>
+// 7 context windows: opening(1) + question(5) + ending(1)
+// Each context has its own conversation turns
+// done:true closes current context, opens next seamlessly
+var CONTEXTS=[
+  // 0: Opening
+  [
+    {done:false,result:"GREETING",speech:"Hi there! Today we're going to talk about the passage you read — The Blockbuster Effect. Are you ready?",hint_kr:null},
+    {done:true,result:"GREETING",speech:"Great! Let's dive in.",hint_kr:null}
+  ],
+  // 1: Question 1
+  [
+    {done:false,result:"",speech:"What is the main idea of the passage?",hint_kr:"이 지문의 주제가 무엇이었나요?"},
+    {done:true,result:"GREAT",speech:"That's right! The passage discusses how blockbuster movies have come to dominate the film industry.",hint_kr:null}
+  ],
+  // 2: Question 2
+  [
+    {done:false,result:"",speech:"What does Joe Swanberg do differently from big Hollywood studios?",hint_kr:"조 스완버그는 할리우드 대형 스튜디오와 어떻게 다른가요?"},
+    {done:true,result:"GOOD_BUT",speech:"Exactly! He makes low-budget films with digital cameras and distributes them through streaming platforms.",hint_kr:null}
+  ],
+  // 3: Question 3
+  [
+    {done:false,result:"",speech:"Why have mid-budget dramas nearly vanished from theaters?",hint_kr:"중간 예산 규모의 드라마가 왜 거의 사라졌나요?"},
+    {done:false,result:"PARTIAL",speech:"You're close! Think about what audiences prefer to see in theaters nowadays.",hint_kr:"요즘 관객들이 극장에서 무엇을 보고 싶어하는지 생각해보세요."},
+    {done:true,result:"GOOD",speech:"That's it! Audiences crave big spectacles that only massive budgets can deliver, so mid-budget films get squeezed out.",hint_kr:null}
+  ],
+  // 4: Question 4
+  [
+    {done:false,result:"",speech:"What kind of movies dominate the global box office according to the passage?",hint_kr:null},
+    {done:true,result:"GREAT",speech:"Right! Superhero franchises, sci-fi epics, and animated features dominate the market.",hint_kr:null}
+  ],
+  // 5: Question 5
+  [
+    {done:false,result:"",speech:"What does the internet offer to independent filmmakers like Swanberg?",hint_kr:"인터넷이 독립 영화 제작자들에게 무엇을 제공하나요?"},
+    {done:true,result:"PARTIAL",speech:"Good thinking! The internet offers them freedom to reach audiences, but it doesn't necessarily guarantee a stable living.",hint_kr:null}
+  ],
+  // 6: Ending
+  [
+    {done:false,result:"GREETING",speech:"You did a wonderful job today! You clearly understood the key ideas of the passage. Keep up the great work!",hint_kr:null},
+    {done:true,result:"GREETING",speech:"See you next time! Bye!",hint_kr:null}
+  ]
+];
+
+var TOTAL=CONTEXTS.length; // 7
+var ctxIdx=0,turnIdx=0,recState='idle',recTimer=null,recSecs=0,cur='entry',ttsPlaying=false;
+var scores=[];
+
+var stuResponses=[
+  "Yes, I'm ready!",
+  "The passage is about how blockbuster movies dominate the film industry.",
+  "He makes low-budget films with digital cameras and uses streaming platforms.",
+  "Because people want to see big action movies... maybe?",
+  "Yes, audiences want spectacular movies with huge budgets.",
+  "Superhero movies, sci-fi, and animated movies.",
+  "The internet gives them freedom to share their films.",
+  "Thank you! Bye!"
+];
+var stuRespIdx=0;
+
+function goTo(n){speechSynthesis.cancel();recState='idle';clearInterval(recTimer);ttsPlaying=false;
+  document.querySelectorAll('.scr').forEach(function(s){s.classList.remove('on')});
+  document.querySelectorAll('.nb').forEach(function(b){b.classList.remove('on')});
+  var map={entry:'sE',main:'sM',result:'sR'},idx={entry:0,main:1,result:2};
+  document.getElementById(map[n]).classList.add('on');document.querySelectorAll('.nb')[idx[n]].classList.add('on');
+  cur=n;window.scrollTo(0,0)}
+var isRetryMode=false;
+function navMain(){ctxIdx=0;turnIdx=0;scores=[];stuRespIdx=0;isRetryMode=false;goTo('main');startContext()}
+function startAll(){navMain()}
+function doExit(){
+  speechSynthesis.cancel();ttsPlaying=false;recState='idle';clearInterval(recTimer);
+  if(isRetryMode){
+    showExitModal('다시 학습을 종료하시겠습니까?','진행 상황이 저장되지 않습니다.','종료','취소',function(){goTo('entry')},null);
+  } else {
+    showExitModal('학습을 종료하시겠습니까?','진행 상황이 저장됩니다.','나가기','계속하기',function(){goTo('entry')},null);
+  }
+}
+function showExitModal(title,desc,okLabel,cancelLabel,onOk,onCancel){
+  document.getElementById('exitMT').textContent=title;
+  document.getElementById('exitMD').textContent=desc;
+  var okBtn=document.getElementById('exitMP');okBtn.textContent=okLabel;
+  var ccBtn=document.getElementById('exitMC');ccBtn.textContent=cancelLabel;
+  okBtn.onclick=function(){document.getElementById('exitP').classList.remove('sh');onOk()};
+  ccBtn.onclick=function(){document.getElementById('exitP').classList.remove('sh');if(onCancel)onCancel()};
+  document.getElementById('exitP').classList.add('sh');
+}
+function showRt(){document.getElementById('rP').classList.add('sh')}
+function clR(e){if(!e||e.target.id==='rP')document.getElementById('rP').classList.remove('sh')}
+function doRetry(){isRetryMode=true;ctxIdx=0;turnIdx=0;scores=[];stuRespIdx=0;goTo('main');startContext()}
+
+function setRecSt(t){document.getElementById('recSt').textContent=t}
+function setRecBtn(c){var b=document.getElementById('recBtn');b.className='rec-btn '+c;b.textContent=c==='recording'?'⏹':'🎤'}
+
+function updateMission(){document.getElementById('prg').textContent='Mission '+(ctxIdx+1)+'/'+TOTAL}
+
+function addAi(text,hint){
+  var area=document.getElementById('chatArea');
+  var m=document.createElement('div');m.className='msg ai';
+  var h=hint?'<div class="hint-box"><span class="hi">💡</span>'+hint+'</div>':'';
+  m.innerHTML='<div class="avatar">🤖</div><div class="bubble-wrap"><div class="bubble">'+text+'</div>'+h+'</div>';
+  area.appendChild(m);setTimeout(function(){m.scrollIntoView({behavior:'smooth',block:'center'})},50);
+}
+function addStu(text){
+  var area=document.getElementById('chatArea');
+  var m=document.createElement('div');m.className='msg stu';
+  m.innerHTML='<div class="bubble-wrap"><div class="bubble">'+text+'</div></div><div class="avatar">👤</div>';
+  area.appendChild(m);setTimeout(function(){m.scrollIntoView({behavior:'smooth',block:'center'})},50);
+}
+function addTyping(){
+  var area=document.getElementById('chatArea');
+  var t=document.createElement('div');t.className='msg ai';t.id='typ';
+  t.innerHTML='<div class="avatar">🤖</div><div class="bubble-wrap"><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div></div>';
+  area.appendChild(t);setTimeout(function(){t.scrollIntoView({behavior:'smooth',block:'center'})},50);
+}
+function rmTyping(){var t=document.getElementById('typ');if(t)t.remove()}
+
+function speak(text){
+  return new Promise(function(r){
+    ttsPlaying=true;
+    var u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=.85;
+    var done=false;
+    function fin(){if(done)return;done=true;ttsPlaying=false;r()}
+    u.onend=fin;u.onerror=fin;
+    speechSynthesis.cancel();speechSynthesis.speak(u);
+    setTimeout(fin,10000);
+  });
+}
+
+function startContext(){
+  // Don't clear chat - keep previous conversation visible
+  turnIdx=0;
+  updateMission();
+  processAiTurn();
+}
+
+async function processAiTurn(){
+  var ctx=CONTEXTS[ctxIdx];
+  if(!ctx||turnIdx>=ctx.length)return;
+  var resp=ctx[turnIdx];
+
+  setRecSt('듣는 중…');setRecBtn('off');
+  document.getElementById('recTime').style.display='none';
+
+  addTyping();
+  await new Promise(function(r){setTimeout(r,700)});
+  rmTyping();
+  addAi(resp.speech,resp.hint_kr);
+  lastAiSpeech=resp.speech;
+  // Extra scroll after hint renders
+  setTimeout(function(){var msgs=document.querySelectorAll('.msg');if(msgs.length)msgs[msgs.length-1].scrollIntoView({behavior:'smooth',block:'center'})},100);
+  await speak(resp.speech);
+
+  // Score collection (only questions: ctxIdx 1~5, only done:true turns)
+  if(ctxIdx>=1&&ctxIdx<=5&&resp.done&&resp.result&&resp.result!=='GREETING'&&resp.result!==''){
+    var pts={GREAT:100,GOOD_BUT:80,GOOD:70,PARTIAL:50,OFF:20,WARNING:0};
+    if(pts[resp.result]!==undefined)scores.push(pts[resp.result]);
+  }
+
+  if(resp.done){
+    // Context done - move to next
+    ctxIdx++;
+    if(ctxIdx<TOTAL){
+      await new Promise(function(r){setTimeout(r,600)});
+      startContext();
+    }else{
+      await new Promise(function(r){setTimeout(r,800)});
+      showResult();goTo('result');
+    }
+  }else{
+    setRecSt('준비되면 녹음 버튼을 눌러주세요');
+    setRecBtn('ready');
+  }
+}
+
+function toggleRec(){
+  var btn=document.getElementById('recBtn');
+  if(btn.classList.contains('off'))return;
+  if(recState==='idle'){
+    recState='recording';recSecs=0;
+    setRecBtn('recording');
+    setRecSt('녹음 중…');
+    document.getElementById('recTime').style.display='block';
+    document.getElementById('recTime').textContent='0:00';
+    recTimer=setInterval(function(){recSecs++;var m=Math.floor(recSecs/60),s=recSecs%60;
+      document.getElementById('recTime').textContent=m+':'+(s<10?'0':'')+s},1000);
+  }else{
+    recState='idle';clearInterval(recTimer);
+    document.getElementById('recTime').style.display='none';
+    setRecBtn('off');
+    setRecSt('분석 중…');
+    var txt=stuResponses[Math.min(stuRespIdx,stuResponses.length-1)];
+    stuRespIdx++;
+    addStu(txt);
+    turnIdx++;
+    setTimeout(function(){processAiTurn()},600);
+  }
+}
+
+function showResult(){
+  var avg=scores.length?Math.round(scores.reduce(function(a,b){return a+b},0)/scores.length):0;
+  document.getElementById('fScN').textContent=avg;
+  var m=document.getElementById('fMsg');
+  if(avg>=80)m.textContent='훌륭해요! 지문 내용을 정확하게 이해하고 있어요! 🌟';
+  else if(avg>=60)m.textContent='잘했어요! 대부분의 내용을 이해하고 있어요!';
+  else m.textContent='괜찮아요! 지문을 다시 한번 읽어보고 도전해보세요! 💪';
+}
+
+var left=false,wasTtsPlaying=false,wasRecording=false,lastAiSpeech='';
+function onL(){if(cur==='main'&&!left){left=true;
+  wasTtsPlaying=ttsPlaying;wasRecording=(recState==='recording');
+  speechSynthesis.cancel();ttsPlaying=false;
+  if(wasRecording){recState='idle';clearInterval(recTimer);document.getElementById('recTime').style.display='none'}
+  document.getElementById('lO').classList.add('sh')}}
+function onR(){if(left){left=false;document.getElementById('lO').classList.remove('sh');
+  if(wasTtsPlaying&&lastAiSpeech){
+    // Was playing TTS when left: replay last AI speech
+    setRecSt('듣는 중…');setRecBtn('off');
+    speak(lastAiSpeech).then(function(){if(!left){setRecSt('준비되면 녹음 버튼을 눌러주세요');setRecBtn('ready')}});
+  }else if(wasRecording){
+    // Was recording when left: discard, restore to ready
+    setRecBtn('ready');setRecSt('준비되면 녹음 버튼을 눌러주세요');
+    wasRecording=false;
+  }
+}}
+document.addEventListener('visibilitychange',function(){document.hidden?onL():onR()});
+document.addEventListener('mouseleave',onL);document.addEventListener('mouseenter',onR);
+</script>
+</body>
+</html>

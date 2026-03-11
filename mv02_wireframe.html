@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V-M02: 플래시카드</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif; background: #f5f5f5; overflow-x: hidden; }
+
+        /* 네비게이션 */
+        .global-nav {
+            position: fixed; top: 0; left: 0; right: 0; background: white; padding: 16px 32px;
+            border-bottom: 2px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 1000; display: flex; align-items: center; justify-content: space-between;
+        }
+        .nav-left { display: flex; align-items: center; gap: 16px; }
+        .nav-title { font-size: 16px; font-weight: 600; color: #212121; }
+        .nav-buttons { display: flex; gap: 8px; }
+        .nav-btn {
+            padding: 10px 20px; background: white; border: 2px solid #e0e0e0; border-radius: 8px;
+            cursor: pointer; font-size: 13px; transition: all 0.2s; font-weight: 500;
+        }
+        .nav-btn:hover { border-color: #2196F3; color: #2196F3; }
+        .nav-btn.active { background: #2196F3; color: white; border-color: #2196F3; }
+        .mode-toggle { display: flex; align-items: center; gap: 8px; background: #F3F4F6; padding: 4px; border-radius: 8px; }
+        .mode-btn {
+            padding: 6px 14px; border: none; border-radius: 6px; font-size: 12px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s; background: transparent; color: #6B7280;
+        }
+        .mode-btn.active { background: white; color: #2196F3; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+        .screen { display: none; min-height: 100vh; padding-top: 64px; }
+        .screen.active { display: block; }
+
+        /* 헤더 */
+        .header {
+            background: white; padding: 20px 32px; border-bottom: 1px solid #e0e0e0;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .header-left .textbook { font-size: 13px; color: #757575; margin-bottom: 4px; }
+        .header-left .unit { font-size: 16px; color: #212121; font-weight: 600; }
+        .header-right { display: flex; align-items: center; gap: 24px; }
+        .module-name { font-size: 13px; color: #757575; }
+        .progress { font-size: 16px; color: #2196F3; font-weight: 600; }
+        .close-btn { width: 32px; height: 32px; border: none; background: none; cursor: pointer; font-size: 24px; color: #757575; }
+
+        /* 진입 */
+        .entry-container {
+            max-width: 600px; margin: 80px auto; padding: 48px; background: white;
+            border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center;
+        }
+        .entry-icon { font-size: 64px; margin-bottom: 24px; }
+        .entry-title { font-size: 36px; font-weight: bold; color: #212121; margin-bottom: 16px; }
+        .entry-count { font-size: 18px; color: #757575; margin-bottom: 8px; }
+        .entry-info { font-size: 14px; color: #9E9E9E; margin-bottom: 32px; }
+        .entry-description { font-size: 16px; color: #616161; line-height: 1.6; margin-bottom: 40px; }
+        .start-btn {
+            width: 100%; padding: 20px; background: #2196F3; color: white; border: none;
+            border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; transition: all 0.2s;
+        }
+        .start-btn:hover { background: #1976D2; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(33,150,243,0.3); }
+
+        /* 학습 진행 */
+        .learning-container {
+            padding: 48px; max-width: 800px; margin: 0 auto;
+            display: flex; flex-direction: column; align-items: center; position: relative;
+        }
+        .status-bar { background: #E3F2FD; padding: 20px 32px; border-radius: 12px; text-align: center; margin-bottom: 48px; width: 100%; }
+        .status-message { font-size: 17px; color: #616161; }
+
+        /* 카드 영역 */
+        .card-area { position: relative; width: 100%; max-width: 500px; display: flex; align-items: center; justify-content: center; gap: 16px; }
+
+        /* 스와이프 화살표 */
+        .swipe-arrow {
+            width: 48px; height: 48px; border-radius: 50%; border: 2px solid #E0E0E0; background: white;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            font-size: 20px; color: #9E9E9E; transition: all 0.3s; flex-shrink: 0;
+            opacity: 0; pointer-events: none;
+        }
+        .swipe-arrow.visible { opacity: 1; pointer-events: auto; }
+        .swipe-arrow:hover { border-color: #2196F3; color: #2196F3; background: #E3F2FD; }
+        .swipe-arrow.hidden { visibility: hidden; }
+
+        /* 플래시카드 */
+        .flashcard-wrapper {
+            perspective: 1000px; width: 100%; max-width: 500px; min-height: 320px;
+            transition: transform 0.3s ease; position: relative;
+        }
+        .flashcard {
+            width: 100%; min-height: 320px; position: relative; transform-style: preserve-3d;
+            transition: transform 0.35s ease; cursor: pointer;
+        }
+        .flashcard.flipped { transform: rotateY(180deg); }
+        .flashcard-face {
+            position: absolute; width: 100%; min-height: 320px; backface-visibility: hidden;
+            border-radius: 20px; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; box-shadow: 0 8px 32px rgba(0,0,0,0.12); padding: 32px;
+        }
+        .flashcard-front { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .flashcard-back { background: white; transform: rotateY(180deg); border: 3px solid #e0e0e0; }
+        .card-word { font-size: 44px; font-weight: bold; margin-bottom: 12px; }
+        .speaker-btn {
+            font-size: 32px; cursor: pointer; transition: transform 0.2s; background: none; border: none; margin-top: 8px;
+        }
+        .speaker-btn:hover { transform: scale(1.1); }
+        .speaker-btn.playing { animation: bounce 0.5s ease infinite; }
+        .card-pos { font-size: 16px; color: #9E9E9E; margin-bottom: 12px; font-style: italic; }
+        .card-meaning { font-size: 32px; font-weight: bold; color: #212121; text-align: center; line-height: 1.4; }
+        .card-meaning-speaker { font-size: 24px; cursor: pointer; margin-top: 12px; transition: transform 0.2s; background: none; border: none; }
+        .card-meaning-speaker:hover { transform: scale(1.1); }
+        .card-meaning-speaker.playing { animation: bounce 0.5s ease infinite; }
+        .flashcard.playing .flashcard-front { animation: cardPulse 0.8s ease-in-out infinite; }
+        @keyframes cardPulse { 0%,100%{box-shadow:0 8px 32px rgba(0,0,0,0.12)} 50%{box-shadow:0 8px 48px rgba(102,126,234,0.4)} }
+        @keyframes bounce { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
+
+        .flip-hint { font-size: 14px; color: #9E9E9E; margin-top: 16px; display: none; align-items: center; gap: 8px; }
+
+        /* 슬라이드 애니메이션 */
+        .flashcard-wrapper.slide-left { transform: translateX(-120%); opacity: 0; }
+        .flashcard-wrapper.slide-right { transform: translateX(120%); opacity: 0; }
+        .flashcard-wrapper.slide-in-from-right { animation: slideInFromRight 0.3s ease forwards; }
+        .flashcard-wrapper.slide-in-from-left { animation: slideInFromLeft 0.3s ease forwards; }
+        @keyframes slideInFromRight { from{transform:translateX(120%);opacity:0} to{transform:translateX(0);opacity:1} }
+        @keyframes slideInFromLeft { from{transform:translateX(-120%);opacity:0} to{transform:translateX(0);opacity:1} }
+
+        /* 결과 */
+        .result-container {
+            max-width: 600px; margin: 80px auto; padding: 48px; background: white;
+            border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center;
+        }
+        .result-icon { font-size: 80px; margin-bottom: 24px; }
+        .result-title { font-size: 28px; font-weight: bold; color: #212121; margin-bottom: 24px; }
+        .result-points { font-size: 20px; color: #FF9800; font-weight: bold; margin-bottom: 32px; }
+        .result-message { font-size: 16px; color: #616161; line-height: 1.6; margin-bottom: 40px; }
+        .result-buttons { display: flex; flex-direction: column; gap: 12px; }
+        .result-btn-primary {
+            width: 100%; padding: 18px; background: #2196F3; color: white; border: none;
+            border-radius: 12px; font-size: 17px; font-weight: bold; cursor: pointer; transition: all 0.2s;
+        }
+        .result-btn-primary:hover { background: #1976D2; transform: translateY(-2px); }
+        .result-btn-secondary {
+            width: 100%; padding: 18px; background: white; color: #2196F3; border: 2px solid #2196F3;
+            border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        }
+        .result-btn-secondary:hover { background: #E3F2FD; }
+        .retry-info { font-size: 13px; color: #757575; margin-top: 8px; }
+
+        /* 바텀 팝업 */
+        .popup-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5);
+            display: none; z-index: 9999; opacity: 0; transition: opacity 0.3s;
+        }
+        .popup-overlay.show { display: block; opacity: 1; }
+        .popup-sheet {
+            position: fixed; bottom: 0; left: 0; right: 0; background: white;
+            border-radius: 24px 24px 0 0; padding: 32px 24px 24px;
+            transform: translateY(100%); transition: transform 0.3s; z-index: 10000;
+        }
+        .popup-overlay.show .popup-sheet { transform: translateY(0); }
+        .popup-title { font-size: 20px; font-weight: bold; color: #212121; margin-bottom: 8px; text-align: center; }
+        .popup-desc { font-size: 14px; color: #757575; margin-bottom: 24px; text-align: center; }
+        .popup-buttons { display: flex; gap: 12px; }
+        .popup-btn {
+            flex: 1; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s; border: none;
+        }
+        .popup-btn.cancel { background: #F5F5F5; color: #616161; }
+        .popup-btn.cancel:hover { background: #EEEEEE; }
+        .popup-btn.confirm { background: #2196F3; color: white; }
+        .popup-btn.confirm:hover { background: #1976D2; }
+
+        @media (max-width: 768px) {
+            .global-nav { flex-direction: column; gap: 12px; padding: 12px 16px; }
+            .nav-left { flex-direction: column; gap: 8px; width: 100%; }
+            .nav-buttons { width: 100%; overflow-x: auto; }
+            .nav-btn { flex-shrink: 0; font-size: 12px; padding: 8px 16px; }
+            .screen { padding-top: 120px; }
+            .learning-container { padding: 24px; }
+            .card-word { font-size: 36px; }
+            .card-meaning { font-size: 26px; }
+            .swipe-arrow { width: 40px; height: 40px; font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="global-nav">
+        <div class="nav-left">
+            <div class="nav-title">📱 V-M02: 플래시카드 - 시연</div>
+            <div class="nav-buttons">
+                <button class="nav-btn active" onclick="goToEntry()">1. 진입</button>
+                <button class="nav-btn" onclick="goToLearning()">2. 학습 진행</button>
+                <button class="nav-btn" onclick="goToResult()">3. 결과</button>
+            </div>
+        </div>
+        <div class="mode-toggle">
+            <button class="mode-btn active" onclick="setMode('ko', this)">영한</button>
+            <button class="mode-btn" onclick="setMode('en', this)">영영</button>
+        </div>
+    </div>
+
+    <!-- 1. 진입 -->
+    <div id="entry" class="screen active">
+        <div class="entry-container">
+            <div class="entry-icon">🎴</div>
+            <h1 class="entry-title">플래시카드</h1>
+            <div class="entry-count">총 10개 단어</div>
+            <div class="entry-info">Reading Book 3A > Unit 3: Space Journey</div>
+            <p class="entry-description">단어의 발음을 듣고 뜻을 확인하면서<br>단어를 익혀보세요.</p>
+            <button class="start-btn" onclick="startLearning()">학습 시작</button>
+        </div>
+    </div>
+
+    <!-- 2. 학습 진행 -->
+    <div id="learning" class="screen">
+        <div class="header">
+            <div class="header-left">
+                <div class="textbook">Reading Book 3A</div>
+                <div class="unit">Unit 3: Space Journey</div>
+            </div>
+            <div class="header-right">
+                <div class="module-name">Step 2 • 플래시카드</div>
+                <div class="progress" id="progressText">1/10</div>
+                <button class="close-btn" onclick="exitLearning()">✕</button>
+            </div>
+        </div>
+        <div class="learning-container">
+            <div class="status-bar">
+                <div class="status-message">발음을 듣고 따라 읽으며 뜻을 확인하세요.</div>
+            </div>
+            <div class="card-area">
+                <div class="swipe-arrow" id="arrowLeft" onclick="goPrev()">◀</div>
+                <div class="flashcard-wrapper" id="cardWrapper">
+                    <div class="flashcard" id="flashcard" onclick="flipCard()">
+                        <div class="flashcard-face flashcard-front">
+                            <div class="card-word" id="cardWord">adventure</div>
+                            <button class="speaker-btn" id="speakerBtn" onclick="event.stopPropagation(); playWordAudio()">🔊</button>
+                        </div>
+                        <div class="flashcard-face flashcard-back">
+                            <div class="card-pos" id="cardPos">n.</div>
+                            <div class="card-meaning" id="cardMeaning">모험</div>
+                            <button class="card-meaning-speaker" id="meaningSpeakerBtn" onclick="event.stopPropagation(); playMeaningAudio()">🔊</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="swipe-arrow" id="arrowRight" onclick="goNext()">▶</div>
+            </div>
+            <div class="flip-hint" id="flipHint"><span>👆</span><span>카드를 클릭하면 앞/뒤를 확인할 수 있어요</span></div>
+        </div>
+    </div>
+
+    <!-- 3. 결과 -->
+    <div id="result" class="screen">
+        <div class="result-container">
+            <div class="result-icon">✨</div>
+            <div class="result-title">플래시 카드 학습 완료</div>
+            <div class="result-points">획득 포인트: 50 P</div>
+            <div class="result-message">학습한 단어를 잘 기억하는지 확인해볼까요?</div>
+            <div class="result-buttons">
+                <button class="result-btn-primary" onclick="alert('다음 모듈로 이동합니다!')">다음 학습</button>
+                <button class="result-btn-secondary" onclick="showRetryPopup()">
+                    다시 학습하기
+                    <div class="retry-info">복습하고 보너스 포인트도 챙기세요!</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 다시 학습하기 팝업 -->
+    <div class="popup-overlay" id="retryPopup" onclick="closeRetryPopup(event)">
+        <div class="popup-sheet" onclick="event.stopPropagation()">
+            <div class="popup-title">다시 공부해볼까요?</div>
+            <div class="popup-desc">(원래 점수는 바뀌지 않아요)</div>
+            <div class="popup-buttons">
+                <button class="popup-btn cancel" onclick="closeRetryPopup()">취소</button>
+                <button class="popup-btn confirm" onclick="confirmRetry()">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== 단어 데이터 (V-M01과 통일) =====
+        const words = [
+            { en: 'adventure', pos: 'n.', ko: '모험', enDef: 'an exciting or unusual experience' },
+            { en: 'astronaut', pos: 'n.', ko: '우주 비행사', enDef: 'a person who travels in a spacecraft' },
+            { en: 'explore', pos: 'v.', ko: '탐험하다', enDef: 'to travel to a new place to learn about it' },
+            { en: 'galaxy', pos: 'n.', ko: '은하', enDef: 'a very large group of stars in space' },
+            { en: 'journey', pos: 'n.', ko: '여행, 여정', enDef: 'a long trip from one place to another' },
+            { en: 'planet', pos: 'n.', ko: '행성', enDef: 'a large round object in space that moves around a star' },
+            { en: 'rocket', pos: 'n.', ko: '로켓', enDef: 'a vehicle that travels into space' },
+            { en: 'satellite', pos: 'n.', ko: '위성', enDef: 'an object sent into space to go around the earth' },
+            { en: 'telescope', pos: 'n.', ko: '망원경', enDef: 'a tool used to see things that are far away' },
+            { en: 'universe', pos: 'n.', ko: '우주', enDef: 'all of space and everything in it' }
+        ];
+        const total = words.length;
+
+        let currentIdx = 0;
+        let isFlipped = false;
+        let isPlaying = false;
+        let hasAutoFlipped = false;
+        let canSwipe = false;
+        let meaningMode = 'ko';
+        let touchStartX = 0;
+
+        // ===== 모드 토글 =====
+        function setMode(mode, btn) {
+            meaningMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updateCardBack();
+        }
+
+        function getMeaning(w) { return meaningMode === 'ko' ? w.ko : w.enDef; }
+
+        function updateCardBack() {
+            const w = words[currentIdx];
+            document.getElementById('cardPos').textContent = w.pos;
+            document.getElementById('cardMeaning').textContent = getMeaning(w);
+        }
+
+        // ===== TTS =====
+        function speak(text, lang, onEnd) {
+            speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = lang; u.rate = 0.85; u.pitch = 1;
+            u.onend = onEnd || null;
+            u.onerror = onEnd || null;
+            speechSynthesis.speak(u);
+        }
+
+        function playWordAudio() {
+            if (isPlaying) return;
+            isPlaying = true;
+            const fc = document.getElementById('flashcard');
+            const sb = document.getElementById('speakerBtn');
+            fc.classList.add('playing'); sb.classList.add('playing');
+            speak(words[currentIdx].en, 'en-US', () => {
+                isPlaying = false;
+                fc.classList.remove('playing'); sb.classList.remove('playing');
+                if (!isFlipped && !hasAutoFlipped) {
+                    setTimeout(autoFlipCard, 300);
+                }
+            });
+        }
+
+        function playMeaningAudio() {
+            if (isPlaying) return;
+            isPlaying = true;
+            const btn = document.getElementById('meaningSpeakerBtn');
+            btn.classList.add('playing');
+            const w = words[currentIdx];
+            const text = meaningMode === 'ko' ? w.ko : w.enDef;
+            const lang = meaningMode === 'ko' ? 'ko-KR' : 'en-US';
+            speak(text, lang, () => {
+                isPlaying = false;
+                btn.classList.remove('playing');
+                if (!canSwipe) {
+                    enableSwipe();
+                }
+            });
+        }
+
+        // ===== 카드 동작 =====
+        function autoFlipCard() {
+            if (!isFlipped && !hasAutoFlipped) {
+                isFlipped = true; hasAutoFlipped = true;
+                document.getElementById('flashcard').classList.add('flipped');
+                document.getElementById('flipHint').style.display = 'flex';
+                setTimeout(playMeaningAudio, 400);
+            }
+        }
+
+        function flipCard() {
+            if (isPlaying) return;
+            isFlipped = !isFlipped;
+            const fc = document.getElementById('flashcard');
+            if (isFlipped) {
+                fc.classList.add('flipped');
+                document.getElementById('flipHint').style.display = 'flex';
+                setTimeout(playMeaningAudio, 400);
+            } else {
+                fc.classList.remove('flipped');
+                setTimeout(playWordAudio, 300);
+            }
+        }
+
+        function enableSwipe() {
+            canSwipe = true;
+            updateArrows();
+        }
+
+        function updateArrows() {
+            const left = document.getElementById('arrowLeft');
+            const right = document.getElementById('arrowRight');
+            if (canSwipe) {
+                right.classList.add('visible');
+                left.classList.toggle('visible', currentIdx > 0);
+                left.classList.toggle('hidden', currentIdx === 0);
+            } else {
+                left.classList.remove('visible');
+                right.classList.remove('visible');
+            }
+        }
+
+        // ===== 네비게이션 =====
+        function goNext() {
+            if (!canSwipe || isPlaying) return;
+            if (currentIdx >= total - 1) { goToResult(); return; }
+            slideCard('left', () => { currentIdx++; loadWord('right'); });
+        }
+
+        function goPrev() {
+            if (!canSwipe || isPlaying || currentIdx <= 0) return;
+            slideCard('right', () => { currentIdx--; loadWord('left'); });
+        }
+
+        function slideCard(dir, cb) {
+            speechSynthesis.cancel(); isPlaying = false;
+            const w = document.getElementById('cardWrapper');
+            w.classList.add(dir === 'left' ? 'slide-left' : 'slide-right');
+            setTimeout(() => { w.classList.remove('slide-left', 'slide-right'); cb(); }, 300);
+        }
+
+        function loadWord(fromDir) {
+            isFlipped = false; hasAutoFlipped = false; canSwipe = false;
+            const fc = document.getElementById('flashcard');
+            fc.style.transition = 'none'; fc.classList.remove('flipped'); fc.classList.remove('playing');
+            fc.offsetHeight; fc.style.transition = '';
+
+            const w = words[currentIdx];
+            document.getElementById('cardWord').textContent = w.en;
+            updateCardBack();
+            document.getElementById('progressText').textContent = `${currentIdx + 1}/${total}`;
+            document.getElementById('flipHint').style.display = 'none';
+            updateArrows();
+
+            const wrapper = document.getElementById('cardWrapper');
+            if (fromDir) {
+                wrapper.classList.add(fromDir === 'right' ? 'slide-in-from-right' : 'slide-in-from-left');
+                setTimeout(() => wrapper.classList.remove('slide-in-from-right', 'slide-in-from-left'), 300);
+            }
+
+            setTimeout(playWordAudio, 500);
+        }
+
+        // ===== 스와이프: 터치 + 마우스 드래그 + 키보드 =====
+        let isDragging = false;
+        // 터치
+        document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, {passive: true});
+        document.addEventListener('touchend', e => {
+            if (!canSwipe) return;
+            const diff = touchStartX - e.changedTouches[0].clientX;
+            if (Math.abs(diff) > 60) { diff > 0 ? goNext() : goPrev(); }
+        });
+        // 마우스 드래그
+        const cardArea = document.querySelector('.card-area');
+        cardArea.addEventListener('mousedown', e => { isDragging = true; touchStartX = e.clientX; });
+        document.addEventListener('mousemove', e => { if (isDragging) e.preventDefault(); });
+        document.addEventListener('mouseup', e => {
+            if (!isDragging) return;
+            isDragging = false;
+            if (!canSwipe) return;
+            const diff = touchStartX - e.clientX;
+            if (Math.abs(diff) > 60) { diff > 0 ? goNext() : goPrev(); }
+        });
+        // 키보드 좌우 화살표
+        document.addEventListener('keydown', e => {
+            if (!canSwipe) return;
+            if (e.key === 'ArrowLeft') goPrev();
+            if (e.key === 'ArrowRight') goNext();
+        });
+
+        // ===== 화면 전환 =====
+        function showScreen(id) {
+            speechSynthesis.cancel(); isPlaying = false;
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        }
+        function goToEntry() { showScreen('entry'); document.querySelectorAll('.nav-btn')[0].classList.add('active'); }
+        function goToLearning() { showScreen('learning'); document.querySelectorAll('.nav-btn')[1].classList.add('active'); currentIdx = 0; loadWord(); }
+        function goToResult() { showScreen('result'); document.querySelectorAll('.nav-btn')[2].classList.add('active'); }
+        function startLearning() { goToLearning(); }
+
+        // ===== 다시 학습 =====
+        function showRetryPopup() { document.getElementById('retryPopup').classList.add('show'); }
+        function closeRetryPopup(e) { if (!e || e.target.id === 'retryPopup') document.getElementById('retryPopup').classList.remove('show'); }
+        function confirmRetry() { closeRetryPopup(); currentIdx = 0; goToLearning(); }
+
+        // ===== 나가기 =====
+        function exitLearning() {
+            if (confirm('학습을 종료하시겠습니까?\n지금까지의 학습 내용이 저장됩니다.')) {
+                speechSynthesis.cancel(); goToEntry();
+            }
+        }
+    </script>
+</body>
+</html>

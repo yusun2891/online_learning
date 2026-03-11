@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MV06: 발음 듣고 철자 빈칸 채우기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+            background: #f5f5f5;
+        }
+
+        /* 네비게이션 */
+        .global-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 16px 32px;
+            border-bottom: 2px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #212121;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-btn:hover {
+            border-color: #2196F3;
+            color: #2196F3;
+        }
+
+        .nav-btn.active {
+            background: #2196F3;
+            color: white;
+            border-color: #2196F3;
+        }
+
+        /* 영한/영영 모드 토글 */
+        .mode-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #F3F4F6;
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        .mode-btn {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: transparent;
+            color: #6B7280;
+        }
+
+        .mode-btn.active {
+            background: white;
+            color: #2196F3;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .screen {
+            padding-top: 64px;
+            display: none;
+            min-height: 100vh;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* 헤더 */
+        .header {
+            background: white;
+            padding: 20px 32px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left .textbook {
+            font-size: 13px;
+            color: #757575;
+            margin-bottom: 4px;
+        }
+
+        .header-left .unit {
+            font-size: 16px;
+            color: #212121;
+            font-weight: 600;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .module-name {
+            font-size: 13px;
+            color: #757575;
+        }
+
+        .progress {
+            font-size: 16px;
+            color: #2196F3;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 24px;
+            color: #757575;
+        }
+
+        /* 진입 페이지 */
+        .entry-container {
+            max-width: 600px;
+            margin: 80px auto;
+            padding: 48px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .entry-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+        }
+
+        .entry-title {
+            font-size: 36px;
+            font-weight: bold;
+            color: #212121;
+            margin-bottom: 16px;
+        }
+
+        .entry-count {
+            font-size: 18px;
+            color: #757575;
+            margin-bottom: 8px;
+        }
+
+        .entry-info {
+            font-size: 14px;
+            color: #9E9E9E;
+            margin-bottom: 32px;
+        }
+
+        .entry-description {
+            font-size: 16px;
+            color: #616161;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .start-btn {
+            width: 100%;
+            padding: 20px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .start-btn:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+        }
+
+        /* 학습 진행 페이지 */
+        .learning-container {
+            padding: 48px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-bottom: 180px;
+            overflow-y: auto;
+        }
+
+        .status-bar {
+            background: #E3F2FD;
+            padding: 20px 32px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .status-message {
+            font-size: 17px;
+            color: #616161;
+        }
+
+        /* 음원 + 뜻 통합 영역 */
+        .word-audio-meaning {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .word-audio-btn {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 3px solid #2196F3;
+            background: #E3F2FD;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .word-audio-btn:hover {
+            background: #BBDEFB;
+            transform: scale(1.05);
+        }
+
+        .word-audio-btn svg {
+            width: 32px;
+            height: 32px;
+            fill: #2196F3;
+        }
+
+        .word-audio-btn.playing {
+            animation: audioPulse 1s infinite;
+            border-color: #1976D2;
+            background: #BBDEFB;
+        }
+
+        @keyframes audioPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(33, 150, 243, 0); }
+        }
+
+        .meaning-text {
+            font-size: 28px;
+            font-weight: bold;
+            color: #212121;
+            text-align: center;
+        }
+
+        .meaning-text.en-mode {
+            font-size: 20px;
+            line-height: 1.5;
+        }
+
+        /* 슬롯 영역 */
+        .slots-container {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 32px;
+        }
+
+        .slot {
+            width: 48px;
+            height: 56px;
+            border: 3px solid #e0e0e0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #212121;
+            background: white;
+            transition: all 0.2s;
+        }
+
+        .slot.active {
+            border-color: #2196F3;
+            background: #E3F2FD;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+        }
+
+        .slot.filled {
+            background: #E8F5E9;
+            border-color: #4CAF50;
+            color: #2E7D32;
+        }
+
+        .slot.correct {
+            background: #E8F5E9;
+            border-color: #4CAF50;
+            color: #2E7D32;
+        }
+
+        .slot.incorrect {
+            background: #FFEBEE;
+            border-color: #F44336;
+            color: #C62828;
+            animation: shake 0.3s ease-in-out;
+        }
+
+        .slot.auto-filled {
+            background: #E3F2FD;
+            border-color: #2196F3;
+            color: #1565C0;
+        }
+
+        /* 단어 완성 시 pop 애니메이션 */
+        .slots-container.word-complete .slot.correct,
+        .slots-container.word-complete .slot.filled {
+            animation: slotPop 0.4s ease-out;
+            background: #C8E6C9;
+            border-color: #388E3C;
+        }
+
+        @keyframes slotPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* 알파벳 블록 영역 */
+        .blocks-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+
+        .letter-block {
+            width: 52px;
+            height: 60px;
+            background: white;
+            border: 3px solid #9E9E9E;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            font-weight: bold;
+            color: #424242;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .letter-block:hover:not(.disabled) {
+            border-color: #2196F3;
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+        }
+
+        .letter-block.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: scale(0.9);
+        }
+
+        /* 하단 고정 버튼 영역 */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 24px 32px;
+            border-top: 1px solid #e0e0e0;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+            transform: translateY(100%);
+            transition: transform 0.3s ease-out;
+            z-index: 999;
+        }
+
+        .bottom-bar.show {
+            transform: translateY(0);
+        }
+
+        .result-message {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .result-message.correct {
+            color: #4CAF50;
+        }
+
+        .result-message.incorrect {
+            color: #F44336;
+        }
+
+        /* 버튼 */
+        .action-btn {
+            width: 100%;
+            padding: 18px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: #1976D2;
+        }
+
+        /* 결과 페이지 */
+        .result-container {
+            max-width: 600px;
+            margin: 80px auto;
+            padding: 48px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .result-icon {
+            font-size: 80px;
+            margin-bottom: 24px;
+        }
+
+        .result-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #212121;
+            margin-bottom: 24px;
+        }
+
+        .result-score {
+            font-size: 48px;
+            color: #2196F3;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .result-points {
+            font-size: 18px;
+            color: #FF9800;
+            font-weight: bold;
+            margin-bottom: 32px;
+        }
+
+        .result-page-message {
+            font-size: 16px;
+            color: #616161;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .result-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .result-btn-primary {
+            width: 100%;
+            padding: 18px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .result-btn-primary:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+        }
+
+        .result-btn-secondary {
+            width: 100%;
+            padding: 18px;
+            background: white;
+            color: #2196F3;
+            border: 2px solid #2196F3;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .result-btn-secondary:hover {
+            background: #E3F2FD;
+        }
+
+        .retry-info {
+            font-size: 13px;
+            color: #757575;
+            margin-top: 8px;
+        }
+
+        /* 바텀 팝업 */
+        .bottom-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .bottom-popup-overlay.show {
+            display: block;
+            opacity: 1;
+        }
+
+        .bottom-popup {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 24px 24px 0 0;
+            padding: 32px 24px 24px;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+            z-index: 10000;
+        }
+
+        .bottom-popup-overlay.show .bottom-popup {
+            transform: translateY(0);
+        }
+
+        .bottom-popup-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #212121;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .bottom-popup-desc {
+            font-size: 14px;
+            color: #757575;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .bottom-popup-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .bottom-popup-btn {
+            flex: 1;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .bottom-popup-btn.cancel {
+            background: #F5F5F5;
+            color: #616161;
+        }
+
+        .bottom-popup-btn.cancel:hover {
+            background: #EEEEEE;
+        }
+
+        .bottom-popup-btn.confirm {
+            background: #2196F3;
+            color: white;
+        }
+
+        .bottom-popup-btn.confirm:hover {
+            background: #1976D2;
+        }
+
+        /* 페이지 이탈 감지 오버레이 */
+        .blur-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            z-index: 9998;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .blur-overlay.show {
+            display: flex;
+        }
+
+        .blur-overlay-message {
+            background: white;
+            padding: 32px 48px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .blur-overlay-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .blur-overlay-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #212121;
+        }
+    </style>
+</head>
+<body>
+    <!-- 글로벌 네비게이션 -->
+    <nav class="global-nav">
+        <div class="nav-left">
+            <div class="nav-title">MV06: 발음 듣고 철자 빈칸 채우기 - 와이어프레임</div>
+        </div>
+        <div class="nav-right">
+            <div class="nav-buttons">
+                <button class="nav-btn active" onclick="goToEntry()">1. 진입</button>
+                <button class="nav-btn" onclick="goToLearning()">2-1. 학습 진행</button>
+                <button class="nav-btn" onclick="goToReview()">2-2. 복습</button>
+                <button class="nav-btn" onclick="goToResult()">3. 결과</button>
+            </div>
+            <div class="mode-toggle">
+                <button class="mode-btn active" onclick="setMode('ko', this)">영한</button>
+                <button class="mode-btn" onclick="setMode('en', this)">영영</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 1. 진입 페이지 -->
+    <div id="entry" class="screen active">
+        <div class="entry-container">
+            <div class="entry-icon">🔊</div>
+            <h1 class="entry-title">발음 듣고 철자 빈칸 채우기</h1>
+            <div class="entry-count">총 10개 단어</div>
+            <div class="entry-info">Reading Book 3A > Unit 3: Science Exploration</div>
+            <p class="entry-description">
+                섞인 글자를 올바른 순서로 배열해 단어를 완성하세요.
+            </p>
+            <button class="start-btn" onclick="startLearning()">학습 시작</button>
+        </div>
+    </div>
+
+    <!-- 2. 학습 진행 페이지 -->
+    <div id="learning" class="screen">
+        <div class="header">
+            <div class="header-left">
+                <div class="textbook">Reading Book 3A</div>
+                <div class="unit">Unit 3: Science Exploration</div>
+            </div>
+            <div class="header-right">
+                <div class="module-name">Step 3 • 발음 듣고 철자 빈칸 채우기</div>
+                <div class="progress" id="progress-text">1/10</div>
+                <button class="close-btn" onclick="exitLearning()">✕</button>
+            </div>
+        </div>
+        
+        <div class="learning-container">
+            <div class="status-bar" id="status-bar">
+                <div class="status-message" id="status-message">발음을 듣고 섞인 글자를 순서대로 눌러 단어를 완성하세요.</div>
+            </div>
+
+            <!-- 음원 + 뜻 통합 영역 -->
+            <div class="word-audio-meaning">
+                <button class="word-audio-btn" id="word-audio-icon" onclick="playWordAudioMain()">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                    </svg>
+                </button>
+                <div class="meaning-text" id="meaning-text">흡수하다; 흡착하다</div>
+            </div>
+
+            <div class="slots-container" id="slots-container">
+                <!-- 동적으로 생성됨 -->
+            </div>
+
+            <div class="blocks-container" id="blocks-container">
+                <!-- 동적으로 생성됨 -->
+            </div>
+        </div>
+
+        <div class="bottom-bar" id="bottom-bar">
+            <div class="result-message" id="result-message"></div>
+            <button class="action-btn" id="action-btn" onclick="nextWord()">다음 단어</button>
+        </div>
+    </div>
+
+    <!-- 3. 결과 페이지 -->
+    <div id="result" class="screen">
+        <div class="result-container">
+            <div class="result-icon" id="result-icon">🏆</div>
+            <div class="result-title">발음 듣고 철자 맞추기 완료</div>
+            <div class="result-score" id="result-score">총점: 92점</div>
+            <div class="result-points">획득 포인트: 100 P</div>
+            <div class="result-page-message" id="result-page-message">
+                완벽해요! 철자를 정확하게 알고 있어요! 🌟
+            </div>
+            <div class="result-buttons">
+                <button class="result-btn-primary" onclick="nextModule()">다음 학습</button>
+                <button class="result-btn-secondary" onclick="showRetryPopup()">
+                    다시 학습하기
+                    <div class="retry-info">복습하고 보너스 포인트도 챙기세요!</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 다시 학습하기 바텀 팝업 -->
+    <div class="bottom-popup-overlay" id="retryPopup" onclick="closeRetryPopup(event)">
+        <div class="bottom-popup" onclick="event.stopPropagation()">
+            <div class="bottom-popup-title">다시 공부해볼까요?</div>
+            <div class="bottom-popup-desc">(원래 점수는 바뀌지 않아요)</div>
+            <div class="bottom-popup-buttons">
+                <button class="bottom-popup-btn cancel" onclick="closeRetryPopup()">취소</button>
+                <button class="bottom-popup-btn confirm" onclick="confirmRetry()">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 페이지 이탈 감지 오버레이 -->
+    <div class="blur-overlay" id="blurOverlay">
+        <div class="blur-overlay-message">
+            <div class="blur-overlay-icon">👀</div>
+            <div class="blur-overlay-text">학습 화면으로 돌아와주세요</div>
+        </div>
+    </div>
+
+    <script>
+        // ===== Web Audio API 효과음 =====
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+        function ensureAudioCtx() {
+            if (!audioCtx) audioCtx = new AudioCtx();
+            return audioCtx;
+        }
+        function playSound(type) {
+            const ctx = ensureAudioCtx();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            
+            if (type === 'correct') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+                osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
+                osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.4);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, ctx.currentTime);
+                osc.frequency.setValueAtTime(150, ctx.currentTime + 0.15);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.3);
+            } else if (type === 'complete') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+                osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.12);
+                osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.24);
+                osc.frequency.setValueAtTime(1046.50, ctx.currentTime + 0.36);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.6);
+            }
+        }
+
+        // ===== 10개 단어 데이터 =====
+        const words = [
+            { word: 'absorb', meaning: '흡수하다', enDef: 'to take in or soak up' },
+            { word: 'reflect', meaning: '반사하다', enDef: 'to throw back light or heat' },
+            { word: 'shine', meaning: '비치다, 빛나다', enDef: 'to give off light' },
+            { word: 'consist', meaning: '~로 구성되다', enDef: 'to be made up of' },
+            { word: 'temperature', meaning: '온도', enDef: 'a measure of how hot or cold something is' },
+            { word: 'measure', meaning: '측정하다', enDef: 'to find the size or amount of something' },
+            { word: 'experiment', meaning: '실험', enDef: 'a test done to learn something new' },
+            { word: 'observe', meaning: '관찰하다', enDef: 'to watch carefully' },
+            { word: 'analyze', meaning: '분석하다', enDef: 'to study something closely' },
+            { word: 'conclude', meaning: '결론짓다', enDef: 'to decide after thinking about something' }
+        ];
+
+        // ===== 영한/영영 모드 =====
+        let meaningMode = 'ko';
+        function getDisplayMeaning(w) {
+            return meaningMode === 'ko' ? w.meaning : w.enDef;
+        }
+        function setMode(m, btn) {
+            meaningMode = m;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            // 현재 학습 중이면 뜻 업데이트
+            const meaningEl = document.getElementById('meaning-text');
+            if (meaningEl && document.getElementById('learning').classList.contains('active')) {
+                const wordData = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
+                meaningEl.textContent = getDisplayMeaning(wordData);
+                meaningEl.classList.toggle('en-mode', m === 'en');
+            }
+        }
+
+        // ===== 학습 상태 변수 =====
+        let currentIndex = 0;
+        let currentSlotIndex = 0;
+        let wrongCount = 0;
+        let filledLetters = [];
+        let shuffledLetters = [];
+        let disabledBlocks = [];
+        let reviewWords = [];
+        let isReviewMode = false;
+        let reviewIndex = 0;
+        let totalScore = 0;
+        let isRetryMode = false;
+        let wordScores = [];
+        let isWordComplete = false;
+
+        // 초기화
+        function init() {
+            currentIndex = 0;
+            currentSlotIndex = 0;
+            wrongCount = 0;
+            filledLetters = [];
+            shuffledLetters = [];
+            disabledBlocks = [];
+            reviewWords = [];
+            isReviewMode = false;
+            reviewIndex = 0;
+            totalScore = 0;
+            wordScores = [];
+            isWordComplete = false;
+        }
+
+        // 화면 전환
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+        }
+
+        // 1. 진입 페이지로
+        function goToEntry() {
+            showScreen('entry');
+            document.querySelectorAll('.nav-btn')[0].classList.add('active');
+            init();
+        }
+
+        // 2-1. 학습 진행 페이지로
+        function goToLearning() {
+            showScreen('learning');
+            document.querySelectorAll('.nav-btn')[1].classList.add('active');
+            isReviewMode = false;
+            currentIndex = 0;
+            loadQuestion();
+        }
+
+        // 2-2. 복습 페이지로
+        function goToReview() {
+            if (reviewWords.length === 0) {
+                alert('복습할 단어가 없습니다. 먼저 학습을 진행해주세요.');
+                return;
+            }
+            showScreen('learning');
+            document.querySelectorAll('.nav-btn')[2].classList.add('active');
+            isReviewMode = true;
+            reviewIndex = 0;
+            loadQuestion();
+        }
+
+        // 3. 결과 페이지로
+        function goToResult() {
+            showScreen('result');
+            document.querySelectorAll('.nav-btn')[3].classList.add('active');
+            displayResult();
+        }
+
+        // Fisher-Yates 셔플 알고리즘
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // 글자 섞기 (원래 순서와 같지 않도록)
+        function shuffleLetters(word) {
+            let letters = word.split('');
+            let shuffled;
+            do {
+                shuffled = shuffleArray(letters);
+            } while (shuffled.join('') === letters.join('') && letters.length > 1);
+            return shuffled;
+        }
+
+        // 문제 로드
+        function loadQuestion() {
+            stopAudio();
+            
+            const wordData = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
+            const word = wordData.word;
+            
+            // 상태 초기화
+            currentSlotIndex = 0;
+            wrongCount = 0;
+            filledLetters = new Array(word.length).fill('');
+            shuffledLetters = shuffleLetters(word);
+            disabledBlocks = new Array(word.length).fill(false);
+            isWordComplete = false;
+
+            // 하단 바 숨김
+            document.getElementById('bottom-bar').classList.remove('show');
+            document.getElementById('action-btn').style.display = 'block';
+            document.getElementById('slots-container').classList.remove('word-complete');
+
+            // 진행 상황 업데이트
+            if (isReviewMode) {
+                document.getElementById('progress-text').textContent = `다시 확인 ${reviewIndex + 1}/${reviewWords.length}`;
+                document.getElementById('status-message').textContent = '복습: 발음을 듣고 다시 한 번 철자를 맞춰보세요.';
+            } else {
+                document.getElementById('progress-text').textContent = `${currentIndex + 1}/10`;
+                document.getElementById('status-message').textContent = '발음을 듣고 섞인 글자를 순서대로 눌러 단어를 완성하세요.';
+            }
+
+            // 뜻 표시
+            const meaningEl = document.getElementById('meaning-text');
+            meaningEl.textContent = getDisplayMeaning(wordData);
+            meaningEl.classList.toggle('en-mode', meaningMode === 'en');
+
+            // 슬롯 생성
+            renderSlots(word);
+
+            // 블록 생성
+            renderBlocks();
+            
+            // 자동 반복 음원 재생 시작 (0.3초 후)
+            setTimeout(() => {
+                startAudioLoop();
+            }, 300);
+        }
+
+        // 슬롯 렌더링
+        function renderSlots(word) {
+            const container = document.getElementById('slots-container');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < word.length; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'slot' + (i === 0 ? ' active' : '');
+                slot.id = `slot-${i}`;
+                slot.textContent = '';
+                container.appendChild(slot);
+            }
+        }
+
+        // 블록 렌더링
+        function renderBlocks() {
+            const container = document.getElementById('blocks-container');
+            container.innerHTML = '';
+            
+            shuffledLetters.forEach((letter, index) => {
+                const block = document.createElement('div');
+                block.className = 'letter-block' + (disabledBlocks[index] ? ' disabled' : '');
+                block.id = `block-${index}`;
+                block.textContent = letter;
+                block.onclick = () => selectBlock(index);
+                container.appendChild(block);
+            });
+        }
+
+        // 블록 선택
+        function selectBlock(blockIndex) {
+            if (disabledBlocks[blockIndex]) return;
+            if (isWordComplete) return;
+            
+            const wordData = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
+            const word = wordData.word;
+            const selectedLetter = shuffledLetters[blockIndex];
+            const correctLetter = word[currentSlotIndex];
+
+            const slot = document.getElementById(`slot-${currentSlotIndex}`);
+
+            if (selectedLetter === correctLetter) {
+                // 정답
+                playSound('correct');
+                slot.textContent = selectedLetter;
+                slot.classList.remove('active', 'incorrect');
+                slot.classList.add('filled', 'correct');
+                
+                filledLetters[currentSlotIndex] = selectedLetter;
+                disabledBlocks[blockIndex] = true;
+                document.getElementById(`block-${blockIndex}`).classList.add('disabled');
+
+                currentSlotIndex++;
+
+                // 다음 슬롯 활성화
+                if (currentSlotIndex < word.length) {
+                    document.getElementById(`slot-${currentSlotIndex}`).classList.add('active');
+                }
+
+                // 단어 완성 체크
+                if (currentSlotIndex === word.length) {
+                    handleWordComplete();
+                }
+            } else {
+                // 오답
+                playSound('wrong');
+                wrongCount++;
+                
+                // 먼저 틀린 글자 표시 + shake 애니메이션
+                slot.textContent = selectedLetter;
+                slot.classList.add('incorrect');
+
+                if (wrongCount === 3) {
+                    // 3차 오답: shake 후 정답 공개
+                    isWordComplete = true;
+                    
+                    setTimeout(() => {
+                        slot.textContent = '';
+                        slot.classList.remove('incorrect');
+                        handleWordFail();
+                    }, 500);
+                } else {
+                    // 1차, 2차 오답: shake 후 비우고 재시도
+                    setTimeout(() => {
+                        slot.textContent = '';
+                        slot.classList.remove('incorrect');
+                    }, 300);
+
+                    handleWrongAnswer();
+                }
+            }
+        }
+
+        // 오답 처리 (1차, 2차만)
+        function handleWrongAnswer() {
+            if (wrongCount === 1) {
+                showFeedback('incorrect1');
+            } else if (wrongCount === 2) {
+                showFeedback('incorrect2');
+            }
+        }
+
+        // 단어 완성 처리
+        function handleWordComplete() {
+            isWordComplete = true;
+            stopAudio();
+            playSound('complete');
+            
+            const wordData = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
+            let score = 0;
+            let message = '';
+            let messages = [];
+
+            if (wrongCount === 0) {
+                score = 10;
+                messages = ['🎉 정답이에요!', '✨ 잘했어요!', '👍 맞았어요!'];
+            } else if (wrongCount === 1) {
+                score = 7;
+                messages = ['👏 이번엔 맞췄어요!'];
+            } else if (wrongCount === 2) {
+                score = 4;
+                messages = ['😊 끝까지 해냈어요!'];
+            }
+
+            if (!isReviewMode) {
+                wordScores[currentIndex] = score;
+                totalScore += score;
+            }
+
+            message = messages[Math.floor(Math.random() * messages.length)];
+            
+            // 슬롯 전체 pop 애니메이션 + 초록색 강조
+            document.getElementById('slots-container').classList.add('word-complete');
+            
+            document.getElementById('result-message').textContent = message;
+            document.getElementById('result-message').className = 'result-message correct';
+            document.getElementById('result-message').style.display = 'block';
+            
+            updateActionButton();
+            
+            setTimeout(() => {
+                document.getElementById('bottom-bar').classList.add('show');
+            }, 200);
+        }
+
+        // 단어 실패 처리 (3차 오답)
+        function handleWordFail() {
+            stopAudio();
+            
+            const wordData = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
+            const word = wordData.word;
+
+            if (!isReviewMode) {
+                wordScores[currentIndex] = 0;
+                reviewWords.push(currentIndex);
+            }
+
+            // 현재 슬롯 active 제거
+            const currentSlot = document.getElementById(`slot-${currentSlotIndex}`);
+            if (currentSlot) {
+                currentSlot.classList.remove('active');
+            }
+
+            // 남은 슬롯 자동 채우기
+            for (let i = currentSlotIndex; i < word.length; i++) {
+                const slot = document.getElementById(`slot-${i}`);
+                slot.textContent = word[i];
+                slot.classList.remove('active', 'incorrect');
+                slot.classList.add('auto-filled');
+            }
+
+            // 모든 블록 비활성화
+            shuffledLetters.forEach((_, index) => {
+                document.getElementById(`block-${index}`).classList.add('disabled');
+            });
+
+            // 격려 메시지만 표시 (정답 정보 제거)
+            const encourageMessages = [
+                '다시 한번 공부해봐요! 💪',
+                '괜찮아요! 복습에서 다시 도전해요! 📚',
+                '한 번 더 연습하면 기억할 수 있어요! ✨'
+            ];
+            const msg = encourageMessages[Math.floor(Math.random() * encourageMessages.length)];
+            document.getElementById('result-message').textContent = msg;
+            document.getElementById('result-message').className = 'result-message incorrect';
+            document.getElementById('result-message').style.display = 'block';
+            
+            updateActionButton();
+            
+            setTimeout(() => {
+                document.getElementById('bottom-bar').classList.add('show');
+            }, 200);
+        }
+
+        // ===== 음원 반복 재생 =====
+        let audioInterval = null;
+        let isAudioPlaying = false;
+
+        function playWordAudioMain() {
+            const wordData = isReviewMode ? words[reviewWords[reviewIndex]] : words[currentIndex];
+            const audioIcon = document.getElementById('word-audio-icon');
+            
+            audioIcon.classList.add('playing');
+            
+            if ('speechSynthesis' in window) {
+                speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(wordData.word);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.8;
+                
+                utterance.onend = function() {
+                    audioIcon.classList.remove('playing');
+                    if (isAudioPlaying) {
+                        audioInterval = setTimeout(() => {
+                            if (isAudioPlaying) {
+                                playWordAudioMain();
+                            }
+                        }, 200); // 0.2초 텀
+                    }
+                };
+                
+                speechSynthesis.speak(utterance);
+            } else {
+                setTimeout(() => {
+                    audioIcon.classList.remove('playing');
+                    if (isAudioPlaying) {
+                        audioInterval = setTimeout(() => {
+                            if (isAudioPlaying) {
+                                playWordAudioMain();
+                            }
+                        }, 200);
+                    }
+                }, 1000);
+            }
+        }
+
+        function startAudioLoop() {
+            isAudioPlaying = true;
+            playWordAudioMain();
+        }
+
+        function stopAudio() {
+            isAudioPlaying = false;
+            if (audioInterval) {
+                clearTimeout(audioInterval);
+                audioInterval = null;
+            }
+            if ('speechSynthesis' in window) {
+                speechSynthesis.cancel();
+            }
+            const audioIcon = document.getElementById('word-audio-icon');
+            if (audioIcon) {
+                audioIcon.classList.remove('playing');
+            }
+        }
+
+        // 피드백 표시
+        function showFeedback(type) {
+            const bottomBar = document.getElementById('bottom-bar');
+            const resultMessage = document.getElementById('result-message');
+            const actionBtn = document.getElementById('action-btn');
+
+            if (type === 'incorrect1') {
+                resultMessage.textContent = '다시 골라보세요!';
+                resultMessage.className = 'result-message incorrect';
+                resultMessage.style.display = 'block';
+                actionBtn.style.display = 'none';
+            } else if (type === 'incorrect2') {
+                resultMessage.textContent = '마지막 기회예요! 신중하게 선택하세요';
+                resultMessage.className = 'result-message incorrect';
+                resultMessage.style.display = 'block';
+                actionBtn.style.display = 'none';
+            }
+
+            setTimeout(() => {
+                bottomBar.classList.add('show');
+            }, 200);
+        }
+
+        // 액션 버튼 업데이트
+        function updateActionButton() {
+            const actionBtn = document.getElementById('action-btn');
+            actionBtn.style.display = 'block';
+
+            if (isReviewMode) {
+                if (reviewIndex < reviewWords.length - 1) {
+                    actionBtn.textContent = `다음 단어 (${reviewIndex + 2}/${reviewWords.length})`;
+                } else {
+                    actionBtn.textContent = '결과 보기';
+                }
+            } else {
+                if (currentIndex < 9) {
+                    actionBtn.textContent = `다음 단어 (${currentIndex + 2}/10)`;
+                } else {
+                    if (reviewWords.length > 0) {
+                        actionBtn.textContent = `복습 시작 (${reviewWords.length}개)`;
+                    } else {
+                        actionBtn.textContent = '결과 보기';
+                    }
+                }
+            }
+        }
+
+        // 다음 단어
+        function nextWord() {
+            if (isReviewMode) {
+                reviewIndex++;
+                if (reviewIndex >= reviewWords.length) {
+                    goToResult();
+                } else {
+                    loadQuestion();
+                }
+            } else {
+                currentIndex++;
+                if (currentIndex >= 10) {
+                    if (reviewWords.length > 0) {
+                        isReviewMode = true;
+                        reviewIndex = 0;
+                        document.querySelectorAll('.nav-btn').forEach(btn => {
+                            btn.classList.remove('active');
+                        });
+                        document.querySelectorAll('.nav-btn')[2].classList.add('active');
+                        loadQuestion();
+                    } else {
+                        goToResult();
+                    }
+                } else {
+                    loadQuestion();
+                }
+            }
+        }
+
+        // 결과 표시
+        function displayResult() {
+            const score = totalScore;
+            document.getElementById('result-score').textContent = `총점: ${score}점`;
+
+            const resultIcon = document.getElementById('result-icon');
+            const resultMessage = document.getElementById('result-page-message');
+
+            if (score >= 90) {
+                resultIcon.textContent = '🏆';
+                resultMessage.textContent = '완벽해요! 철자를 정확하게 알고 있어요! 🌟';
+            } else if (score >= 80) {
+                resultIcon.textContent = '🎉';
+                resultMessage.textContent = '아주 잘했어요! 단어를 잘 기억하고 있어요! 🎉';
+            } else if (score >= 70) {
+                resultIcon.textContent = '✨';
+                resultMessage.textContent = '잘했어요! 조금만 더 연습하면 완벽할 거예요! ✨';
+            } else {
+                resultIcon.textContent = '💪';
+                resultMessage.textContent = '괜찮아요! 틀린 단어를 다시 복습해보세요! 💪';
+            }
+        }
+
+        // 다음 모듈
+        function nextModule() {
+            alert('다음 학습 모듈로 이동합니다.');
+            goToEntry();
+        }
+
+        // 다시 학습하기 팝업
+        function showRetryPopup() {
+            document.getElementById('retryPopup').classList.add('show');
+        }
+
+        function closeRetryPopup(event) {
+            if (!event || event.target.id === 'retryPopup') {
+                document.getElementById('retryPopup').classList.remove('show');
+            }
+        }
+
+        function confirmRetry() {
+            closeRetryPopup();
+            isRetryMode = true;
+            currentIndex = 0;
+            reviewIndex = 0;
+            totalScore = 0;
+            reviewWords = [];
+            isReviewMode = false;
+            wordScores = [];
+            goToLearning();
+        }
+
+        // 나가기
+        function exitLearning() {
+            if (isRetryMode) {
+                if (confirm('다시 학습을 종료하시겠습니까?\n\n다시 학습 중에는 보너스 포인트가 지급되지 않으며\n진행 상황이 저장되지 않습니다.')) {
+                    isRetryMode = false;
+                    goToEntry();
+                }
+            } else {
+                if (confirm('학습을 종료하시겠습니까?\n\n지금까지의 학습 내용이 저장됩니다.')) {
+                    goToEntry();
+                }
+            }
+        }
+
+        // 학습 시작
+        function startLearning() {
+            isRetryMode = false;
+            init();
+            goToLearning();
+        }
+
+        // ===== 페이지 이탈 감지 (음원 일시정지 + Dim) =====
+        let isPageLeft = false;
+        function handleLeave() {
+            const currentScreen = document.querySelector('.screen.active').id;
+            if (currentScreen !== 'learning') return;
+            if (isWordComplete) return;
+            if (!isPageLeft) {
+                isPageLeft = true;
+                // 음원 일시정지
+                if (isAudioPlaying) {
+                    stopAudio();
+                    isPageLeft = 'audio_was_playing';
+                }
+                document.getElementById('blurOverlay').classList.add('show');
+            }
+        }
+        function handleReturn() {
+            if (!isPageLeft) return;
+            const wasPlaying = isPageLeft === 'audio_was_playing';
+            isPageLeft = false;
+            document.getElementById('blurOverlay').classList.remove('show');
+            // 음원 재생 재개
+            if (wasPlaying && !isWordComplete) {
+                startAudioLoop();
+            }
+        }
+        document.addEventListener('visibilitychange', () => document.hidden ? handleLeave() : handleReturn());
+        document.addEventListener('mouseleave', handleLeave);
+        document.addEventListener('mouseenter', handleReturn);
+        window.addEventListener('blur', handleLeave);
+        window.addEventListener('focus', handleReturn);
+    </script>
+</body>
+</html>

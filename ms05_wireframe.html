@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MS05: AI 패턴 말하기</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Malgun Gothic',sans-serif;background:#f5f5f5}
+.gnav{position:fixed;top:0;left:0;right:0;background:#fff;padding:16px 32px;border-bottom:2px solid #e0e0e0;box-shadow:0 2px 8px rgba(0,0,0,.1);z-index:1000;display:flex;align-items:center}
+.gnav-l{display:flex;align-items:center;gap:16px}.gnav-t{font-size:16px;font-weight:600;color:#212121}
+.gnav-b{display:flex;gap:8px}.nb{padding:10px 20px;background:#fff;border:2px solid #e0e0e0;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;transition:all .2s}
+.nb:hover{border-color:#2196F3;color:#2196F3}.nb.on{background:#2196F3;color:#fff;border-color:#2196F3}
+.mode-toggle{display:flex;gap:4px;background:#F3F4F6;padding:4px;border-radius:8px;margin-left:auto}
+.mb{padding:6px 14px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:#6B7280;transition:all .2s}
+.mb.on{background:#fff;color:#2196F3;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.scr{display:none;min-height:100vh;padding-top:64px}.scr.on{display:block}
+.hdr{position:sticky;top:64px;background:#fff;padding:20px 32px;border-bottom:1px solid #e0e0e0;display:flex;justify-content:space-between;align-items:center;z-index:500}
+.hdr-l .tb{font-size:13px;color:#757575;margin-bottom:4px}.hdr-l .ut{font-size:16px;color:#212121;font-weight:600}
+.hdr-r{display:flex;align-items:center;gap:24px}.mn{font-size:13px;color:#757575}.prg{font-size:16px;font-weight:600;color:#2196F3}
+.xb{width:32px;height:32px;border:none;background:none;cursor:pointer;font-size:24px;color:#757575}
+.ent{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:40px}
+.ecard{max-width:600px;width:100%;background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.1);padding:48px;text-align:center}
+.eicon{font-size:56px;margin-bottom:20px}.etitle{font-size:26px;font-weight:700;color:#212121;margin-bottom:14px}
+.einfo{font-size:17px;color:#2196F3;font-weight:600;margin-bottom:6px}
+.etb{font-size:13px;color:#9E9E9E;margin-bottom:28px}
+.edesc{font-size:15px;color:#616161;line-height:1.6;margin-bottom:36px}
+.startb{width:100%;padding:18px;background:#2196F3;color:#fff;border:none;border-radius:12px;font-size:17px;font-weight:600;cursor:pointer}
+.startb:hover{background:#1976D2}
+.lc{padding:24px 48px;max-width:800px;margin:0 auto;padding-bottom:100px}
+.smsg{background:#E3F2FD;padding:14px 20px;border-radius:12px;text-align:center;margin-bottom:16px;font-size:14px;color:#1976D2;font-weight:600}
+.prog-row{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.prog-txt{font-size:12px;color:#9E9E9E;font-weight:600;white-space:nowrap}
+.prog-bar{flex:1;height:4px;background:#E0E0E0;border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:#2196F3;border-radius:2px;transition:width .3s;width:0}
+/* Flashcard */
+.fc-wrap{perspective:800px;margin-bottom:16px}
+.fc-inner{position:relative;min-height:220px;transition:transform .6s;transform-style:preserve-3d}
+.fc-inner.flipped{transform:rotateY(180deg)}
+.fc-face{position:absolute;top:0;left:0;width:100%;min-height:220px;backface-visibility:hidden;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:40px 32px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer}
+.fc-front{background:#fff}
+.fc-front.playing{box-shadow:0 0 0 4px rgba(33,150,243,.3),0 4px 20px rgba(0,0,0,.08)}
+.fc-back{background:#E3F2FD;transform:rotateY(180deg)}
+.fc-face .pat{font-size:28px;font-weight:800;color:#212121;margin-bottom:12px}.fc-face .pat .hl{color:#2196F3}
+.fc-face .mean{font-size:20px;color:#333;line-height:1.6;margin-bottom:8px}
+.fc-face .fc-spk{width:40px;height:40px;border-radius:50%;border:2px solid #E0E0E0;background:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.fc-face .fc-spk:hover{border-color:#2196F3;background:#E3F2FD}
+
+/* Sentence card */
+.scard{background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);padding:32px;margin-bottom:16px}
+.scard .stxt{font-size:20px;line-height:1.8;color:#212121;text-align:center;margin-bottom:16px}
+.scard .stxt .blank{display:inline-block;min-width:60px;border-bottom:3px dashed #FF9800;color:transparent;margin:0 2px}
+.scard .stxt .hl{color:#2196F3;font-weight:700}
+.scard .kotext{font-size:15px;color:#757575;text-align:center;margin-bottom:16px}
+.scard .sent-label{font-size:12px;color:#9E9E9E;text-align:center;margin-bottom:8px}
+.audio-row{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:16px}
+.audio-btn{width:44px;height:44px;border-radius:50%;border:2px solid #E0E0E0;background:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.audio-btn:hover{border-color:#2196F3;background:#E3F2FD}
+.wave{display:flex;align-items:center;gap:2px;height:18px}
+.wave span{width:3px;background:#2196F3;border-radius:2px;animation:wv .6s ease-in-out infinite}
+.wave span:nth-child(1){height:6px}.wave span:nth-child(2){height:12px;animation-delay:.1s}
+.wave span:nth-child(3){height:8px;animation-delay:.2s}.wave span:nth-child(4){height:14px;animation-delay:.15s}
+@keyframes wv{0%,100%{transform:scaleY(.5)}50%{transform:scaleY(1.2)}}
+.rec-area{text-align:center}
+.rec-st{font-size:14px;color:#757575;margin-bottom:10px}
+.rec-btn{width:64px;height:64px;border-radius:50%;border:none;font-size:24px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .25s}
+.rec-btn.ready{background:#F44336;color:#fff;box-shadow:0 4px 16px rgba(244,67,54,.3);position:relative}
+.rec-btn.ready::after{content:'';position:absolute;width:76px;height:76px;border-radius:50%;border:2px solid rgba(244,67,54,.3);animation:ring 1.5s ease-out infinite}
+@keyframes ring{0%{transform:scale(.8);opacity:1}100%{transform:scale(1.3);opacity:0}}
+.rec-btn.recording{background:#D32F2F;color:#fff;animation:rp 1s infinite}
+@keyframes rp{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.rec-btn.off{background:#E0E0E0;color:#9E9E9E;cursor:not-allowed}
+.rec-time{font-size:13px;color:#F44336;font-weight:700;margin-top:8px}
+/* Own sentence */
+.own-area{background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);padding:32px;text-align:center}
+.own-prompt{font-size:16px;color:#333;margin-bottom:8px}.own-pattern{font-size:22px;font-weight:700;color:#2196F3;margin-bottom:16px}
+.own-hint{font-size:13px;color:#9E9E9E;margin-bottom:20px}
+/* Result panel */
+.rpanel{background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);padding:32px}
+.rscore-big{text-align:center;margin-bottom:16px}
+.rscore-big .num{font-size:48px;font-weight:800}.rscore-big .lbl{font-size:14px;color:#757575}
+.rscore-big.good .num{color:#4CAF50}.rscore-big.ok .num{color:#FF9800}.rscore-big.bad .num{color:#F44336}
+.transcript-box{background:#F5F5F5;border-radius:12px;padding:16px 20px;margin-bottom:16px;text-align:left}
+.transcript-box .tl{font-size:12px;color:#9E9E9E;margin-bottom:6px;font-weight:600}
+.transcript-box .tt{font-size:16px;color:#333;line-height:1.6;font-style:italic}
+.rfeedback{margin-bottom:16px}
+.rf-item{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-radius:10px;margin-bottom:8px;background:#F5F5F5}
+.rf-item .rf-icon{font-size:20px;flex-shrink:0}
+.rf-item .rf-label{font-size:12px;color:#9E9E9E;margin-bottom:2px;font-weight:600}
+.rf-item .rf-val{font-size:14px;color:#333;line-height:1.5}
+.racts{display:flex;gap:12px;justify-content:center;margin-top:16px}
+.ra-btn{padding:14px 32px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;border:none}
+.ra-retry{background:#fff;color:#FF9800;border:2px solid #FF9800}.ra-retry:hover{background:#FFF3E0}
+.ra-next{background:#2196F3;color:#fff}.ra-next:hover{background:#1976D2}
+.ra-must{font-size:12px;color:#F44336;text-align:center;margin-top:8px}
+/* Bottom bar */
+.bb{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid #e0e0e0;box-shadow:0 -4px 12px rgba(0,0,0,.1);z-index:100;padding:20px 32px;text-align:center;transform:translateY(100%);transition:transform .4s}.bb.sh{transform:translateY(0)}
+.bb-btn{padding:14px 48px;border:none;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer;color:#fff;background:#2196F3}.bb-btn:hover{background:#1976D2}
+/* Final result */
+.rc{max-width:600px;margin:80px auto;padding:48px;background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.1);text-align:center}
+.ricon{font-size:72px;margin-bottom:20px}.rtitle{font-size:26px;font-weight:bold;color:#212121;margin-bottom:20px}
+.rscN{font-size:48px;font-weight:800;color:#2196F3}.rscL{font-size:14px;color:#757575;margin-bottom:16px}
+.rsc2{font-size:18px;color:#FF9800;font-weight:bold;margin-bottom:20px}
+.r-list{text-align:left;margin-bottom:24px}
+.r-item{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-radius:8px;margin-bottom:4px;background:#F5F5F5}
+.r-item .r-pat{font-size:14px;color:#333;font-weight:600;flex:1}.r-item .r-sc{font-size:14px;font-weight:700;flex-shrink:0}
+.r-item .r-sc.good{color:#4CAF50}.r-item .r-sc.ok{color:#FF9800}.r-item .r-sc.bad{color:#F44336}
+.rmsg2{font-size:16px;color:#616161;margin-bottom:28px}
+.rbs{display:flex;flex-direction:column;gap:10px}
+.rb1{width:100%;padding:16px;background:#2196F3;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer}
+.rb2{width:100%;padding:16px;background:#fff;color:#2196F3;border:2px solid #2196F3;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer}
+.ri{font-size:12px;color:#757575;margin-top:6px}
+.po{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:none;z-index:9999}.po.sh{display:block}
+.psh{position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:24px 24px 0 0;padding:28px 20px 20px;transform:translateY(100%);transition:transform .3s;z-index:10000}.po.sh .psh{transform:translateY(0)}
+.pt2{font-size:18px;font-weight:bold;color:#212121;margin-bottom:12px;text-align:center}.pbs{display:flex;gap:10px}
+.ppb{flex:1;padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none}.ppb.cc{background:#F5F5F5;color:#616161}.ppb.cf{background:#2196F3;color:#fff}
+.lo{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:5000;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all .3s}.lo.sh{opacity:1;visibility:visible}
+@media(max-width:768px){.gnav{flex-direction:column;gap:12px;padding:12px 16px}.gnav-l{flex-direction:column;gap:8px;width:100%}
+.lc{padding:16px;padding-bottom:100px}.scr{padding-top:120px}.hdr{top:120px}.fc{padding:28px 20px;min-height:160px}}
+</style>
+</head>
+<body>
+<div class="gnav"><div class="gnav-l"><div class="gnav-t">📱 MS05: AI 패턴 말하기</div><div class="gnav-b">
+<button class="nb on" onclick="goTo('entry')">1. 진입</button>
+<button class="nb" onclick="navMain()">2. 학습 진행</button>
+<button class="nb" onclick="goTo('result')">3. 결과</button>
+</div></div></div>
+<div class="po" id="rP" onclick="clR(event)"><div class="psh" onclick="event.stopPropagation()"><div class="pt2">다시 연습해볼까요?</div><div class="pbs"><button class="ppb cc" onclick="clR()">취소</button><button class="ppb cf" onclick="clR();doRetry()">확인</button></div></div></div>
+<div class="po" id="exitP"><div class="psh" onclick="event.stopPropagation()"><div class="pt2" id="exitMT"></div><div style="font-size:13px;color:#757575;text-align:center;margin-bottom:14px" id="exitMD"></div><div class="pbs"><button class="ppb cc" id="exitMC"></button><button class="ppb cf" id="exitMP"></button></div></div></div>
+<div class="lo" id="lO"><div><div style="font-size:56px;text-align:center;margin-bottom:12px">👀</div><div style="font-size:18px;color:#fff;font-weight:600;text-align:center">학습 화면으로 돌아와주세요</div></div></div>
+<div id="sE" class="scr on"><div class="ent"><div class="ecard">
+<div class="eicon">💬</div><div class="etitle">AI 패턴 말하기</div>
+<div class="einfo">3개 핵심 표현</div>
+<div class="etb">Reading Level C > Unit 8: The Blockbuster Effect</div>
+<div class="edesc">핵심 표현을 하나씩 익히고,<br>직접 문장을 만들어 말해보세요!</div>
+<button class="startb" onclick="startAll()">학습 시작</button>
+</div></div></div>
+<div id="sM" class="scr">
+<div class="hdr"><div class="hdr-l"><div class="tb">Reading Level C</div><div class="ut">Unit 8: The Blockbuster Effect</div></div>
+<div class="hdr-r"><div class="mn">Step 6 • AI 패턴 말하기</div><div class="prg" id="prg"></div><button class="xb" onclick="doExit()">✕</button></div></div>
+<div class="lc">
+  <div class="smsg" id="sMsg"></div>
+  <div class="prog-row"><span class="prog-txt" id="pLbl"></span><div class="prog-bar"><div class="prog-fill" id="pFill"></div></div></div>
+  <div id="mainArea"></div>
+</div>
+<div class="bb" id="bb"><button class="bb-btn" id="bbBtn" onclick="bbClick()">다음</button></div>
+</div>
+<div id="sR" class="scr"><div class="rc">
+<div class="ricon">💬</div><div class="rtitle">AI 패턴 말하기 완료</div>
+<div class="rscN" id="fScN">0</div><div class="rscL">점</div>
+<div class="rsc2">획득 포인트: 50 P</div>
+<div class="r-list" id="rList"></div>
+<div class="rmsg2" id="fMsg"></div>
+<div class="rbs"><button class="rb1" onclick="alert('다음 모듈로 이동합니다!')">다음 학습</button>
+<button class="rb2" onclick="showRt()">다시 학습하기<div class="ri">복습하고 보너스 포인트도 챙기세요!</div></button></div>
+</div></div>
+
+<script>
+var D=[
+  {pattern:'be tired of ~',hl:'be <span class="hl">tired of</span> ~',
+   ko:'~에 지치다, ~에 질리다',en:'to be bored or annoyed with something',
+   ex:{en:'I am <span class="hl">tired of</span> eating the same lunch every day.',plain:'I am tired of eating the same lunch every day.',ko:'나는 매일 같은 점심을 먹는 것에 질렸어.'},
+   sents:[
+     {label:'지문 문장',ko:'나는 매일 같은 점심을 먹는 것에 질렸어.',full:'I am tired of eating the same lunch every day.',blanked:'I am _____ _____ eating the same lunch every day.'},
+     {label:'추가 예문',ko:'그녀는 혼자 숙제하는 것에 지쳤어.',full:'She is tired of doing homework alone.',blanked:'She is _____ _____ doing homework alone.'},
+     {label:'추가 예문',ko:'우리는 버스를 기다리는 것에 지쳤어.',full:'We are tired of waiting for the bus.',blanked:'We are _____ _____ waiting for the bus.'}
+   ]},
+  {pattern:'be supposed to ~',hl:'be <span class="hl">supposed to</span> ~',
+   ko:'~하기로 되어 있다',en:'to be expected or required to do something',
+   ex:{en:'You are <span class="hl">supposed to</span> finish your homework before dinner.',plain:'You are supposed to finish your homework before dinner.',ko:'너는 저녁 전에 숙제를 끝내기로 되어 있어.'},
+   sents:[
+     {label:'지문 문장',ko:'너는 저녁 전에 숙제를 끝내기로 되어 있어.',full:'You are supposed to finish your homework before dinner.',blanked:'You are _____ _____ finish your homework before dinner.'},
+     {label:'추가 예문',ko:'우리는 8시까지 도착하기로 되어 있어.',full:'We are supposed to arrive by eight.',blanked:'We are _____ _____ arrive by eight.'},
+     {label:'추가 예문',ko:'학생들은 교복을 입기로 되어 있어.',full:'Students are supposed to wear uniforms.',blanked:'Students are _____ _____ wear uniforms.'}
+   ]},
+  {pattern:'end up ~ing',hl:'<span class="hl">end up</span> ~ing',
+   ko:'결국 ~하게 되다',en:'to finally be in a particular situation',
+   ex:{en:'We <span class="hl">ended up</span> staying home all weekend.',plain:'We ended up staying home all weekend.',ko:'우리는 결국 주말 내내 집에 있게 되었어.'},
+   sents:[
+     {label:'지문 문장',ko:'우리는 결국 주말 내내 집에 있게 되었어.',full:'We ended up staying home all weekend.',blanked:'We _____ _____ staying home all weekend.'},
+     {label:'추가 예문',ko:'그는 결국 걸어서 학교에 갔어.',full:'He ended up walking to school.',blanked:'He _____ _____ walking to school.'},
+     {label:'추가 예문',ko:'나는 결국 그 영화를 다시 봤어.',full:'I ended up watching that movie again.',blanked:'I _____ _____ watching that movie again.'}
+   ]}
+];
+
+var meaningMode="ko",pIdx=0,sentIdx=0,ownIdx=0,recState='idle',recTimer=null,recSecs=0,cur='entry',bbAction=null;
+var ttsHeard=false,sentTries={},ownTries={},patScores={},ownOrder=[];
+
+var fakeTranscripts=[
+  "I am tired of eating the same lunch every day",
+  "She is supposed to finish homework before dinner",
+  "We ended up staying at home all weekend",
+  "I am tired of waiting for the bus every morning",
+  "They are supposed to arrive by eight o'clock",
+  "He ended up walking to school again"
+];
+var goodComments=[
+  "아주 잘했어요! 패턴을 자연스럽게 사용했고, 문장 구조도 완벽해요. 이 표현을 일상에서 써보면 금방 익숙해질 거예요! 😊",
+  "훌륭해요! 패턴의 의미를 정확하게 이해하고 문장에 잘 녹여냈어요. 자신감을 가지고 더 다양한 문장을 만들어보세요! 🌟",
+  "정말 잘 만들었어요! 이 패턴을 자기 것으로 만들었네요. 다른 상황에서도 이 표현을 활용해보면 영어가 더 풍부해질 거예요! ✨"
+];
+var okComments=[
+  "좋은 시도예요! 패턴은 잘 사용했는데, 문장을 조금 더 자연스럽게 다듬어보면 어떨까요? 한 번 더 도전해보세요! 💪",
+  "괜찮아요! 패턴의 기본 구조는 맞았어요. 문장 뒤에 구체적인 내용을 더 붙여보면 더 좋은 문장이 될 거예요. 다시 해볼까요? 😊",
+  "잘 하고 있어요! 패턴 사용법을 거의 익혔네요. 발음에 조금 더 신경 쓰면서 한 번 더 연습하면 훨씬 좋아질 거예요! 🎯"
+];
+var badComments=[
+  "아직 조금 어렵죠? 괜찮아요! 위에 있는 예문을 다시 한번 읽어보고, 비슷한 구조로 문장을 만들어보세요. 천천히 하면 분명 잘할 수 있어요! 💛",
+  "처음이라 어려울 수 있어요. 패턴을 문장 안에 꼭 넣어서 말해보세요. 예를 들어 '주어 + 패턴 + 나머지' 순서로요. 다시 도전해볼까요? 😊",
+  "조금만 더 연습하면 돼요! 패턴의 뜻을 다시 한번 확인하고, 간단한 문장부터 시작해보세요. 짧은 문장도 충분히 좋아요! 🌱"
+];
+
+function setMode(m,b){meaningMode=m;document.querySelectorAll('.mb').forEach(function(x){x.classList.remove('on')});b.classList.add('on')}
+function getMeaning(d){return meaningMode==='ko'?d.ko:d.en}
+var isRetryMode=false;
+function goTo(n){speechSynthesis.cancel();recState='idle';clearInterval(recTimer);hideBB();
+  document.querySelectorAll('.scr').forEach(function(s){s.classList.remove('on')});
+  document.querySelectorAll('.nb').forEach(function(b){b.classList.remove('on')});
+  var map={entry:'sE',main:'sM',result:'sR'},idx={entry:0,main:1,result:2};
+  document.getElementById(map[n]).classList.add('on');document.querySelectorAll('.nb')[idx[n]].classList.add('on');
+  cur=n;window.scrollTo(0,0)}
+function navMain(){pIdx=0;sentIdx=0;sentTries={};ownTries={};patScores={};isRetryMode=false;goTo('main');showFC()}
+function startAll(){navMain()}
+function doExit(){
+  speechSynthesis.cancel();recState='idle';clearInterval(recTimer);
+  if(isRetryMode){
+    showExitModal('다시 학습을 종료하시겠습니까?','진행 상황이 저장되지 않습니다.','종료','취소',function(){goTo('entry')},null);
+  } else {
+    showExitModal('학습을 종료하시겠습니까?','진행 상황이 저장됩니다.','나가기','계속하기',function(){goTo('entry')},null);
+  }
+}
+function showExitModal(title,desc,okLabel,cancelLabel,onOk,onCancel){
+  document.getElementById('exitMT').textContent=title;
+  document.getElementById('exitMD').textContent=desc;
+  var okBtn=document.getElementById('exitMP');okBtn.textContent=okLabel;
+  var ccBtn=document.getElementById('exitMC');ccBtn.textContent=cancelLabel;
+  okBtn.onclick=function(){document.getElementById('exitP').classList.remove('sh');onOk()};
+  ccBtn.onclick=function(){document.getElementById('exitP').classList.remove('sh');if(onCancel)onCancel()};
+  document.getElementById('exitP').classList.add('sh');
+}
+function showBB(txt,fn){document.getElementById('bbBtn').textContent=txt;bbAction=fn;document.getElementById('bb').classList.add('sh')}
+function hideBB(){document.getElementById('bb').classList.remove('sh')}
+function bbClick(){hideBB();if(bbAction)bbAction()}
+function showRt(){document.getElementById('rP').classList.add('sh')}
+function clR(e){if(!e||e.target.id==='rP')document.getElementById('rP').classList.remove('sh')}
+function doRetry(){isRetryMode=true;pIdx=0;sentIdx=0;sentTries={};ownTries={};patScores={};goTo('main');showFC()}
+function updProg(c,t){document.getElementById('pLbl').textContent=c+' / '+t;document.getElementById('pFill').style.width=(c/t*100)+'%'}
+
+function speak(text){return new Promise(function(r){speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=.85;u.onend=function(){r()};u.onerror=function(){r()};speechSynthesis.speak(u)})}
+
+// ===== FLASHCARD =====
+var fcFlipped=false,fcFirstFlip=true,fcSide='front';
+
+function showFC(){
+  var d=D[pIdx];
+  fcFlipped=false;fcFirstFlip=true;fcSide='front';
+  document.getElementById('prg').textContent='패턴 '+(pIdx+1)+'/'+D.length;
+  document.getElementById('sMsg').textContent='핵심 표현을 확인하세요.';
+  updProg(pIdx*2+1, D.length*2+1);
+  var area=document.getElementById('mainArea');
+  area.innerHTML='<div class="fc-wrap"><div class="fc-inner" id="fcInner" onclick="fcToggle()">'+
+    '<div class="fc-face fc-front" id="fcFront">'+
+      '<div class="fc-spk" id="fcSpkF" onclick="event.stopPropagation();playFront()">🔊</div>'+
+      '<div class="pat">'+d.hl+'</div></div>'+
+    '<div class="fc-face fc-back" id="fcBack">'+
+      '<div class="mean">'+getMeaning(d)+'</div>'+
+      '<div class="fc-spk" id="fcSpkB" onclick="event.stopPropagation();playBack()" style="margin-top:12px">🔊</div>'+
+    '</div></div></div>';
+  hideBB();
+  // Auto-play front TTS
+  setTimeout(function(){playFrontAuto()},400);
+}
+
+function playFrontAuto(){
+  var d=D[pIdx];
+  var front=document.getElementById('fcFront');
+  var btn=document.getElementById('fcSpkF');
+  if(front)front.classList.add('playing');
+  if(btn)btn.innerHTML='<div class="wave"><span></span><span></span><span></span><span></span></div>';
+  var done=false;
+  function finish(){
+    if(done)return;done=true;
+    if(btn)btn.textContent='🔊';
+    if(front)front.classList.remove('playing');
+    if(fcFirstFlip){fcFirstFlip=false;setTimeout(function(){doFlipToBack()},400)}
+  }
+  speak(d.pattern.replace(' ~','')).then(finish);
+  setTimeout(finish,3000);
+}
+
+function playFront(){
+  var d=D[pIdx];
+  var btn=document.getElementById('fcSpkF');
+  if(btn)btn.innerHTML='<div class="wave"><span></span><span></span><span></span><span></span></div>';
+  speak(d.pattern.replace(' ~','')).then(function(){if(btn)btn.textContent='🔊'});
+}
+
+function doFlipToBack(){
+  var inner=document.getElementById('fcInner');
+  if(!inner||fcFlipped)return;
+  fcFlipped=true;fcSide='back';
+  inner.classList.add('flipped');
+  // Auto-play back TTS after flip animation
+  setTimeout(function(){playBackAuto()},600);
+}
+
+function playBackAuto(){
+  var d=D[pIdx];
+  var btn=document.getElementById('fcSpkB');
+  if(btn)btn.innerHTML='<div class="wave"><span></span><span></span><span></span><span></span></div>';
+  var txt=getMeaning(d);var lang=meaningMode==='ko'?'ko-KR':'en-US';
+  var u=new SpeechSynthesisUtterance(txt);u.lang=lang;u.rate=.9;
+  u.onend=function(){
+    if(btn)btn.textContent='🔊';
+    showBB('다음',function(){sentIdx=0;loadSent()});
+  };
+  u.onerror=function(){if(btn)btn.textContent='🔊'};
+  speechSynthesis.cancel();speechSynthesis.speak(u);
+}
+
+function playBack(){
+  var d=D[pIdx];
+  var btn=document.getElementById('fcSpkB');
+  if(btn)btn.innerHTML='<div class="wave"><span></span><span></span><span></span><span></span></div>';
+  var txt=getMeaning(d);var lang=meaningMode==='ko'?'ko-KR':'en-US';
+  var u=new SpeechSynthesisUtterance(txt);u.lang=lang;u.rate=.9;
+  u.onend=function(){if(btn)btn.textContent='🔊'};
+  u.onerror=function(){if(btn)btn.textContent='🔊'};
+  speechSynthesis.speak(u);
+  setTimeout(function(){if(btn)btn.textContent='🔊'},3000);
+}
+
+function fcToggle(){
+  // After first auto-flip, allow manual toggle
+  if(fcFirstFlip)return; // Still in auto sequence
+  var inner=document.getElementById('fcInner');if(!inner)return;
+  speechSynthesis.cancel();
+  if(fcSide==='back'){
+    // Flip to front
+    fcSide='front';fcFlipped=false;
+    inner.classList.remove('flipped');
+    // Play front TTS (no auto-flip)
+    setTimeout(function(){playFront()},400);
+  }else{
+    // Flip to back
+    fcSide='back';fcFlipped=true;
+    inner.classList.add('flipped');
+    // Play back TTS
+    setTimeout(function(){playBack()},600);
+  }
+}
+
+// ===== SENTENCE PRACTICE =====
+function loadSent(){
+  hideBB();ttsHeard=false;ttsFirstPlay=true;
+  var d=D[pIdx],s=d.sents[sentIdx];
+  var key=pIdx+'_'+sentIdx;if(!sentTries[key])sentTries[key]=0;
+  document.getElementById('prg').textContent='패턴 '+(pIdx+1)+'/'+D.length;
+  document.getElementById('sMsg').textContent='문장을 듣고, 빈칸을 채워 말해보세요.';
+  updProg(pIdx*2+2, D.length*2+1);
+  var area=document.getElementById('mainArea');
+  area.innerHTML='<div class="scard">'+
+    '<div class="sent-label">'+(sentIdx===0?'📖 지문 문장':'📝 추가 예문')+' ('+(sentIdx+1)+'/'+d.sents.length+')</div>'+
+    '<div class="kotext">'+s.ko+'</div>'+
+    '<div class="stxt" id="sTxt">'+s.blanked+'</div>'+
+    '<div class="audio-row"><button class="audio-btn" id="listenBtn" onclick="playSent()">🔊</button></div>'+
+    '<div class="rec-area"><div class="rec-st" id="recSt">음원을 먼저 들어보세요</div>'+
+    '<button class="rec-btn off" id="recBtn" onclick="toggleSentRec()">🎤</button>'+
+    '<div class="rec-time" id="recTime" style="display:none">0:00</div></div></div>';
+  // Auto-play TTS
+  setTimeout(function(){playSent()},400);
+}
+var ttsActive=false,ttsFirstPlay=true;
+function playSent(){
+  if(ttsActive)return;
+  ttsActive=true;
+  var btn=document.getElementById('listenBtn');
+  btn.innerHTML='<div class="wave"><span></span><span></span><span></span><span></span></div>';
+  if(ttsFirstPlay){
+    // First play: unstoppable, disable listen button
+    ttsHeard=false;
+    btn.style.pointerEvents='none';btn.style.opacity='.6';
+  }
+  var done=false;
+  function finish(){
+    if(done)return;done=true;ttsActive=false;
+    btn.textContent='🔊';btn.style.pointerEvents='';btn.style.opacity='';
+    if(!ttsHeard){
+      ttsHeard=true;ttsFirstPlay=false;
+      var rb=document.getElementById('recBtn');if(rb)rb.className='rec-btn ready';
+      var rs=document.getElementById('recSt');if(rs)rs.textContent='준비되면 녹음 버튼을 눌러주세요';
+    }
+  }
+  speak(D[pIdx].sents[sentIdx].full).then(finish);
+  setTimeout(finish,8000);
+}
+function toggleSentRec(){
+  var btn=document.getElementById('recBtn');if(btn.classList.contains('off'))return;
+  if(recState==='idle'){
+    if(!ttsHeard)return;
+    // Stop TTS if replaying (2nd+ listen)
+    if(ttsActive){
+      speechSynthesis.cancel();ttsActive=false;
+      var lb=document.getElementById('listenBtn');if(lb){lb.textContent='🔊';lb.style.pointerEvents='';lb.style.opacity=''}
+    }
+    recState='recording';recSecs=0;btn.className='rec-btn recording';btn.textContent='⏹';
+    document.getElementById('recSt').textContent='녹음 중…';
+    document.getElementById('recTime').style.display='block';document.getElementById('recTime').textContent='0:00';
+    recTimer=setInterval(function(){recSecs++;var m=Math.floor(recSecs/60),s=recSecs%60;
+      document.getElementById('recTime').textContent=m+':'+(s<10?'0':'')+s},1000);
+  }else{
+    recState='idle';clearInterval(recTimer);document.getElementById('recTime').style.display='none';
+    btn.className='rec-btn off';
+    var key=pIdx+'_'+sentIdx;sentTries[key]++;
+    var pass=sentTries[key]>1||Math.random()>.35;
+    if(pass){
+      var s=D[pIdx].sents[sentIdx];
+      document.getElementById('sTxt').innerHTML=s.full.replace(/(tired of|supposed to|ended up)/gi,'<span class="hl">$1</span>');
+      document.getElementById('recSt').textContent='✅ 잘 읽었어요!';
+      setTimeout(function(){sentIdx++;if(sentIdx<D[pIdx].sents.length)loadSent();else nextAfterSents()},1000);
+    }else{
+      if(sentTries[key]>=3){
+        document.getElementById('sTxt').innerHTML=D[pIdx].sents[sentIdx].full;
+        document.getElementById('recSt').textContent='3회 시도 완료. 다음으로 넘어갑니다.';
+        setTimeout(function(){sentIdx++;if(sentIdx<D[pIdx].sents.length)loadSent();else nextAfterSents()},1200);
+      }else{
+        document.getElementById('recSt').textContent='❌ 빈칸 부분을 다시 말해보세요 ('+sentTries[key]+'/3)';
+        btn.className='rec-btn ready';ttsHeard=true;
+      }
+    }
+  }
+}
+function nextAfterSents(){
+  pIdx++;
+  if(pIdx<D.length){showFC()}
+  else{startOwnPhase()}
+}
+
+// ===== OWN SENTENCE =====
+function startOwnPhase(){
+  // Randomize pattern order for own sentences
+  ownOrder=[];for(var i=0;i<D.length;i++)ownOrder.push(i);
+  for(var i=ownOrder.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=ownOrder[i];ownOrder[i]=ownOrder[j];ownOrder[j]=t}
+  ownIdx=0;loadOwn();
+}
+function loadOwn(){
+  hideBB();
+  var pi=ownOrder[ownIdx],d=D[pi];
+  if(!ownTries[pi])ownTries[pi]=0;
+  document.getElementById('prg').textContent='패턴 '+(ownOrder[ownIdx]+1)+'/'+D.length;
+  document.getElementById('sMsg').textContent='패턴을 사용해서 나만의 영어 문장을 만들어보세요!';
+  updProg(D.length*2+1, D.length*2+1);
+  var area=document.getElementById('mainArea');
+  area.innerHTML='<div class="own-area">'+
+    '<div class="own-prompt">아래 패턴을 사용해서 나만의 문장을 말해보세요!</div>'+
+    '<div class="own-pattern">'+d.hl+'</div>'+
+    
+    '<div class="rec-area"><div class="rec-st" id="recSt">준비되면 녹음 버튼을 눌러주세요</div>'+
+    '<button class="rec-btn ready" id="recBtn" onclick="toggleOwnRec()">🎤</button>'+
+    '<div class="rec-time" id="recTime" style="display:none">0:00</div></div></div>';
+}
+function toggleOwnRec(){
+  var btn=document.getElementById('recBtn');if(btn.classList.contains('off'))return;
+  if(recState==='idle'){
+    recState='recording';recSecs=0;btn.className='rec-btn recording';btn.textContent='⏹';
+    document.getElementById('recSt').textContent='녹음 중…';
+    document.getElementById('recTime').style.display='block';document.getElementById('recTime').textContent='0:00';
+    recTimer=setInterval(function(){recSecs++;var m=Math.floor(recSecs/60),s=recSecs%60;
+      document.getElementById('recTime').textContent=m+':'+(s<10?'0':'')+s},1000);
+  }else{
+    recState='idle';clearInterval(recTimer);document.getElementById('recTime').style.display='none';
+    btn.className='rec-btn off';document.getElementById('recSt').textContent='⏳ 분석 중…';
+    var pi=ownOrder[ownIdx];ownTries[pi]++;
+    setTimeout(function(){showOwnResult(pi)},800);
+  }
+}
+function showOwnResult(pi){
+  var d=D[pi],tries=ownTries[pi];
+  var score;
+  if(pi===ownOrder[0]&&tries===1){score=Math.floor(Math.random()*8)+20}
+  else if(pi===ownOrder[1]&&tries===1){score=Math.floor(Math.random()*10)+25}
+  else{score=Math.floor(Math.random()*30)+60}
+  if(!patScores[pi]||score>patScores[pi])patScores[pi]=score;
+  var cls=score>=70?'good':score>=30?'ok':'bad';
+  var patUsed=score>=35;
+  var comment=score>=70?goodComments[pi%3]:score>=30?okComments[pi%3]:badComments[pi%3];
+  var transcript=fakeTranscripts[Math.floor(Math.random()*fakeTranscripts.length)];
+  // Simulated grammar feedback
+  var grammarComments=[
+    "문장 구조가 자연스럽고 문법적으로 정확해요!",
+    "'everyday'는 형용사예요. 'every day'로 띄어 쓰면 부사로 더 정확해요.",
+    "주어와 동사의 시제가 잘 맞아요. 'to' 뒤에 동사원형을 쓴 것도 정확해요!",
+    "문장이 조금 짧지만 문법은 맞아요. 뒤에 구체적인 내용을 더 붙여보면 좋겠어요.",
+    "'be tired of' 뒤에는 동명사(-ing)가 와야 해요. 확인해보세요!",
+    "좋은 문장이에요! 'supposed to' 다음에 동사원형을 정확히 사용했어요."
+  ];
+  var gramComment=grammarComments[Math.floor(Math.random()*grammarComments.length)];
+  var corrected=score<50?d.ex.plain:null;
+
+  var isLast=ownIdx>=D.length-1;
+  var nextLabel=isLast?'결과 보기':'다음 패턴 →';
+  var html='<div class="rpanel sh">';
+  html+='<div class="rscore-big '+cls+'"><div class="num">'+score+'</div><div class="lbl">점수</div></div>';
+  html+='<div class="transcript-box"><div class="tl">🎤 내가 말한 문장</div><div class="tt">"'+transcript+'"</div></div>';
+  html+='<div class="rfeedback">';
+  html+='<div class="rf-item"><div class="rf-icon">'+(patUsed?'✅':'⚠️')+'</div><div><div class="rf-label">패턴 사용</div><div class="rf-val">'+(patUsed?d.pattern+' 패턴이 올바르게 사용되었어요!':'패턴이 문장에 포함되지 않은 것 같아요. 다시 시도해보세요!')+'</div></div></div>';
+  html+='<div class="rf-item"><div class="rf-icon">📝</div><div><div class="rf-label">문법 코멘트</div><div class="rf-val">'+gramComment+'</div></div></div>';
+  if(corrected){
+    html+='<div class="rf-item"><div class="rf-icon">✏️</div><div><div class="rf-label">교정 문장</div><div class="rf-val" style="font-style:italic;color:#1976D2">'+corrected+'</div></div></div>';
+  }
+  html+='<div class="rf-item"><div class="rf-icon">💬</div><div><div class="rf-label">종합 코멘트</div><div class="rf-val">'+comment+'</div></div></div>';
+  html+='</div>';
+  html+='<div class="racts">';
+  if(score<30&&tries<3){
+    html+='<button class="ra-btn ra-retry" onclick="retryOwn()">🔄 다시 시도 ('+tries+'/3)</button>';
+    html+='</div><div class="ra-must">30점 이상이어야 다음으로 넘어갈 수 있어요 ('+tries+'/3회)</div>';
+  }else if(score<30&&tries>=3){
+    html+='<button class="ra-btn ra-next" onclick="nextOwn()">'+nextLabel+'</button>';
+    html+='</div><div class="ra-must">최대 시도 횟수에 도달했어요. 가장 높은 점수로 저장됩니다.</div>';
+  }else if(tries<3){
+    html+='<button class="ra-btn ra-retry" onclick="retryOwn()">🔄 다시 시도 ('+tries+'/3)</button>';
+    html+='<button class="ra-btn ra-next" onclick="nextOwn()">'+nextLabel+'</button></div>';
+  }else{
+    html+='<button class="ra-btn ra-next" onclick="nextOwn()">'+nextLabel+'</button></div>';
+  }
+  html+='</div>';
+  document.getElementById('mainArea').innerHTML=html;
+}
+function retryOwn(){loadOwn()}
+function nextOwn(){ownIdx++;if(ownIdx>=D.length){showFinal();goTo('result')}else loadOwn()}
+
+function showFinal(){
+  var avg=0,cnt=0;for(var k in patScores){avg+=patScores[k];cnt++}
+  avg=cnt?Math.round(avg/cnt):0;
+  document.getElementById('fScN').textContent=avg;
+  var m=document.getElementById('fMsg');
+  if(avg>=80)m.textContent='훌륭해요! 패턴을 아주 잘 활용했어요! 🌟';
+  else if(avg>=60)m.textContent='잘했어요! 꾸준히 연습하면 더 좋아질 거예요!';
+  else m.textContent='괜찮아요! 다시 한번 연습해보세요! 💪';
+  var list=document.getElementById('rList');list.innerHTML='';
+  D.forEach(function(d,i){var sc=patScores[i]||0;var cls=sc>=70?'good':sc>=30?'ok':'bad';
+    list.innerHTML+='<div class="r-item"><div class="r-pat">'+d.pattern+'</div><div class="r-sc '+cls+'">'+sc+'점</div></div>'});
+}
+
+var left=false,wasRecording=false;
+function onL(){if(cur==='main'&&!left){left=true;speechSynthesis.cancel();
+  wasRecording=false;
+  if(recState==='recording'){wasRecording=true;recState='idle';clearInterval(recTimer);var rt=document.getElementById('recTime');if(rt)rt.style.display='none'}
+  document.getElementById('lO').classList.add('sh')}}
+function onR(){if(left){left=false;document.getElementById('lO').classList.remove('sh');
+  if(wasRecording){
+    var btn=document.getElementById('recBtn');
+    if(btn){btn.className='rec-btn ready';btn.textContent='🎤'}
+    var rs=document.getElementById('recSt');if(rs)rs.textContent='준비되면 녹음 버튼을 눌러주세요';
+    wasRecording=false;
+  }
+}}
+document.addEventListener('visibilitychange',function(){document.hidden?onL():onR()});
+document.addEventListener('mouseleave',onL);document.addEventListener('mouseenter',onR);
+</script>
+</body>
+</html>

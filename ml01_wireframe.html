@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML01: 지문 듣고 단어 수집</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Malgun Gothic',sans-serif;background:#f5f5f5}
+.gnav{position:fixed;top:0;left:0;right:0;background:#fff;padding:16px 32px;border-bottom:2px solid #e0e0e0;box-shadow:0 2px 8px rgba(0,0,0,.1);z-index:1000;display:flex;align-items:center}
+.gnav-l{display:flex;align-items:center;gap:16px}.gnav-t{font-size:16px;font-weight:600;color:#212121}
+.gnav-b{display:flex;gap:8px}.nb{padding:10px 20px;background:#fff;border:2px solid #e0e0e0;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;transition:all .2s}
+.nb:hover{border-color:#2196F3;color:#2196F3}.nb.on{background:#2196F3;color:#fff;border-color:#2196F3}
+.scr{display:none;min-height:100vh;padding-top:64px}.scr.on{display:block}
+.hdr{background:#fff;padding:20px 32px;border-bottom:1px solid #e0e0e0;display:flex;justify-content:space-between;align-items:center}
+.hdr-l .tb{font-size:13px;color:#757575;margin-bottom:4px}.hdr-l .ut{font-size:16px;color:#212121;font-weight:600}
+.hdr-r{display:flex;align-items:center;gap:24px}.mn{font-size:13px;color:#757575}
+.prg{font-size:16px;color:#2196F3;font-weight:600}.xb{width:32px;height:32px;border:none;background:none;cursor:pointer;font-size:24px;color:#757575}
+.ent{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f5f5f5;padding:40px}
+.ecard{max-width:600px;width:100%;background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.1);padding:48px;text-align:center}
+.eicon{font-size:64px;margin-bottom:24px}.etitle{font-size:28px;font-weight:700;color:#212121;margin-bottom:16px}
+.einfo{font-size:18px;color:#2196F3;font-weight:600;margin-bottom:8px}.etime{font-size:15px;color:#757575;margin-bottom:8px}
+.etb{font-size:14px;color:#9E9E9E;margin-bottom:32px}
+.edesc{font-size:16px;color:#616161;line-height:1.6;margin-bottom:40px}
+.startb{width:100%;padding:20px;background:#2196F3;color:#fff;border:none;border-radius:12px;font-size:18px;font-weight:600;cursor:pointer;transition:all .3s}
+.startb:hover{background:#1976D2;transform:translateY(-2px)}
+.lc{padding:24px 48px;max-width:900px;margin:0 auto;padding-bottom:180px}
+.smsg{background:#E3F2FD;padding:16px 24px;border-radius:12px;text-align:center;margin-bottom:16px;font-size:15px;color:#1976D2;font-weight:600}
+.ac{background:#fff;border-radius:12px;padding:14px 20px;margin-bottom:16px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.pb{width:44px;height:44px;border-radius:50%;border:none;background:#2196F3;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.pb:hover{background:#1976D2;transform:scale(1.05)}.pb.pg{background:#FF9800}.pb.pg:hover{background:#F57C00}
+.pw2{flex:1;display:flex;flex-direction:column;gap:3px}
+.pbar{height:5px;background:#E0E0E0;border-radius:3px;overflow:hidden}.pfill{height:100%;background:#2196F3;border-radius:3px;transition:width .3s;width:0}
+.plbl{font-size:12px;color:#9E9E9E;display:flex;justify-content:space-between}
+.dbdg{display:none;font-size:12px;color:#4CAF50;font-weight:600}.dbdg.sh{display:inline}
+.sctrl{display:flex;gap:4px;flex-shrink:0}
+.sb{padding:4px 10px;border:1.5px solid #E0E0E0;border-radius:6px;background:#fff;font-size:12px;font-weight:600;cursor:pointer;color:#757575;transition:all .2s}
+.sb.on{border-color:#2196F3;color:#2196F3;background:#E3F2FD}.sb:hover{border-color:#2196F3}
+.pbox{background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.06);overflow:hidden}
+.phdr{padding:20px 28px 0}.pttl{font-size:20px;font-weight:700;color:#212121;padding-bottom:10px;border-bottom:2px solid #E3F2FD}
+.pscr{height:380px;overflow-y:auto;padding:16px 28px 28px;scroll-behavior:smooth;line-height:2.2;font-size:17px;color:#333}
+.pblk{margin-bottom:14px}
+.snt{display:inline;transition:background .3s;border-radius:4px;padding:2px 0}.snt.hl{background:#FFF9C4;box-shadow:0 0 0 3px #FFF9C4}
+.w{transition:all .15s;border-radius:3px;padding:0 1px}.w.can{cursor:pointer}.w.can:hover{background:#E3F2FD}
+.w.got{background:#E3F2FD;border-bottom:2px solid #2196F3;color:#1565C0;font-weight:600}.w:not(.can){cursor:default}
+
+/* Bottom bar with fixed collected words */
+.bb{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid #e0e0e0;box-shadow:0 -4px 12px rgba(0,0,0,.1);transform:translateY(100%);transition:transform .4s cubic-bezier(.4,0,.2,1);z-index:100}
+.bb.sh{transform:translateY(0)}
+.bb-inner{padding:16px 32px}
+.bb-slots{display:flex;gap:8px;overflow-x:auto;padding:8px 0;scrollbar-width:thin;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
+.bb-slots::-webkit-scrollbar{height:4px}.bb-slots::-webkit-scrollbar-thumb{background:#BDBDBD;border-radius:2px}
+.bb-slot{flex-shrink:0;height:40px;min-width:72px;padding:0 14px;border:2px dashed #E0E0E0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#BDBDBD;background:#FAFAFA;transition:all .3s;white-space:nowrap}
+.bb-slot.filled{border:2px solid #2196F3;background:#E3F2FD;color:#1565C0;font-size:13px;font-weight:700;cursor:pointer;min-width:auto;padding:0 16px;gap:6px}
+.bb-slot.filled:hover{background:#BBDEFB}
+.bb-slot .sx{font-size:11px;color:#90CAF9;cursor:pointer;margin-left:2px}.bb-slot .sx:hover{color:#F44336}
+.bb-slot.bn{animation:bn .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes bn{0%{transform:scale(.5);opacity:0}50%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.bb-empty{font-size:13px;color:#BDBDBD;padding:8px 0}
+.bb-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.bb-lbl{font-size:13px;color:#757575;font-weight:600}.bb-cnt{font-size:13px;color:#2196F3;font-weight:700}
+.bb-msg{font-size:14px;color:#757575;text-align:center;padding:8px 0}
+.bb-acts{display:flex;gap:12px;justify-content:center;padding-top:12px}
+.b1{padding:14px 48px;background:#2196F3;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer;transition:all .3s}
+.b1:hover:not(:disabled){background:#1976D2;transform:translateY(-2px)}.b1:disabled{opacity:.4;cursor:not-allowed}
+.b2{padding:14px 32px;background:#fff;color:#2196F3;border:2px solid #2196F3;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer}.b2:hover{background:#E3F2FD}
+
+.rc{max-width:600px;margin:80px auto;padding:48px;background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.1);text-align:center}
+.ricon{font-size:80px;margin-bottom:24px}.rtitle{font-size:28px;font-weight:bold;color:#212121;margin-bottom:24px}
+.rscore{font-size:18px;color:#FF9800;font-weight:bold;margin-bottom:24px}
+.rdet{font-size:16px;color:#616161;line-height:1.6;margin-bottom:12px}
+.rmsg{font-size:17px;color:#212121;line-height:1.6;margin-bottom:32px}
+.rwg{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:32px}
+.rwt{display:inline-flex;align-items:center;gap:6px;background:#E3F2FD;color:#1565C0;padding:8px 16px;border-radius:20px;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s}
+.rwt:hover{background:#BBDEFB;transform:translateY(-2px)}
+.rbs{display:flex;flex-direction:column;gap:12px}
+.rb1{width:100%;padding:18px;background:#2196F3;color:#fff;border:none;border-radius:12px;font-size:17px;font-weight:bold;cursor:pointer}.rb1:hover{background:#1976D2}
+.rb2{width:100%;padding:18px;background:#fff;color:#2196F3;border:2px solid #2196F3;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer}.rb2:hover{background:#E3F2FD}
+.ri{font-size:13px;color:#757575;margin-top:8px}
+.toast{position:fixed;bottom:140px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(0,0,0,.8);color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:500;z-index:2000;opacity:0;transition:all .3s;pointer-events:none}.toast.sh{opacity:1;transform:translateX(-50%) translateY(0)}
+.mo{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:3000;opacity:0;visibility:hidden;transition:all .3s}.mo.sh{opacity:1;visibility:visible}
+.mc{background:#fff;padding:32px;border-radius:16px;max-width:400px;width:90%;text-align:center}
+.mi{font-size:48px;margin-bottom:16px}.mt{font-size:18px;font-weight:700;color:#212121;margin-bottom:12px}
+.md{font-size:15px;color:#757575;margin-bottom:24px;line-height:1.5}
+.ma{display:flex;gap:12px;justify-content:center}.mb{padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer}
+.mbs{background:#fff;border:2px solid #e0e0e0;color:#757575}.mbp{background:#2196F3;border:none;color:#fff}
+.po{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:none;z-index:9999;opacity:0;transition:opacity .3s}.po.sh{display:block;opacity:1}
+.psh{position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:24px 24px 0 0;padding:32px 24px 24px;transform:translateY(100%);transition:transform .3s;z-index:10000}
+.po.sh .psh{transform:translateY(0)}.pt2{font-size:20px;font-weight:bold;color:#212121;margin-bottom:8px;text-align:center}
+.pbs{display:flex;gap:12px}.ppb{flex:1;padding:16px;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;border:none}
+.ppb.cc{background:#F5F5F5;color:#616161}.ppb.cf{background:#2196F3;color:#fff}
+.lo{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:5000;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all .3s}.lo.sh{opacity:1;visibility:visible}
+@media(max-width:768px){
+.gnav{flex-direction:column;gap:12px;padding:12px 16px}.gnav-l{flex-direction:column;gap:8px;width:100%}.gnav-b{width:100%;overflow-x:auto}
+.lc{padding:16px;padding-bottom:200px}.scr{padding-top:120px}.pscr{height:260px;font-size:15px;padding:12px 16px}
+.ac{flex-wrap:wrap;gap:8px;padding:12px}.sctrl{width:100%;justify-content:center}
+.bb-inner{padding:12px 16px}.bb-acts{flex-direction:column}.b1,.b2{width:100%}
+}
+</style>
+</head>
+<body>
+<div class="gnav"><div class="gnav-l"><div class="gnav-t">📱 ML01: 지문 듣고 단어 수집</div><div class="gnav-b">
+<button class="nb on" onclick="goTo('entry')">1. 진입</button>
+<button class="nb" onclick="navListen()">2. 청독</button>
+<button class="nb" onclick="navCollect()">3. 단어 수집</button>
+<button class="nb" onclick="goTo('result')">4. 결과</button>
+<button class="nb" onclick="demoResume()" style="border-color:#FF9800;color:#FF9800">5. 재진입</button>
+</div></div></div>
+
+<div class="toast" id="toast"></div>
+<div class="po" id="rP" onclick="clR(event)"><div class="psh" onclick="event.stopPropagation()"><div class="pt2">다시 들어볼까요?</div><div class="pbs"><button class="ppb cc" onclick="clR()">취소</button><button class="ppb cf" onclick="clR();doRetry()">확인</button></div></div></div>
+<!-- Exit modal (custom labels) -->
+<div class="mo" id="exitM"><div class="mc"><div class="mi">📝</div><div class="mt" id="exitMT"></div><div class="md" id="exitMD"></div><div class="ma"><button class="mb mbs" id="exitMC"></button><button class="mb mbp" id="exitMP"></button></div></div></div>
+<!-- Resume modal (이어서 학습하시겠습니까?) -->
+<div class="mo" id="resumeM"><div class="mc"><div class="mi">📖</div><div class="mt">이어서 학습하시겠습니까?</div><div class="md">이전에 수집한 단어가 있습니다.</div><div class="ma"><button class="mb mbs" onclick="clM('resumeM');resumeFromStart()">처음부터</button><button class="mb mbp" onclick="clM('resumeM');resumeContinue()">이어하기</button></div></div></div>
+<div class="lo" id="lO"><div><div style="font-size:64px;text-align:center;margin-bottom:16px">👀</div><div style="font-size:20px;color:#fff;font-weight:600;text-align:center">학습 화면으로 돌아와주세요</div></div></div>
+
+<div id="sE" class="scr on"><div class="ent"><div class="ecard">
+<div class="eicon">🎧</div><div class="etitle">지문 듣고 단어 수집</div>
+<div class="einfo">지문 1개</div><div class="etime">⏱ 예상 소요시간: 약 2분</div>
+<div class="etb">Reading Level C > Unit 8: The Blockbuster Effect</div>
+<div class="edesc">지문을 집중해서 듣고, 모르는 단어를 수집해볼까요?</div>
+<button class="startb" onclick="startAll()">학습 시작</button>
+</div></div></div>
+
+<div id="sM" class="scr">
+<div class="hdr"><div class="hdr-l"><div class="tb">Reading Level C</div><div class="ut">Unit 8: The Blockbuster Effect</div></div><div class="hdr-r"><div class="mn">Step 1 • 지문 듣고 단어 수집</div><div class="prg" id="prg">듣기 준비</div><button class="xb" onclick="doExit()">✕</button></div></div>
+<div class="lc">
+  <div class="smsg" id="sMsg">음원을 들으면서 지문 내용을 읽어보세요.</div>
+  <div class="ac">
+    <button class="pb" id="pBtn" onclick="togglePlay()">▶</button>
+    <div class="pw2"><div class="pbar"><div class="pfill" id="pF"></div></div><div class="plbl"><span id="pC">0 / 0 문장</span><span class="dbdg" id="dB">✅ 듣기 완료</span></div></div>
+    <div class="sctrl"><button class="sb" onclick="setSp(.6,this)">0.6x</button><button class="sb" onclick="setSp(.8,this)">0.8x</button><button class="sb on" onclick="setSp(1,this)">1.0x</button></div>
+  </div>
+  <div class="pbox"><div class="phdr"><div class="pttl">The Blockbuster Effect</div></div><div class="pscr" id="ps"></div></div>
+</div>
+<!-- Bottom bar: collected words + actions -->
+<div class="bb" id="bb">
+  <div class="bb-inner">
+    <!-- Collected chips row (hidden in pass 1) -->
+    <div id="chipArea" style="display:none">
+      <div class="bb-row"><span class="bb-lbl">📥 수집한 단어</span><span class="bb-cnt" id="chipCnt">0개</span></div>
+      <div class="bb-slots" id="chipRow"></div>
+    </div>
+    <!-- Message + buttons -->
+    <div class="bb-msg" id="bbMsg"></div>
+    <div class="bb-acts" id="bbActs"></div>
+  </div>
+</div>
+</div>
+
+<div id="sR" class="scr"><div class="rc">
+<div class="ricon" id="rI">📋</div><div class="rtitle">지문 듣고 단어 수집 완료</div>
+<div class="rscore">획득 포인트: 50 P</div>
+<div class="rdet" id="rD"></div><div class="rmsg" id="rM"></div>
+<div class="rbs"><button class="rb1" onclick="alert('다음 모듈로 이동합니다!')">다음 학습</button>
+<button class="rb2" onclick="showRt()">다시 학습하기<div class="ri">복습하고 보너스 포인트도 챙기세요!</div></button></div>
+</div></div>
+
+<script>
+var P=[
+["JOE SWANBERG makes films about the romantic lives of young urbanites.","He shoots quickly with a digital camera and asks actors to wear their own clothes.","His films, which tend to cost between $30,000 and $50,000 to make, are almost never shown in cinemas.","Instead they are available on pay-television as video-on-demand, as downloads from iTunes or as DVDs.","By keeping his costs down and distributing digitally, Mr Swanberg is making a living."],
+["Technology was expected to help young artists like Mr Swanberg.","In 2006 Chris Anderson predicted that the internet would vastly increase the supply of niche media products and bring audiences to them.","That has certainly happened.","But so has the opposite.","In film, music, television and books, blockbusters are tightening their grip on audiences and advertisers.","The loser in a world of almost limitless entertainment choice is not the hit, but the near-miss."]
+];
+var STOP=new Set("a,an,the,is,am,are,was,were,be,been,being,do,does,did,have,has,had,will,would,shall,should,can,could,may,might,must,of,in,on,at,to,for,with,by,from,as,into,about,between,through,after,before,during,without,within,among,along,across,against,upon,toward,than,so,or,and,but,nor,not,no,if,then,else,when,while,where,which,who,whom,whose,what,how,that,this,these,those,it,its,he,she,they,we,you,me,him,her,us,them,my,your,his,our,their,mine,yours,ours,theirs,much,many,more,most,some,any,each,every,all,both,few,several,own,other,another,such,very,too,also,just,only,even,still,already,yet,now,here,there,up,down,out,off,over,under,again,further,once,well,back,i,like".split(","));
+function cl(w){return w.replace(/[.,!?;:\u201C\u201D\u2018\u2019\u2014()\[\]$"']/g,'').toLowerCase()}
+function isC(w){var c=cl(w);return c.length>2&&!STOP.has(c)&&!/^\d/.test(c)&&!/^\[/.test(w)}
+
+var allS=[];P.forEach(function(p){p.forEach(function(s){allS.push(s)})});
+var collected=[],playing=false,paused=false,aborted=false,retryM=false,cur='entry',spd=1,aIdx=-1,pass=0,playGen=0;
+
+function setSp(r,b){spd=r;document.querySelectorAll('.sb').forEach(function(x){x.classList.remove('on')});b.classList.add('on')}
+
+function renderP(){
+  var el=document.getElementById('ps');el.innerHTML='';var gi=0;
+  P.forEach(function(para){
+    var d=document.createElement('div');d.className='pblk';
+    para.forEach(function(sent){
+      var sp=document.createElement('span');sp.className='snt';sp.id='s'+gi;sp.setAttribute('data-gi',gi);
+      sent.split(/(\s+)/).forEach(function(tok){
+        if(/^\s+$/.test(tok)){sp.appendChild(document.createTextNode(tok));return}
+        var e=document.createElement('span'),cw=cl(tok),ic=isC(tok);
+        e.className='w';e.textContent=tok;e.setAttribute('data-w',cw);e.setAttribute('data-gi',gi);
+        if(ic) e.addEventListener('click',function(ev){
+          ev.stopPropagation();var g=parseInt(e.getAttribute('data-gi'));
+          if(pass===1){showToast('듣기에 집중하세요! 단어 수집은 다음 단계에서 할 수 있어요');return}
+          
+          if(pass===0){showToast('재생 버튼을 눌러주세요');return}
+          toggle(cw);
+        });
+        if(collected.indexOf(cw)>-1)e.classList.add('got');
+        sp.appendChild(e);
+      });
+      d.appendChild(sp);d.appendChild(document.createTextNode(' '));gi++;
+    });el.appendChild(d);
+  });updateW();
+}
+
+function updateW(){
+  document.querySelectorAll('#ps .w').forEach(function(e){
+    var gi=parseInt(e.getAttribute('data-gi')),ic=isC(e.textContent),cw=e.getAttribute('data-w');
+    var can=false;
+    if(ic){if(pass===2||pass===3)can=true;}
+    can?e.classList.add('can'):e.classList.remove('can');
+    collected.indexOf(cw)>-1?e.classList.add('got'):e.classList.remove('got');
+  });
+}
+
+// ===== Bottom bar chips =====
+function renderChips(){
+  var row=document.getElementById('chipRow');row.innerHTML='';
+  document.getElementById('chipCnt').textContent=collected.length+'개';
+  var show=Math.max(5,collected.length+1);
+  for(var i=0;i<show;i++){
+    var s=document.createElement('span');s.className='bb-slot';s.id='ch'+i;
+    if(i<collected.length){
+      s.classList.add('filled');
+      var w=collected[i];
+      s.innerHTML=w+' <span class="sx" onclick="event.stopPropagation();toggle(\''+w+'\')">✕</span>';
+    }else{
+      s.textContent=(i+1);
+    }
+    row.appendChild(s);
+  }
+  setTimeout(function(){
+    if(collected.length>0){
+      var last=document.getElementById('ch'+(collected.length-1));
+      if(last)last.scrollIntoView({behavior:'smooth',inline:'end',block:'nearest'});
+    }
+  },50);
+}
+
+function toggle(w){
+  var i=collected.indexOf(w);var isNew=false;
+  if(i>-1){collected.splice(i,1)}
+  else{collected.push(w);isNew=true}
+  renderChips();updateW();
+  if(isNew){
+    var last=document.getElementById('ch'+(collected.length-1));
+    if(last){last.classList.add('bn');last.addEventListener('animationend',function(){last.classList.remove('bn')},{once:true})}
+  }
+}
+
+function speak(t){return new Promise(function(r){var u=new SpeechSynthesisUtterance(t);u.lang='en-US';u.rate=spd;u.onend=function(){r()};u.onerror=function(){r()};speechSynthesis.speak(u)})}
+function speakW(w){speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(w);u.lang='en-US';u.rate=.85;speechSynthesis.speak(u)}
+
+// ===== Pass 1: pure listen =====
+async function playP1(){
+  if(playing)return;var gen=++playGen;playing=true;paused=false;aborted=false;pass=1;
+  document.getElementById('pBtn').textContent='\u23F8';document.getElementById('pBtn').classList.add('pg');
+  document.getElementById('sMsg').textContent='1차 듣기 \u2014 지문 내용에 집중하며 들어보세요.';
+  document.getElementById('chipArea').style.display='none';
+  document.getElementById('bb').classList.remove('sh');
+  var start=aIdx<0?0:aIdx;
+  for(var i=start;i<allS.length;i++){
+    if(aborted)break;
+    while(paused&&!aborted)await new Promise(function(r){setTimeout(r,100)});
+    if(aborted)break;
+    aIdx=i;
+    var el=document.getElementById('s'+i),sc=document.getElementById('ps');
+    if(el){el.classList.add('hl');sc.scrollTop=el.offsetTop-sc.offsetTop-80}
+    document.getElementById('pC').textContent=(i+1)+' / '+allS.length+' 문장';
+    document.getElementById('pF').style.width=((i+1)/allS.length*100)+'%';
+    document.getElementById('prg').textContent='1차 듣기 '+(i+1)+'/'+allS.length;
+    await speak(allS[i]);
+    if(el)el.classList.remove('hl');
+  }
+  if(gen!==playGen)return;
+  playing=false;
+  document.getElementById('pBtn').textContent='\u25B6';document.getElementById('pBtn').classList.remove('pg');
+  if(!aborted){
+    aIdx=-1;
+    document.getElementById('prg').textContent='1차 듣기 완료';
+    document.getElementById('sMsg').textContent='1차 듣기 완료!';
+    // Show bottom bar with transition to pass 2
+    document.getElementById('bbMsg').textContent='이번에는 모르는 단어를 터치해서 수집해보세요.';
+    document.getElementById('bbActs').innerHTML='<button class="b1" onclick="startP2()">단어 수집 시작</button>';
+    document.getElementById('chipArea').style.display='none';
+    document.getElementById('bb').classList.add('sh');
+  }
+}
+
+// ===== Pass 2: listen + collect =====
+function startP2(){
+  document.getElementById('bb').classList.remove('sh');
+
+  pass=2;aIdx=-1;
+  document.getElementById('chipArea').style.display='';
+  document.getElementById('sMsg').textContent='모르는 단어를 터치하여 수집하세요.';
+  document.getElementById('pF').style.width='0';
+  document.getElementById('pC').textContent='0 / '+allS.length+' 문장';
+  document.getElementById('prg').textContent='단어 수집 준비';
+  document.getElementById('dB').classList.remove('sh');
+  renderP();renderChips();
+  // Show bottom bar with chips
+  document.getElementById('bbMsg').textContent='';
+  document.getElementById('bbActs').innerHTML='<button class="b1" onclick="complete()">수집 완료</button>';
+  document.getElementById('bb').classList.add('sh');
+  setTimeout(playP2,500);
+}
+
+async function playP2(){
+  if(playing)return;var gen=++playGen;playing=true;paused=false;aborted=false;
+  document.getElementById('pBtn').textContent='\u23F8';document.getElementById('pBtn').classList.add('pg');
+  var start=aIdx<0?0:aIdx;
+  for(var i=start;i<allS.length;i++){
+    if(aborted)break;
+    while(paused&&!aborted)await new Promise(function(r){setTimeout(r,100)});
+    if(aborted)break;
+    aIdx=i;updateW();
+    var el=document.getElementById('s'+i),sc=document.getElementById('ps');
+    if(el){el.classList.add('hl');sc.scrollTop=el.offsetTop-sc.offsetTop-80}
+    document.getElementById('pC').textContent=(i+1)+' / '+allS.length+' 문장';
+    document.getElementById('pF').style.width=((i+1)/allS.length*100)+'%';
+    document.getElementById('prg').textContent='단어 수집 '+(i+1)+'/'+allS.length;
+    await speak(allS[i]);
+    if(el)el.classList.remove('hl');
+    if(!aborted&&i<allS.length-1)await new Promise(function(r){setTimeout(r,1000)});
+  }
+  if(gen!==playGen)return;
+  playing=false;
+  document.getElementById('pBtn').textContent='\u25B6';document.getElementById('pBtn').classList.remove('pg');
+  if(!aborted){
+    pass=3;aIdx=-1;updateW();
+    document.getElementById('prg').textContent='듣기 완료';
+    document.getElementById('dB').classList.add('sh');
+    document.getElementById('sMsg').textContent='듣기 완료! 지문 전체에서 모르는 단어를 추가로 수집할 수 있어요.';
+    document.getElementById('bbMsg').textContent='모르는 단어를 모두 수집했나요?';
+    document.getElementById('bbActs').innerHTML='<button class="b1" onclick="complete()">수집 완료</button>';
+  }
+}
+
+function togglePlay(){
+  if(!playing&&!paused){
+    if(pass===0){pass=1;playP1();return}
+    if(pass===1){playP1();return}
+    if(pass===2){playP2();return}
+    if(pass===3){return}
+  }
+  if(playing&&!paused){paused=true;speechSynthesis.cancel();document.getElementById('pBtn').textContent='\u25B6';document.getElementById('pBtn').classList.remove('pg');updateW();return}
+  if(paused){paused=false;document.getElementById('pBtn').textContent='\u23F8';document.getElementById('pBtn').classList.add('pg');updateW();return}
+}
+
+function complete(){showResult()}
+function showResult(){
+  var n=collected.length;
+  document.getElementById('rI').textContent=n>0?'📋':'🌟';
+  document.getElementById('rD').textContent=n>0?n+'개의 모르는 단어를 수집했어요.':'모르는 단어 없이 완료했어요!';
+  
+  
+  goTo('result');
+}
+
+function navListen(){
+  speechSynthesis.cancel();aborted=true;playing=false;paused=false;
+  pass=0;aIdx=-1;collected=[];
+  document.getElementById('dB').classList.remove('sh');
+  document.getElementById('pF').style.width='0';
+  document.getElementById('pC').textContent='0 / '+allS.length+' 문장';
+  document.getElementById('bb').classList.remove('sh');
+  document.getElementById('prg').textContent='듣기 준비';
+  document.getElementById('sMsg').textContent='음원을 들으면서 지문 내용을 읽어보세요.';
+  document.getElementById('chipArea').style.display='none';
+  document.getElementById('bbMsg').textContent='';
+  document.getElementById('bbActs').innerHTML='';
+  renderP();renderChips();goTo('main');
+}
+function navCollect(){
+  speechSynthesis.cancel();aborted=true;playing=false;paused=false;
+  if(pass<2){pass=2;aIdx=-1;}
+  document.getElementById('chipArea').style.display='';
+  document.getElementById('sMsg').textContent='모르는 단어를 터치하여 수집하세요.';
+  document.getElementById('pF').style.width='0';document.getElementById('pC').textContent='0 / '+allS.length+' 문장';
+  document.getElementById('prg').textContent='단어 수집 준비';
+  document.getElementById('bbMsg').textContent='';
+  document.getElementById('bbActs').innerHTML='<button class="b1" onclick="complete()">수집 완료</button>';
+  renderP();renderChips();
+  document.getElementById('bb').classList.add('sh');
+  goTo('main');
+}
+
+function startAll(){retryM=false;collected=[];pass=0;aIdx=-1;
+  document.getElementById('dB').classList.remove('sh');
+  document.getElementById('pF').style.width='0';document.getElementById('pC').textContent='0 / '+allS.length+' 문장';
+  document.getElementById('bb').classList.remove('sh');document.getElementById('prg').textContent='듣기 준비';
+  document.getElementById('sMsg').textContent='음원을 들으면서 지문 내용을 읽어보세요.';
+  document.getElementById('chipArea').style.display='none';
+  document.getElementById('bbMsg').textContent='';document.getElementById('bbActs').innerHTML='';
+  renderP();renderChips();goTo('main')}
+function showRt(){document.getElementById('rP').classList.add('sh')}
+function clR(e){if(!e||e.target.id==='rP')document.getElementById('rP').classList.remove('sh')}
+function doRetry(){retryM=true;collected=[];startAll()}
+function demoResume(){
+  speechSynthesis.cancel();aborted=true;playing=false;paused=false;
+  /* Simulate having left during pass 2 with some collected words */
+  savedCollected=['blockbusters','niche','audiences','distributing','urbanites'];
+  savedPass=2;savedAIdx=4;
+  showResumeModal();
+}
+function doExit(){
+  var wasPlaying=playing,wasPaused=paused;
+  speechSynthesis.cancel();aborted=true;playing=false;paused=false;
+  if(retryM){
+    showExitModal('다시 학습을 종료하시겠습니까?','진행 상황이 저장되지 않습니다.','종료','취소',function(){retryM=false;goTo('entry')},function(){restorePlay(wasPlaying,wasPaused)});
+  } else if(pass>=2){
+    showExitModal('학습을 종료하시겠습니까?','수집한 단어가 저장됩니다.','저장 후 나가기','취소',function(){goTo('entry')},function(){restorePlay(wasPlaying,wasPaused)});
+  } else {
+    showExitModal('학습을 종료하시겠습니까?','수집한 단어가 저장됩니다.','나가기','계속하기',function(){goTo('entry')},function(){restorePlay(wasPlaying,wasPaused)});
+  }
+}
+function restorePlay(wp,wpa){aborted=false;if(wp&&!wpa){/* was playing, would need manual restart */}}
+function showExitModal(title,desc,okLabel,cancelLabel,onOk,onCancel){
+  document.getElementById('exitMT').textContent=title;
+  document.getElementById('exitMD').textContent=desc;
+  var okBtn=document.getElementById('exitMP');okBtn.textContent=okLabel;
+  var ccBtn=document.getElementById('exitMC');ccBtn.textContent=cancelLabel;
+  okBtn.onclick=function(){clM('exitM');onOk()};
+  ccBtn.onclick=function(){clM('exitM');if(onCancel)onCancel()};
+  document.getElementById('exitM').classList.add('sh');
+}
+/* Resume modal for re-entry after leaving during pass 2 */
+var savedCollected=null,savedPass=null,savedAIdx=null;
+function showResumeModal(){document.getElementById('resumeM').classList.add('sh')}
+function resumeContinue(){
+  pass=2;aIdx=savedAIdx||0;collected=savedCollected||[];
+  document.getElementById('chipArea').style.display='';
+  document.getElementById('sMsg').textContent='모르는 단어를 터치하여 수집하세요.';
+  document.getElementById('prg').textContent='단어 수집 준비';
+  document.getElementById('bbMsg').textContent='';
+  document.getElementById('bbActs').innerHTML='<button class="b1" onclick="complete()">수집 완료</button>';
+  renderP();renderChips();
+  document.getElementById('bb').classList.add('sh');
+  goTo('main');
+}
+function resumeFromStart(){collected=[];savedCollected=null;startAll()}
+function clM(id){document.getElementById(id).classList.remove('sh')}
+function showToast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('sh');setTimeout(function(){t.classList.remove('sh')},2500)}
+
+function goTo(n){
+  if(n!=='main'){speechSynthesis.cancel();aborted=true;playing=false;paused=false}
+  document.querySelectorAll('.scr').forEach(function(s){s.classList.remove('on')});
+  document.querySelectorAll('.nb').forEach(function(b){b.classList.remove('on')});
+  var map={entry:'sE',main:'sM',result:'sR'};
+  document.getElementById(map[n]).classList.add('on');
+  var bi=n==='entry'?0:n==='result'?3:(pass<=1?1:2);
+  document.querySelectorAll('.nb')[bi].classList.add('on');
+  cur=n;window.scrollTo(0,0);
+}
+
+var left=false,wasPlayingBeforeLeave=false,wasPausedBeforeLeave=false;
+function onL(){if(cur==='entry'||cur==='result')return;if(!left){left=true;wasPlayingBeforeLeave=playing;wasPausedBeforeLeave=paused;speechSynthesis.cancel();aborted=true;playing=false;paused=false;document.getElementById('lO').classList.add('sh')}}
+function onR2(){if(!left)return;left=false;aborted=false;document.getElementById('lO').classList.remove('sh');if(wasPausedBeforeLeave){paused=true;document.getElementById('pBtn').textContent='\u25B6';document.getElementById('pBtn').classList.remove('pg')}}
+document.addEventListener('visibilitychange',function(){document.hidden?onL():onR2()});
+document.addEventListener('mouseleave',onL);document.addEventListener('mouseenter',onR2);
+window.addEventListener('blur',onL);window.addEventListener('focus',onR2);
+
+renderP();renderChips();
+</script>
+</body>
+</html>

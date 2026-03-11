@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML02: 문장 듣고 빈칸 채우기</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Malgun Gothic',sans-serif;background:#f5f5f5}
+.global-nav{position:fixed;top:0;left:0;right:0;background:#fff;padding:16px 32px;border-bottom:2px solid #e0e0e0;box-shadow:0 2px 8px rgba(0,0,0,.1);z-index:1000;display:flex;align-items:center;justify-content:space-between}
+.nav-left{display:flex;align-items:center;gap:16px}.nav-title{font-size:16px;font-weight:600;color:#212121}
+.nav-buttons{display:flex;gap:8px}.nav-btn{padding:10px 20px;background:#fff;border:2px solid #e0e0e0;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;transition:all .2s}
+.nav-btn:hover{border-color:#2196F3;color:#2196F3}.nav-btn.active{background:#2196F3;color:#fff;border-color:#2196F3}
+.mode-toggle{display:flex;gap:8px;background:#F3F4F6;padding:4px;border-radius:8px}
+.mode-btn{padding:6px 14px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:#6B7280;transition:all .2s}
+.mode-btn.active{background:#fff;color:#2196F3;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.screen{padding-top:64px;display:none;min-height:100vh}.screen.active{display:block}
+.header{background:#fff;padding:20px 32px;border-bottom:1px solid #e0e0e0;display:flex;justify-content:space-between;align-items:center}
+.header-left .textbook{font-size:13px;color:#757575;margin-bottom:4px}.header-left .unit{font-size:16px;color:#212121;font-weight:600}
+.header-right{display:flex;align-items:center;gap:24px}.module-name{font-size:13px;color:#757575}
+.progress{font-size:16px;font-weight:600}.close-btn{width:32px;height:32px;border:none;background:none;cursor:pointer;font-size:24px;color:#757575}
+/* Entry (MV02 card) */
+.entry-container{max-width:600px;margin:80px auto;padding:48px;background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.1);text-align:center}
+.entry-icon{font-size:64px;margin-bottom:24px}.entry-title{font-size:28px;font-weight:bold;color:#212121;margin-bottom:16px}
+.entry-count{font-size:18px;color:#2196F3;font-weight:600;margin-bottom:8px}.entry-info{font-size:14px;color:#9E9E9E;margin-bottom:32px}
+.entry-desc{font-size:16px;color:#616161;line-height:1.6;margin-bottom:40px}
+.start-btn{width:100%;padding:20px;background:#2196F3;color:#fff;border:none;border-radius:12px;font-size:18px;font-weight:bold;cursor:pointer;transition:all .2s}
+.start-btn:hover{background:#1976D2;transform:translateY(-2px)}
+/* Learning */
+.learning-container{padding:48px;max-width:800px;margin:0 auto;padding-bottom:220px}
+.status-bar{background:#E3F2FD;padding:16px 24px;border-radius:12px;text-align:center;margin-bottom:24px;font-size:15px;color:#1976D2;font-weight:600}
+.timer-container{text-align:center;margin-bottom:20px}.timer{display:inline-block;padding:10px 28px;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.timer-label{font-size:11px;color:#757575;margin-bottom:2px}.timer-value{font-size:28px;font-weight:bold}
+.timer.green .timer-value{color:#4CAF50}.timer.yellow .timer-value{color:#FF9800}.timer.red .timer-value{color:#F44336}
+/* Audio + Sentence area */
+.sentence-area{text-align:center;margin-bottom:32px}
+.audio-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:20px}
+.speaker-btn{width:48px;height:48px;border-radius:50%;border:2px solid #E0E0E0;background:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.speaker-btn:hover{border-color:#2196F3;background:#E3F2FD}.speaker-btn.playing{border-color:#2196F3;background:#E3F2FD;animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.replay-label{font-size:13px;color:#757575}
+.blank-sentence{font-size:22px;color:#333;line-height:1.8;padding:20px;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.blank-word{display:inline-block;min-width:100px;border-bottom:3px solid #2196F3;color:#2196F3;font-weight:700;text-align:center;padding:0 8px;transition:all .3s}
+.blank-word.filled{border-bottom-color:#4CAF50;color:#4CAF50}
+.blank-word.filled-wrong{border-bottom-color:#F44336;color:#F44336}
+.word-meaning{font-size:16px;color:#757575;margin-top:12px;display:none;transition:all .3s}
+.word-meaning.show{display:block}
+/* Choices */
+.choices-container{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px}
+.choice-card{background:#fff;padding:28px 20px;border-radius:12px;border:3px solid #e0e0e0;cursor:pointer;transition:all .2s;text-align:center;min-height:70px;display:flex;align-items:center;justify-content:center}
+.choice-card:hover:not(.disabled):not(.correct):not(.incorrect){border-color:#2196F3;transform:translateY(-4px);box-shadow:0 4px 16px rgba(33,150,243,.2)}
+.choice-text{font-size:20px;color:#212121;font-weight:600}
+.choice-card.correct{border-color:#4CAF50;background:#E8F5E9;cursor:default}.choice-card.correct .choice-text{color:#2E7D32;font-weight:bold}
+.choice-card.incorrect{border-color:#F44336;background:#FFEBEE;cursor:not-allowed;position:relative;overflow:hidden}
+.choice-card.incorrect .choice-text{color:#C62828}
+.choice-card.incorrect::after{content:'✗';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:64px;color:rgba(244,67,54,.15);font-weight:bold;pointer-events:none}
+.choice-card.disabled{opacity:.35;cursor:not-allowed;pointer-events:none;background:#F5F5F5}
+.choice-card.reveal{border-color:#4CAF50;background:#E8F5E9;box-shadow:0 4px 20px rgba(76,175,80,.4);position:relative;animation:revealPop .35s cubic-bezier(.34,1.56,.64,1)}
+.choice-card.reveal .choice-text{color:#2E7D32;font-weight:bold}
+.choice-card.reveal::before{content:'✓ 정답';position:absolute;top:8px;right:12px;background:#4CAF50;color:#fff;font-size:11px;font-weight:bold;padding:2px 8px;border-radius:4px}
+@keyframes revealPop{0%{transform:scale(.7);opacity:.5}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.choices-container.answered{display:flex;justify-content:center;min-height:150px}
+.choices-container.answered .choice-card{display:none}
+.choices-container.answered .choice-card.correct-hero{display:flex;border-color:#4CAF50;background:#E8F5E9;width:100%;max-width:400px;padding:32px;flex-direction:column;gap:8px;animation:popIn .35s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 32px rgba(76,175,80,.3)}
+.choices-container.answered .choice-card.correct-hero .choice-text{color:#2E7D32;font-weight:bold;font-size:22px}
+@keyframes popIn{0%{transform:scale(.7);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.shake{animation:shake .3s ease}
+/* Bottom bar */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;padding:24px 32px;border-top:2px solid #e0e0e0;box-shadow:0 -4px 12px rgba(0,0,0,.1);transform:translateY(100%);transition:transform .4s cubic-bezier(.4,0,.2,1);z-index:100}
+.bottom-bar.show{transform:translateY(0)}
+.feedback-msg{font-size:18px;font-weight:600;text-align:center;margin-bottom:16px}
+.feedback-msg.correct{color:#4CAF50}.feedback-msg.wrong{color:#F44336}.feedback-msg.encourage{color:#FF9800}
+.action-btn{display:block;width:100%;max-width:400px;margin:0 auto;padding:16px;background:#2196F3;color:#fff;border:none;border-radius:12px;font-size:17px;font-weight:bold;cursor:pointer;transition:all .2s}
+.action-btn:hover{background:#1976D2;transform:translateY(-2px)}
+.retry-msg{font-size:14px;color:#757575;text-align:center;margin-top:8px}
+/* Result (MV02 card) */
+.result-container{max-width:600px;margin:80px auto;padding:48px;background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.1);text-align:center}
+.result-icon{font-size:80px;margin-bottom:24px}.result-title{font-size:28px;font-weight:bold;color:#212121;margin-bottom:16px}
+.result-score{font-size:20px;color:#2196F3;font-weight:bold;margin-bottom:8px}
+.result-points{font-size:16px;color:#FF9800;font-weight:600;margin-bottom:24px}
+.result-msg{font-size:17px;color:#616161;line-height:1.6;margin-bottom:32px}
+.result-buttons{display:flex;flex-direction:column;gap:12px}
+.result-btn-primary{width:100%;padding:18px;background:#2196F3;color:#fff;border:none;border-radius:12px;font-size:17px;font-weight:bold;cursor:pointer}.result-btn-primary:hover{background:#1976D2}
+.result-btn-secondary{width:100%;padding:18px;background:#fff;color:#2196F3;border:2px solid #2196F3;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer}.result-btn-secondary:hover{background:#E3F2FD}
+.retry-info{font-size:13px;color:#757575;margin-top:8px}
+/* Popup/Overlay */
+.popup-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:none;z-index:9999;opacity:0;transition:opacity .3s}
+.popup-overlay.show{display:block;opacity:1}
+.popup-sheet{position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:24px 24px 0 0;padding:32px 24px 24px;transform:translateY(100%);transition:transform .3s;z-index:10000}
+.popup-overlay.show .popup-sheet{transform:translateY(0)}
+.popup-title{font-size:20px;font-weight:bold;color:#212121;margin-bottom:8px;text-align:center}
+.popup-buttons{display:flex;gap:12px}.popup-btn{flex:1;padding:16px;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;border:none}
+.popup-btn.cancel{background:#F5F5F5;color:#616161}.popup-btn.confirm{background:#2196F3;color:#fff}
+.leave-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:5000;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all .3s}
+.leave-overlay.show{opacity:1;visibility:visible}
+@media(max-width:768px){
+.global-nav{flex-direction:column;gap:12px;padding:12px 16px}.nav-left{flex-direction:column;gap:8px;width:100%}
+.learning-container{padding:24px;padding-bottom:200px}.choices-container{grid-template-columns:1fr}
+.blank-sentence{font-size:18px;padding:16px}.bottom-bar{padding:16px}
+}
+</style>
+</head>
+<body>
+<div class="global-nav"><div class="nav-left"><div class="nav-title">📱 ML02: 문장 듣고 빈칸 채우기</div><div class="nav-buttons">
+<button class="nav-btn active" onclick="goEntry()">1. 진입</button>
+<button class="nav-btn" onclick="goLearning()">2. 학습 진행</button>
+<button class="nav-btn" onclick="goReview()">3. 복습</button>
+<button class="nav-btn" onclick="goResult()">4. 결과</button>
+</div></div>
+<div class="mode-toggle"><button class="mode-btn active" onclick="setMode('ko',this)">영한</button><button class="mode-btn" onclick="setMode('en',this)">영영</button></div>
+</div>
+
+<div class="popup-overlay" id="retryPopup" onclick="closeRetry(event)"><div class="popup-sheet" onclick="event.stopPropagation()"><div class="popup-title">다시 공부해볼까요?</div><div style="font-size:14px;color:#757575;text-align:center;margin-bottom:16px">(원래 점수는 바뀌지 않아요)</div><div class="popup-buttons"><button class="popup-btn cancel" onclick="closeRetry()">취소</button><button class="popup-btn confirm" onclick="closeRetry();doRetry()">확인</button></div></div></div>
+<!-- Exit modal -->
+<div class="popup-overlay" id="exitModal"><div class="popup-sheet" onclick="event.stopPropagation()"><div class="popup-title" id="exitMT"></div><div style="font-size:14px;color:#757575;text-align:center;margin-bottom:16px" id="exitMD"></div><div class="popup-buttons"><button class="popup-btn cancel" id="exitMC"></button><button class="popup-btn confirm" id="exitMP"></button></div></div></div>
+<div class="leave-overlay" id="leaveOv"><div><div style="font-size:64px;text-align:center;margin-bottom:16px">👀</div><div style="font-size:20px;color:#fff;font-weight:600;text-align:center">학습 화면으로 돌아와주세요</div></div></div>
+
+<!-- 1. Entry -->
+<div id="sEntry" class="screen active">
+<div class="entry-container">
+<div class="entry-icon">🎧</div>
+<div class="entry-title">문장 듣고 빈칸 채우기</div>
+<div class="entry-count">총 6개 단어</div>
+<div class="entry-info">Reading Book 3A > Unit 3: Space Journey</div>
+<div class="entry-desc">문장을 듣고 빈칸에 들어갈 알맞은 단어를 찾아보세요.</div>
+<button class="start-btn" onclick="startLearning()">학습 시작</button>
+</div>
+</div>
+
+<!-- 2. Learning -->
+<div id="sLearn" class="screen">
+<div class="header"><div class="header-left"><div class="textbook">Reading Book 3A</div><div class="unit">Unit 3: Space Journey</div></div><div class="header-right"><div class="module-name">Step 2 • 문장 듣고 빈칸 채우기</div><div class="progress" id="prog">1/6</div><button class="close-btn" onclick="exitLearning()">✕</button></div></div>
+<div class="learning-container">
+  <div class="status-bar" id="statusBar">문장을 듣고 빈칸에 들어갈 알맞은 단어를 선택하세요.</div>
+  <div class="timer-container" id="timerBox" style="display:none"><div class="timer green" id="timer"><div class="timer-label">남은 시간</div><div class="timer-value" id="timerVal">15초</div></div></div>
+  <div class="sentence-area">
+    <div class="audio-row"><button class="speaker-btn" id="speakerBtn" onclick="replayAudio()">🔊</button><span class="replay-label">다시 듣기</span></div>
+    <div class="blank-sentence" id="blankSentence"></div>
+    <div class="word-meaning" id="wordMeaning"></div>
+  </div>
+  <div class="choices-container" id="choices"></div>
+</div>
+<div class="bottom-bar" id="bottomBar">
+  <div class="feedback-msg" id="feedbackMsg"></div>
+  <button class="action-btn" id="actionBtn" onclick="nextWord()">다음 단어</button>
+  <div class="retry-msg" id="retryMsg"></div>
+</div>
+</div>
+
+<!-- 3. Result -->
+<div id="sResult" class="screen">
+<div class="result-container">
+<div class="result-icon" id="rIcon">🏆</div>
+<div class="result-title">문장 듣고 빈칸 채우기 완료</div>
+<div class="result-score" id="rScore">총점: 100점</div>
+<div class="result-points">획득 포인트: 50 P</div>
+<div class="result-msg" id="rMsg"></div>
+<div class="result-buttons">
+<button class="result-btn-primary" onclick="alert('다음 모듈로 이동합니다!')">다음 학습</button>
+<button class="result-btn-secondary" onclick="showRetry()">다시 학습하기<div class="retry-info">복습하고 보너스 포인트도 챙기세요!</div></button>
+</div>
+</div>
+</div>
+
+<script>
+var audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+function playSound(t){if(audioCtx.state==='suspended')audioCtx.resume();if(t==='correct'){[523.25,659.25].forEach(function(f,i){var o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.3,audioCtx.currentTime+i*.12);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+i*.12+.4);o.connect(g);g.connect(audioCtx.destination);o.start(audioCtx.currentTime+i*.12);o.stop(audioCtx.currentTime+i*.12+.4)})}else if(t==='wrong'){var o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='square';o.frequency.value=180;g.gain.setValueAtTime(.2,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.35);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.35)}else if(t==='timeout'){[300,200].forEach(function(f,i){var o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.2,audioCtx.currentTime+i*.15);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+i*.15+.25);o.connect(g);g.connect(audioCtx.destination);o.start(audioCtx.currentTime+i*.15);o.stop(audioCtx.currentTime+i*.15+.25)})}}
+
+// Word data with sentences
+var words=[
+  {en:'adventure',ko:'모험',enDef:'an exciting or unusual experience',sentence:'Going to space is a great adventure.',blank:'Going to space is a great _______.'},
+  {en:'astronaut',ko:'우주 비행사',enDef:'a person who travels in a spacecraft',sentence:'The astronaut floated inside the space station.',blank:'The _______ floated inside the space station.'},
+  {en:'explore',ko:'탐험하다',enDef:'to travel to a new place to learn about it',sentence:'Scientists want to explore the surface of Mars.',blank:'Scientists want to _______ the surface of Mars.'},
+  {en:'galaxy',ko:'은하',enDef:'a very large group of stars in space',sentence:'Our solar system is in the Milky Way galaxy.',blank:'Our solar system is in the Milky Way _______.'},
+  {en:'satellite',ko:'위성',enDef:'an object sent into space to go around the earth',sentence:'The satellite sends pictures of Earth back to us.',blank:'The _______ sends pictures of Earth back to us.'},
+  {en:'telescope',ko:'망원경',enDef:'a tool used to see things that are far away',sentence:'We used a telescope to look at the stars.',blank:'We used a _______ to look at the stars.'}
+];
+
+var mode='ko',shuffled=[],cIdx=0,state='question',firstWrong=null,review=[],isReview=false,rIdx=0;
+var timerInt=null,timeLeft=15,TIMER_SEC=15,totalScore=0,isRetry=false;
+
+function getMeaning(w){return mode==='ko'?w.ko:w.enDef}
+function setMode(m,b){mode=m;document.querySelectorAll('.mode-btn').forEach(function(x){x.classList.remove('active')});b.classList.add('active')}
+function shuffle(a){var r=[].concat(a);for(var i=r.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=r[i];r[i]=r[j];r[j]=t}return r}
+
+function showScreen(id){speechSynthesis.cancel();document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});document.getElementById(id).classList.add('active');document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active')})}
+
+function goEntry(){showScreen('sEntry');document.querySelectorAll('.nav-btn')[0].classList.add('active');clearInterval(timerInt)}
+function goLearning(){showScreen('sLearn');document.querySelectorAll('.nav-btn')[1].classList.add('active');isReview=false;cIdx=0;shuffled=shuffle([0,1,2,3,4,5]);totalScore=0;review=[];loadQ()}
+function goReview(){if(review.length===0)review=[shuffled[1],shuffled[3]];showScreen('sLearn');document.querySelectorAll('.nav-btn')[2].classList.add('active');isReview=true;rIdx=0;loadQ()}
+function goResult(){showScreen('sResult');document.querySelectorAll('.nav-btn')[3].classList.add('active');clearInterval(timerInt);
+  var score=Math.round(totalScore);
+  document.getElementById('rScore').textContent='총점: '+score+'점';
+  var icon=document.getElementById('rIcon'),msg=document.getElementById('rMsg');
+  if(score>=90){icon.textContent='🏆';msg.textContent='완벽해요! 문장 속 단어를 정확히 찾았어요! 🌟'}
+  else if(score>=70){icon.textContent='🎉';msg.textContent='잘했어요! 조금만 더 연습하면 완벽할 거예요! ✨'}
+  else{icon.textContent='💪';msg.textContent='괜찮아요! 다시 한번 도전해보세요! 💪'}
+}
+function startLearning(){isRetry=false;goLearning()}
+
+// TTS
+function speakSentence(text,onDone){speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=.9;var btn=document.getElementById('speakerBtn');btn.classList.add('playing');u.onend=function(){btn.classList.remove('playing');if(onDone)onDone()};u.onerror=function(){btn.classList.remove('playing');if(onDone)onDone()};speechSynthesis.speak(u)}
+function replayAudio(){var w=getCurWord();speakSentence(w.sentence)}
+
+// Timer
+function startTimer(){timeLeft=TIMER_SEC;document.getElementById('timerBox').style.display='block';updateTimer();clearInterval(timerInt);timerInt=setInterval(function(){timeLeft--;updateTimer();if(timeLeft<=0){clearInterval(timerInt);handleTimeout()}},1000)}
+function updateTimer(){document.getElementById('timerVal').textContent=timeLeft+'초';var t=document.getElementById('timer');t.classList.remove('green','yellow','red');if(timeLeft>TIMER_SEC*.5)t.classList.add('green');else if(timeLeft>TIMER_SEC*.25)t.classList.add('yellow');else t.classList.add('red')}
+function handleTimeout(){state='incorrect1';playSound('timeout');showRetryState()}
+
+// Question
+function getCurWord(){return isReview?words[review[rIdx]]:words[shuffled[cIdx]]}
+function getWIdx(){return isReview?review[rIdx]:shuffled[cIdx]}
+
+function loadQ(){
+  var w=getCurWord();state='question';firstWrong=null;
+  var p=document.getElementById('prog'),sb=document.getElementById('statusBar');
+  if(isReview){p.textContent='다시 확인 '+(rIdx+1)+'/'+review.length;p.style.color='#FF9800';sb.style.background='#FFF3E0';sb.textContent='다시 한번 들어보고 맞춰보세요.'}
+  else{p.textContent=(cIdx+1)+'/'+words.length;p.style.color='#2196F3';sb.style.background='#E3F2FD';sb.textContent='문장을 듣고 빈칸에 들어갈 알맞은 단어를 선택하세요.'}
+  // Blank sentence
+  document.getElementById('blankSentence').innerHTML=w.blank.replace('_______','<span class="blank-word" id="blankW">_______</span>');
+  document.getElementById('wordMeaning').classList.remove('show');document.getElementById('wordMeaning').textContent='';
+  // Choices
+  var others=words.filter(function(x){return x.en!==w.en});
+  var wrongs=shuffle(others).slice(0,3).map(function(x){return x.en});
+  var all=shuffle([w.en].concat(wrongs));
+  var c=document.getElementById('choices');c.innerHTML='';c.classList.remove('answered');
+  all.forEach(function(ch,i){var card=document.createElement('div');card.className='choice-card';card.innerHTML='<div class="choice-text">'+ch+'</div>';card.onclick=function(){selectChoice(ch,i)};c.appendChild(card)});
+  // Hide bottom bar, reset
+  document.getElementById('bottomBar').classList.remove('show');
+  document.getElementById('retryMsg').textContent='';
+  // Auto-play sentence TTS, then start timer after TTS completes
+  document.getElementById('timerBox').style.display='none';
+  clearInterval(timerInt);
+  setTimeout(function(){speakSentence(w.sentence,function(){if(state==='question')startTimer()})},300);
+}
+
+function selectChoice(ch,idx){
+  var cards=document.querySelectorAll('.choice-card');
+  if(cards[idx].classList.contains('correct')||cards[idx].classList.contains('incorrect')||cards[idx].classList.contains('disabled')||cards[idx].classList.contains('correct-hero'))return;
+  if(state==='correct1'||state==='correct2'||state==='incorrect2')return;
+  clearInterval(timerInt);speechSynthesis.cancel();
+  var w=getCurWord(),isCorrect=(ch===w.en);
+  var perWord=100/words.length; // points per word (full)
+
+  if(state==='question'){
+    if(isCorrect){state='correct1';if(!isReview)totalScore+=perWord;playSound('correct');showCorrectHero(cards,idx,['🎉 정답이에요!','✨ 잘했어요!','👍 맞았어요!'],w)}
+    else{state='incorrect1';firstWrong=idx;playSound('wrong');cards[idx].classList.add('incorrect','shake');showRetryState()}
+  }else if(state==='incorrect1'){
+    if(isCorrect){state='correct2';if(!isReview)totalScore+=perWord*0.5;playSound('correct');showCorrectHero(cards,idx,['👏 이번엔 맞췄어요!'],w)}
+    else{state='incorrect2';playSound('wrong');cards[idx].classList.add('incorrect','shake');if(!isReview)review.push(getWIdx());revealAnswer(w)}
+  }
+}
+
+function showCorrectHero(cards,idx,msgs,w){
+  var c=document.getElementById('choices'),card=cards[idx];
+  card.classList.add('correct-hero');card.innerHTML='<div style="font-size:28px;margin-bottom:4px">✅</div><div class="choice-text">'+w.en+'</div><div style="font-size:15px;color:#757575;margin-top:4px">'+getMeaning(w)+'</div>';
+  c.classList.add('answered');
+  // Fill blank
+  document.getElementById('blankW').textContent=w.en;document.getElementById('blankW').classList.add('filled');
+  // Show meaning
+  document.getElementById('wordMeaning').textContent=w.en+' - '+getMeaning(w);document.getElementById('wordMeaning').classList.add('show');
+  // Bottom bar
+  var fb=document.getElementById('feedbackMsg');fb.className='feedback-msg correct';fb.textContent=msgs[Math.floor(Math.random()*msgs.length)];
+  document.getElementById('actionBtn').textContent=isLastWord()?'결과 보기':'다음 단어';
+  document.getElementById('bottomBar').classList.add('show');
+}
+
+function showRetryState(){
+  // Disable chosen wrong, keep others
+  var sb=document.getElementById('statusBar');sb.textContent='다시 골라보세요!';sb.style.background='#FFF3E0';
+  document.getElementById('retryMsg').textContent='';
+}
+
+function revealAnswer(w){
+  var cards=document.querySelectorAll('.choice-card');
+  cards.forEach(function(card){
+    if(card.querySelector('.choice-text').textContent===w.en){card.classList.add('reveal');card.style.flexDirection='column';card.style.padding='20px';card.innerHTML='<div class="choice-text">'+w.en+'</div><div style="font-size:14px;color:#2E7D32;margin-top:8px;font-weight:500;line-height:1.4">'+getMeaning(w)+'</div>'}
+    else if(!card.classList.contains('incorrect')){card.classList.add('disabled')}
+  });
+  // Fill blank (wrong color)
+  document.getElementById('blankW').textContent=w.en;document.getElementById('blankW').classList.add('filled-wrong');
+  // Show meaning
+  document.getElementById('wordMeaning').textContent=w.en+' - '+getMeaning(w);document.getElementById('wordMeaning').classList.add('show');
+  // Bottom bar
+  var msgs=['다시 한번 공부해봐요! 📚','괜찮아요! 복습에서 다시 도전해요! 💪','한 번 더 연습하면 기억할 수 있어요! ✨'];
+  var fb=document.getElementById('feedbackMsg');fb.className='feedback-msg encourage';fb.textContent=msgs[Math.floor(Math.random()*msgs.length)];
+  document.getElementById('actionBtn').textContent=isLastWord()?(review.length>0?'복습 시작':'결과 보기'):'다음 단어';
+  document.getElementById('bottomBar').classList.add('show');
+}
+
+function isLastWord(){return isReview?(rIdx>=review.length-1):(cIdx>=words.length-1)}
+
+function nextWord(){
+  document.getElementById('bottomBar').classList.remove('show');
+  if(isReview){
+    rIdx++;
+    if(rIdx>=review.length){goResult();return}
+    loadQ();
+  }else{
+    cIdx++;
+    if(cIdx>=words.length){
+      if(review.length>0){isReview=true;rIdx=0;document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active')});document.querySelectorAll('.nav-btn')[2].classList.add('active');loadQ()}
+      else goResult();
+      return;
+    }
+    loadQ();
+  }
+}
+
+function showRetry(){document.getElementById('retryPopup').classList.add('show')}
+function closeRetry(e){if(!e||e.target.id==='retryPopup')document.getElementById('retryPopup').classList.remove('show')}
+function doRetry(){isRetry=true;goLearning()}
+function exitLearning(){
+  clearInterval(timerInt);speechSynthesis.cancel();
+  if(isRetry){
+    showExitModal('다시 학습을 종료하시겠습니까?','진행 상황이 저장되지 않습니다.','종료','취소',function(){goEntry()},null);
+  } else {
+    showExitModal('학습을 종료하시겠습니까?','진행 상황이 저장됩니다.','나가기','계속하기',function(){goEntry()},function(){if(state==='question')startTimer()});
+  }
+}
+function showExitModal(title,desc,okLabel,cancelLabel,onOk,onCancel){
+  document.getElementById('exitMT').textContent=title;
+  document.getElementById('exitMD').textContent=desc;
+  var okBtn=document.getElementById('exitMP');okBtn.textContent=okLabel;
+  var ccBtn=document.getElementById('exitMC');ccBtn.textContent=cancelLabel;
+  okBtn.onclick=function(){document.getElementById('exitModal').classList.remove('show');onOk()};
+  ccBtn.onclick=function(){document.getElementById('exitModal').classList.remove('show');if(onCancel)onCancel()};
+  document.getElementById('exitModal').classList.add('show');
+}
+
+// Leave detection
+var left=false;
+function onL(){if(document.getElementById('sLearn').classList.contains('active')){if(!left){left=true;speechSynthesis.cancel();document.getElementById('leaveOv').classList.add('show')}}}
+function onR(){if(left){left=false;document.getElementById('leaveOv').classList.remove('show')}}
+document.addEventListener('visibilitychange',function(){document.hidden?onL():onR()});
+document.addEventListener('mouseleave',onL);document.addEventListener('mouseenter',onR);
+window.addEventListener('blur',onL);window.addEventListener('focus',onR);
+</script>
+</body>
+</html>
