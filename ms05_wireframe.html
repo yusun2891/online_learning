@@ -125,7 +125,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Malgun Gothic',san
 <button class="nb" onclick="navMain()">2. 학습 진행</button>
 <button class="nb" onclick="goTo('result')">3. 결과</button>
 </div></div></div>
-<div class="po" id="rP" onclick="clR(event)"><div class="psh" onclick="event.stopPropagation()"><div class="pt2">다시 연습해볼까요?</div><div class="pbs"><button class="ppb cc" onclick="clR()">취소</button><button class="ppb cf" onclick="clR();doRetry()">확인</button></div></div></div>
+<div class="po" id="rP" onclick="clR(event)"><div class="psh" onclick="event.stopPropagation()"><div class="pt2">다시 공부해볼까요?</div><div style="font-size:13px;color:#757575;text-align:center;margin-bottom:14px">(원래 점수는 바뀌지 않아요)</div><div class="pbs"><button class="ppb cc" onclick="clR()">취소</button><button class="ppb cf" onclick="clR();doRetry()">확인</button></div></div></div>
 <div class="po" id="exitP"><div class="psh" onclick="event.stopPropagation()"><div class="pt2" id="exitMT"></div><div style="font-size:13px;color:#757575;text-align:center;margin-bottom:14px" id="exitMD"></div><div class="pbs"><button class="ppb cc" id="exitMC"></button><button class="ppb cf" id="exitMP"></button></div></div></div>
 <div class="lo" id="lO"><div><div style="font-size:56px;text-align:center;margin-bottom:12px">👀</div><div style="font-size:18px;color:#fff;font-weight:600;text-align:center">학습 화면으로 돌아와주세요</div></div></div>
 <div id="sE" class="scr on"><div class="ent"><div class="ecard">
@@ -226,7 +226,7 @@ function doExit(){
   if(isRetryMode){
     showExitModal('다시 학습을 종료하시겠습니까?','진행 상황이 저장되지 않습니다.','종료','취소',function(){goTo('entry')},null);
   } else {
-    showExitModal('학습을 종료하시겠습니까?','진행 상황이 저장됩니다.','나가기','계속하기',function(){goTo('entry')},null);
+    showExitModal('학습을 종료하시겠습니까?','지금까지의 학습 내용이 저장됩니다.','저장 후 나가기','취소',function(){goTo('entry')},null);
   }
 }
 function showExitModal(title,desc,okLabel,cancelLabel,onOk,onCancel){
@@ -356,11 +356,10 @@ function loadSent(){
   var d=D[pIdx],s=d.sents[sentIdx];
   var key=pIdx+'_'+sentIdx;if(!sentTries[key])sentTries[key]=0;
   document.getElementById('prg').textContent='패턴 '+(pIdx+1)+'/'+D.length;
-  document.getElementById('sMsg').textContent='문장을 듣고, 빈칸을 채워 말해보세요.';
+  document.getElementById('sMsg').textContent='문장을 듣고 빈칸을 채워 말해보세요.';
   updProg(pIdx*2+2, D.length*2+1);
   var area=document.getElementById('mainArea');
   area.innerHTML='<div class="scard">'+
-    '<div class="sent-label">'+(sentIdx===0?'📖 지문 문장':'📝 추가 예문')+' ('+(sentIdx+1)+'/'+d.sents.length+')</div>'+
     '<div class="kotext">'+s.ko+'</div>'+
     '<div class="stxt" id="sTxt">'+s.blanked+'</div>'+
     '<div class="audio-row"><button class="audio-btn" id="listenBtn" onclick="playSent()">🔊</button></div>'+
@@ -448,13 +447,11 @@ function loadOwn(){
   var pi=ownOrder[ownIdx],d=D[pi];
   if(!ownTries[pi])ownTries[pi]=0;
   document.getElementById('prg').textContent='패턴 '+(ownOrder[ownIdx]+1)+'/'+D.length;
-  document.getElementById('sMsg').textContent='패턴을 사용해서 나만의 영어 문장을 만들어보세요!';
+  document.getElementById('sMsg').textContent='아래 패턴을 사용해서 나만의 문장을 말해보세요!';
   updProg(D.length*2+1, D.length*2+1);
   var area=document.getElementById('mainArea');
   area.innerHTML='<div class="own-area">'+
-    '<div class="own-prompt">아래 패턴을 사용해서 나만의 문장을 말해보세요!</div>'+
     '<div class="own-pattern">'+d.hl+'</div>'+
-    
     '<div class="rec-area"><div class="rec-st" id="recSt">준비되면 녹음 버튼을 눌러주세요</div>'+
     '<button class="rec-btn ready" id="recBtn" onclick="toggleOwnRec()">🎤</button>'+
     '<div class="rec-time" id="recTime" style="display:none">0:00</div></div></div>';

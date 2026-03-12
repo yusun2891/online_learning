@@ -108,7 +108,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Malgun Gothic',san
 </div></div></div>
 
 <div class="toast" id="toast"></div>
-<div class="po" id="rP" onclick="clR(event)"><div class="psh" onclick="event.stopPropagation()"><div class="pt2">다시 들어볼까요?</div><div class="pbs"><button class="ppb cc" onclick="clR()">취소</button><button class="ppb cf" onclick="clR();doRetry()">확인</button></div></div></div>
+<div class="po" id="rP" onclick="clR(event)"><div class="psh" onclick="event.stopPropagation()"><div class="pt2">다시 공부해볼까요?</div><div class="pbs"><button class="ppb cc" onclick="clR()">취소</button><button class="ppb cf" onclick="clR();doRetry()">확인</button></div></div></div>
 <!-- Exit modal (custom labels) -->
 <div class="mo" id="exitM"><div class="mc"><div class="mi">📝</div><div class="mt" id="exitMT"></div><div class="md" id="exitMD"></div><div class="ma"><button class="mb mbs" id="exitMC"></button><button class="mb mbp" id="exitMP"></button></div></div></div>
 <!-- Resume modal (이어서 학습하시겠습니까?) -->
@@ -248,7 +248,7 @@ function speakW(w){speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(w
 async function playP1(){
   if(playing)return;var gen=++playGen;playing=true;paused=false;aborted=false;pass=1;
   document.getElementById('pBtn').textContent='\u23F8';document.getElementById('pBtn').classList.add('pg');
-  document.getElementById('sMsg').textContent='1차 듣기 \u2014 지문 내용에 집중하며 들어보세요.';
+  document.getElementById('sMsg').textContent='지문 내용에 집중하며 들어보세요.';
   document.getElementById('chipArea').style.display='none';
   document.getElementById('bb').classList.remove('sh');
   var start=aIdx<0?0:aIdx;
@@ -261,7 +261,7 @@ async function playP1(){
     if(el){el.classList.add('hl');sc.scrollTop=el.offsetTop-sc.offsetTop-80}
     document.getElementById('pC').textContent=(i+1)+' / '+allS.length+' 문장';
     document.getElementById('pF').style.width=((i+1)/allS.length*100)+'%';
-    document.getElementById('prg').textContent='1차 듣기 '+(i+1)+'/'+allS.length;
+    document.getElementById('prg').textContent=(i+1)+'/'+allS.length;
     await speak(allS[i]);
     if(el)el.classList.remove('hl');
   }
@@ -270,10 +270,9 @@ async function playP1(){
   document.getElementById('pBtn').textContent='\u25B6';document.getElementById('pBtn').classList.remove('pg');
   if(!aborted){
     aIdx=-1;
-    document.getElementById('prg').textContent='1차 듣기 완료';
-    document.getElementById('sMsg').textContent='1차 듣기 완료!';
-    // Show bottom bar with transition to pass 2
-    document.getElementById('bbMsg').textContent='이번에는 모르는 단어를 터치해서 수집해보세요.';
+    document.getElementById('prg').textContent='듣기 완료';
+    // Show bottom bar with button to start word collection
+    document.getElementById('bbMsg').textContent='';
     document.getElementById('bbActs').innerHTML='<button class="b1" onclick="startP2()">단어 수집 시작</button>';
     document.getElementById('chipArea').style.display='none';
     document.getElementById('bb').classList.add('sh');
@@ -312,7 +311,7 @@ async function playP2(){
     if(el){el.classList.add('hl');sc.scrollTop=el.offsetTop-sc.offsetTop-80}
     document.getElementById('pC').textContent=(i+1)+' / '+allS.length+' 문장';
     document.getElementById('pF').style.width=((i+1)/allS.length*100)+'%';
-    document.getElementById('prg').textContent='단어 수집 '+(i+1)+'/'+allS.length;
+    document.getElementById('prg').textContent=(i+1)+'/'+allS.length;
     await speak(allS[i]);
     if(el)el.classList.remove('hl');
     if(!aborted&&i<allS.length-1)await new Promise(function(r){setTimeout(r,1000)});
@@ -324,8 +323,8 @@ async function playP2(){
     pass=3;aIdx=-1;updateW();
     document.getElementById('prg').textContent='듣기 완료';
     document.getElementById('dB').classList.add('sh');
-    document.getElementById('sMsg').textContent='듣기 완료! 지문 전체에서 모르는 단어를 추가로 수집할 수 있어요.';
-    document.getElementById('bbMsg').textContent='모르는 단어를 모두 수집했나요?';
+    document.getElementById('sMsg').textContent='모르는 단어를 터치하여 수집하세요.';
+    document.getElementById('bbMsg').textContent='';
     document.getElementById('bbActs').innerHTML='<button class="b1" onclick="complete()">수집 완료</button>';
   }
 }

@@ -137,7 +137,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Malgun Gothic',san
 <button class="nb" onclick="goTo('result')">3. 결과</button>
 </div></div></div>
 
-<div class="po" id="rP" onclick="clR(event)"><div class="psh" onclick="event.stopPropagation()"><div class="pt2">다시 읽어볼까요?</div><div class="pbs"><button class="ppb cc" onclick="clR()">취소</button><button class="ppb cf" onclick="clR();doRetry()">확인</button></div></div></div>
+<div class="po" id="rP" onclick="clR(event)"><div class="psh" onclick="event.stopPropagation()"><div class="pt2">다시 공부해볼까요?</div><div style="font-size:13px;color:#757575;text-align:center;margin-bottom:14px">(원래 점수는 바뀌지 않아요)</div><div class="pbs"><button class="ppb cc" onclick="clR()">취소</button><button class="ppb cf" onclick="clR();doRetry()">확인</button></div></div></div>
 <div class="po" id="exitP"><div class="psh" onclick="event.stopPropagation()"><div class="pt2" id="exitMT"></div><div style="font-size:13px;color:#757575;text-align:center;margin-bottom:14px" id="exitMD"></div><div class="pbs"><button class="ppb cc" id="exitMC"></button><button class="ppb cf" id="exitMP"></button></div></div></div>
 <div class="lo" id="lO"><div><div style="font-size:56px;text-align:center;margin-bottom:12px">👀</div><div style="font-size:18px;color:#fff;font-weight:600;text-align:center">학습 화면으로 돌아와주세요</div></div></div>
 
@@ -155,7 +155,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Malgun Gothic',san
 <div class="hdr"><div class="hdr-l"><div class="tb">Reading Level C</div><div class="ut">Unit 8: The Blockbuster Effect</div></div>
 <div class="hdr-r"><div class="mn">Step 3 • 번갈아 읽기</div><div class="prg" id="prg">1회차</div><button class="xb" onclick="doExit()">✕</button></div></div>
 <div class="lc">
-  <div class="smsg" id="sMsg">1회차 — 음원을 듣고, 다음 문장을 소리 내어 읽어보세요.</div>
+  <div class="smsg" id="sMsg">음원을 듣고, 다음 문장을 소리 내어 읽어보세요.</div>
   <!-- Progress + Speed -->
   <div class="prog-row">
     <span class="prog-txt" id="pLbl">0 / 10 문장</span>
@@ -314,6 +314,11 @@ function stopRec(i){
     scores.push(sim);setRow(i,'stu-pass');setCtrl(i,'');
     updateProgress(doneCount+1);
     if(window._rr){window._rr();window._rr=null}
+  }else if(attempts[i]>=3){
+    // Max 3 attempts reached - force pass with last sim score
+    scores.push(sim);setRow(i,'stu-pass');setCtrl(i,'');
+    updateProgress(doneCount+1);
+    if(window._rr){window._rr();window._rr=null}
   }else{
     setRow(i,'stu-fail');
     var ct=document.getElementById('ct'+i);if(ct)ct.setAttribute('data-sim',sim);
@@ -363,10 +368,7 @@ async function beginRound(){
   await runRound();
   if(aborted)return;
   if(round===1){
-    document.getElementById('sMsg').textContent='1회차 완료! 🎉';
-    document.getElementById('prg').textContent='1회차 완료';
-    
-    showBB('순서를 바꿔서 한 번 더 읽어볼까요?','2회차 준비 →','orange',function(){startRound(2)});
+    showBB('순서를 바꿔서 한 번 더 읽어볼까요?','2회차 녹음','orange',function(){startRound(2)});
   }else{
     updateResult();goTo('result');
   }
@@ -376,8 +378,8 @@ function startRound(r){
   round=r;sIdx=0;aborted=false;doneCount=0;attempts={};
   if(r===1)scores=[]; // Only reset scores on round 1, keep round 1 scores for round 2
   document.getElementById('sMsg').textContent=round===1
-    ?'1회차 — 음원을 듣고, 다음 문장을 소리 내어 읽어보세요.'
-    :'2회차 — 이번에는 내가 먼저 읽고, 음원을 들어보세요.';
+    ?'음원을 듣고, 다음 문장을 소리 내어 읽어보세요.'
+    :'이번에는 내가 먼저 읽고, 음원을 들어보세요.';
   document.getElementById('prg').textContent=(round===1?'1회차':'2회차');
   var tag=document.getElementById('rTag');tag.textContent=(round===1?'1회차':'2회차');
   tag.className='rtag '+(round===1?'r1':'r2');
@@ -432,7 +434,7 @@ function doExit(){
   if(isRetryMode){
     showExitModal('다시 학습을 종료하시겠습니까?','진행 상황이 저장되지 않습니다.','종료','취소',function(){goTo('entry')},null);
   } else {
-    showExitModal('학습을 종료하시겠습니까?','진행 상황이 저장됩니다.','나가기','계속하기',function(){goTo('entry')},null);
+    showExitModal('학습을 종료하시겠습니까?','지금까지의 학습 내용이 저장됩니다.','저장 후 나가기','취소',function(){goTo('entry')},null);
   }
 }
 function showExitModal(title,desc,okLabel,cancelLabel,onOk,onCancel){
